@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Seller Analytics - SharpDocs{% endblock %}
+{% block body_class %}seller-analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern Analytics Dashboard Styles */
+.analytics-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+}
+
+.metric-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    line-height: 1;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+.table-modern {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table-modern thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 1rem 0.75rem;
+}
+
+.table-modern tbody td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+}
+
+.table-modern tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.progress-modern {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.progress-bar-modern {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+
+.subject-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.subject-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.subject-title {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.subject-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.btn-period {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.btn-period:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-period.active {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Animations */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-in {
+    animation: slideInUp 0.6s ease-out;
+}
+
+.animate-in:nth-child(1) { animation-delay: 0.1s; }
+.animate-in:nth-child(2) { animation-delay: 0.2s; }
+.animate-in:nth-child(3) { animation-delay: 0.3s; }
+.animate-in:nth-child(4) { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+  <!-- Analytics Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card analytics-header shadow-sm border-0 rounded-4">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h4 class="mb-0 fw-bold">
+              Seller Analytics
+            </h4>
+            <div class="text-white-50 small mt-1">{{ request.user.username }}</div>
+          </div>
+          <div class="col-md-6 text-end">
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-period {% if current_period == 7 %}active{% endif %}" data-period="7">7 Days</button>
+              <button type="button" class="btn btn-period {% if current_period == 30 %}active{% endif %}" data-period="30">30 Days</button>
+              <button type="button" class="btn btn-period {% if current_period == 90 %}active{% endif %}" data-period="90">90 Days</button>
+              <button type="button" class="btn btn-period {% if current_period == 365 %}active{% endif %}" data-period="365">1 Year</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="row mb-4 animate-in" style="animation-delay: 0.2s;">
+    <div class="col-md-3">
+      <div class="card metric-card border-0 bg-primary text-white">
+        <div class="card-body text-center">
+          <div class="metric-icon">
+            <i class="bi bi-currency-dollar"></i>
+          </div>
+          <div class="metric-value">${{ analytics.total_revenue|floatformat:2 }}</div>
+          <div class="metric-label">Total Revenue</div>
+          <small class="text-white-50">Last {{ analytics.period_days }} days</small>
+        </div>
+      </div>
+    </div>
+     
+    <div class="col-md-3">
+      <div class="card metric-card border-0 bg-success text-white">
+        <div class="card-body text-center">
+          <div class="metric-icon">
+            <i class="bi bi-cart-check"></i>
+          </div>
+          <div class="metric-value">{{ analytics.total_sales }}</div>
+          <div class="metric-label">Total Sales</div>
+          <small class="text-white-50">{{ analytics.conversion_rate|floatformat:1 }}% conversion</small>
+        </div>
+      </div>
+    </div>
+     
+    <div class="col-md-3">
+      <div class="card metric-card border-0 bg-info text-white">
+        <div class="card-body text-center">
+          <div class="metric-icon">
+            <i class="bi bi-download"></i>
+          </div>
+          <div class="metric-value">{{ analytics.total_downloads }}</div>
+          <div class="metric-label">Total Downloads</div>
+          <small class="text-white-50">{{ analytics.total_documents }} documents</small>
+        </div>
+      </div>
+    </div>
+     
+    <div class="col-md-3">
+      <div class="card metric-card border-0 bg-warning text-white">
+        <div class="card-body text-center">
+          <div class="metric-icon">
+            <i class="bi bi-tag"></i>
+          </div>
+          <div class="metric-value">${{ analytics.avg_document_price|floatformat:2 }}</div>
+          <div class="metric-label">Avg Price</div>
+          <small class="text-white-50">{{ analytics.total_documents }} docs</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row mb-4 animate-in" style="animation-delay: 0.3s;">
+    <div class="col-md-8">
+      <!-- Sales Chart -->
+      <div class="card border-0 rounded-4 chart-container">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-bar-chart me-2"></i> Sales Trend
+          </h5>
+        </div>
+        <div class="card-body">
+          <canvas id="salesChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <!-- Subject Performance -->
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-pie-chart me-2"></i> Top Subjects
+          </h5>
+        </div>
+        <div class="card-body">
+          {% for subject in analytics.subject_performance %}
+          <div class="subject-card animate-in" style="animation-delay: 0.{{ forloop.counter }}s;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <span class="subject-title">{{ subject.subject|title }}</span>
+                <span class="subject-badge">{{ subject.doc_count }}</span>
+              </div>
+            </div>
+            <div class="progress-modern">
+              <div class="progress-bar-modern" style="width: {{ subject.download_percentage|default:0 }}%"></div>
+            </div>
+            <div class="small text-muted">
+              {{ subject.total_downloads }} downloads • ${{ subject.total_revenue|floatformat:2 }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Tables -->
+  <div class="row mb-4 animate-in" style="animation-delay: 0.4s;">
+    <div class="col-md-6">
+      <!-- Top Performing Documents -->
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-trophy me-2"></i> Top Documents
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-modern">
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Downloads</th>
+                  <th>Sales</th>
+                  <th>Revenue</th>
+                  <th>Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for doc in analytics.top_documents %}
+                <tr>
+                  <td>
+                    <a href="{% url 'documents:document_detail' doc.slug %}" class="text-decoration-none fw-medium">{{ doc.title|truncatechars:30 }}</a>
+                  </td>
+                  <td><span class="badge bg-info text-white">{{ doc.downloads_count }}</span></td>
+                  <td><span class="badge bg-success text-white">{{ doc.sales_count|default:0 }}</span></td>
+                  <td><span class="badge bg-primary text-white">${{ doc.revenue|default_if_none:0|floatformat:2 }}</span></td>
+                  <td>
+                    {% if doc.avg_rating %}
+                      {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= doc.avg_rating|floatformat:0 %}
+                          <i class="bi bi-star-fill text-warning"></i>
+                        {% else %}
+                          <i class="bi bi-star text-warning"></i>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <!-- Recent Sales -->
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-clock-history me-2"></i> Recent Sales
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-modern">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Document</th>
+                  <th>Buyer</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sale in analytics.recent_sales %}
+                <tr>
+                  <td><small class="text-muted">{{ sale.created_at|date:"M d, Y" }}</small></td>
+                  <td>
+                    <a href="{% url 'documents:document_detail' sale.document.slug %}" class="text-decoration-none fw-medium">{{ sale.document.title|truncatechars:25 }}</a>
+                  </td>
+                  <td>{{ sale.buyer.get_full_name|default:sale.buyer.username }}</td>
+                  <td><span class="badge bg-success text-white fw-semibold">${{ sale.net_amount|floatformat:2 }}</span></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sales Chart
+const salesCtx = document.getElementById('salesChart').getContext('2d');
+const salesData = {{ sales_chart_data|safe }};
+
+new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: salesData.map(item => item.month),
+        datasets: [{
+            label: 'Revenue',
+            data: salesData.map(item => parseFloat(item.revenue)),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+        }, {
+            label: 'Sales Count',
+            data: salesData.map(item => item.sales_count),
+            borderColor: 'rgb(153, 102, 255)',
+            backgroundColor: 'rgba(153, 102, 255, 0.2)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Period selector
+document.querySelectorAll('[data-period]').forEach(button => {
+    button.addEventListener('click', function() {
+        document.querySelectorAll('[data-period]').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Reload page with new period
+        const period = this.dataset.period;
+        window.location.href = `?period=${period}`;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}My Purchases - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="fw-bold mb-4">🛒 My Purchases</h2>
+
+    {% if purchases %}
+        {% if unreviewed_count %}
+        <div class="alert alert-info">
+            You have {{ unreviewed_count }} purchase(s) not reviewed yet. Leaving reviews helps other buyers.
+        </div>
+        {% endif %}
+        <div class="list-group">
+            {% for item in purchases %}
+                {% with order=item.order %}
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="mb-2 mb-md-0 d-flex align-items-center">
+
+                        <!-- File type icon -->
+                        {% with filename=order.document.file.name|lower %}
+                            {% if filename|slice:"-4:" == ".pdf" %}
+                                <span class="me-2 text-danger fs-5">📄</span>
+                            {% elif filename|slice:"-5:" == ".docx" or filename|slice:"-4:" == ".doc" %}
+                                <span class="me-2 text-primary fs-5">📝</span>
+                            {% elif filename|slice:"-4:" == ".txt" %}
+                                <span class="me-2 text-secondary fs-5">📃</span>
+                            {% elif filename|slice:"-5:" == ".pptx" or filename|slice:"-4:" == ".ppt" %}
+                                <span class="me-2 text-warning fs-5">📊</span>
+                            {% elif filename|slice:"-5:" == ".xlsx" or filename|slice:"-4:" == ".xls" %}
+                                <span class="me-2 text-success fs-5">📈</span>
+                            {% else %}
+                                <span class="me-2 fs-5">📁</span>
+                            {% endif %}
+                        {% endwith %}
+
+                        <div>
+                            <h5 class="mb-1">{{ order.document.title }}</h5>
+                            <p class="mb-1 text-muted small">
+                                Purchased on {{ order.created_at|date:"M d, Y H:i" }}
+                            </p>
+                            <p class="mb-0 text-muted small">
+                                <strong>Seller:</strong> {{ order.document.seller.username }} |
+                                <strong>Pages:</strong> {{ order.document.pages|default:"N/A" }} |
+                                <strong>Price Paid:</strong> ${{ order.amount_paid }}
+                            </p>
+                            <p class="mb-0 text-muted small mt-1">
+                                <strong>Usage Rights:</strong> {{ order.document.get_license_type_display }} — {{ order.document.license_summary }}
+                            </p>
+                            <div class="mt-2 d-flex gap-2 flex-wrap">
+                                {% if item.is_reviewed %}
+                                    <span class="badge bg-success">Reviewed</span>
+                                {% else %}
+                                    <a class="btn btn-outline-primary btn-sm" href="{% url 'reviews:add_review' order.document.id %}">Leave Review</a>
+                                {% endif %}
+
+                                {% if item.refund_request %}
+                                    <span class="badge bg-warning text-dark">Refund: {{ item.refund_request.get_status_display }}</span>
+                                {% elif item.can_request_refund %}
+                                    <a class="btn btn-outline-danger btn-sm" href="{% url 'documents:request_refund' order.id %}">Request Refund</a>
+                                {% else %}
+                                    <span class="badge bg-secondary">Refund window: {{ item.refund_window_days }} days</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cloudinary download button -->
+                    {% if item.download_url %}
+                    <a href="{{ item.download_url }}" 
+                       class="btn btn-success btn-sm shadow-sm"
+                       target="_blank"
+                       onclick="this.innerText='Downloading…';">
+                        ⬇️ Download
+                    </a>
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm shadow-sm" disabled>
+                        ❌ Unavailable
+                    </button>
+                    {% endif %}
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            You haven't purchased any documents yet.
+            <a href="{% url 'documents:document_list' %}" class="alert-link ms-2">Browse documents</a> to get started.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

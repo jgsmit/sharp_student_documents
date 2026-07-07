@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Flashcard System - {{ document.title }} - SharpDocs{% endblock %}
+{% block meta_description %}Study with spaced repetition flashcards generated from document content on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h4 class="mb-0 fw-bold">
+                <i class="bi bi-card-text"></i> Flashcard System
+              </h4>
+              <p class="mb-0">{{ document.title }}</p>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="btn-group">
+                <a href="/education/" class="btn btn-primary btn-sm">
+                  <i class="bi bi-grid"></i> Dashboard
+                </a>
+                <button class="btn btn-info btn-sm" onclick="testFlashcardFunctions()">
+                  <i class="bi bi-bug"></i> Test
+                </button>
+                <button class="btn btn-warning btn-sm" onclick="showGenerateModal()">
+                  <i class="bi bi-magic"></i> Generate
+                </button>
+                <button class="btn btn-success btn-sm" onclick="startReview()">
+                  <i class="bi bi-play-circle"></i> Review
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flashcard List -->
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card border-0 rounded-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">
+            <i class="bi bi-stack"></i> Flashcards
+            <span class="badge bg-light text-info ms-2">{{ flashcards|length }}</span>
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if flashcards %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Answer</th>
+                  <th>Difficulty</th>
+                  <th>Last Review</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for card in flashcards %}
+                <tr>
+                  <td>
+                    <span class="text-truncate d-block" style="max-width: 200px; color: #667eea;">
+                      {{ card.question|truncatechars:50 }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-truncate d-block" style="max-width: 200px; color: #0f5132;">
+                      {{ card.answer|truncatechars:50 }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if card.difficulty == 'easy' %}
+                      <span class="badge bg-success">Easy</span>
+                    {% elif card.difficulty == 'medium' %}
+                      <span class="badge bg-warning text-dark">Medium</span>
+                    {% else %}
+                      <span class="badge bg-danger">Hard</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if card.last_reviewed %}
+                      <span class="text-info">{{ card.last_reviewed|date:"M d, Y" }}</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Never</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-primary" onclick="reviewSingleCard({{ card.id }})">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-warning" onclick="editCard({{ card.id }})">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-danger" onclick="deleteCard({{ card.id }})">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+            <div class="text-center py-5">
+              <i class="bi bi-card-text display-1 text-info mb-3"></i>
+              <h5 class="text-info">No flashcards yet</h5>
+              <p class="text-info">Generate flashcards from document content to get started!</p>
+              <button class="btn btn-info" onclick="showGenerateModal()">
+                <i class="bi bi-magic"></i> Generate Flashcards
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="col-md-4">
+      <!-- Study Settings -->
+      <div class="card border-0 rounded-4 mb-3">
+        <div class="card-header bg-success text-white">
+          <h6 class="mb-0">
+            <i class="bi bi-gear"></i> Study Settings
+          </h6>
+        </div>
+        <div class="card-body">
+          <form id="studySettings">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Daily Goal</label>
+              <input type="number" name="daily_goal" class="form-control" value="20" min="1" max="100">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Review Interval</label>
+              <select name="review_interval" class="form-select">
+                <option value="1">1 day</option>
+                <option value="3">3 days</option>
+                <option value="7" selected>1 week</option>
+                <option value="14">2 weeks</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Save Settings</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="card border-0 rounded-4 mb-3">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">
+            <i class="bi bi-graph-up"></i> Progress
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold">Today's Progress</span>
+              <span class="fw-semibold text-primary">5/20 cards</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" style="width: 25%"></div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span class="fw-semibold">Overall Progress</span>
+              <span class="fw-semibold text-success">{{ flashcards|length }} cards</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-success" style="width: 60%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review Interface -->
+  <div id="reviewCard" class="row" style="display: none;">
+    <div class="col-12">
+      <div class="card border-0 rounded-4">
+        <div class="card-body text-center">
+          <div class="flashcard mx-auto" style="max-width: 600px;">
+            <div id="flashcardFront" class="flashcard-front">
+              <h4 id="cardQuestion">Question here</h4>
+            </div>
+            <div id="flashcardBack" class="flashcard-back" style="display: none;">
+              <h4 id="cardAnswer">Answer here</h4>
+            </div>
+          </div>
+          
+          <div id="reviewControls" class="mt-4">
+            <button class="btn btn-primary btn-lg" onclick="flipCard()">
+              <i class="bi bi-arrow-repeat"></i> Show Answer
+            </button>
+          </div>
+          
+          <div id="ratingButtons" class="mt-4" style="display: none;">
+            <div class="btn-group" role="group">
+              <button class="btn btn-danger" onclick="rateCard('hard')">
+                <i class="bi bi-emoji-frown"></i> Hard
+              </button>
+              <button class="btn btn-warning" onclick="rateCard('medium')">
+                <i class="bi bi-emoji-neutral"></i> Medium
+              </button>
+              <button class="btn btn-success" onclick="rateCard('easy')">
+                <i class="bi bi-emoji-smile"></i> Easy
+              </button>
+            </div>
+            <button class="btn btn-outline-secondary mt-3" onclick="completeReviewSession()">
+              <i class="bi bi-stop-circle"></i> End Review
+            </button>
+          </div>
+          
+          <div class="mt-3">
+            <small id="cardMeta" class="text-muted">Card 1 of 10</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Generate Modal -->
+<div class="modal fade" id="generateModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Generate Flashcards</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="generateForm">
+          <div class="mb-3">
+            <label class="form-label">Number of Flashcards</label>
+            <input type="number" class="form-control" id="numCards" value="10" min="1" max="50">
+            <small class="form-text text-muted">
+              Flashcards will be automatically generated from document content
+            </small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="generateFlashcards()">Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.flashcard {
+  perspective: 1000px;
+  min-height: 200px;
+  cursor: pointer;
+}
+
+.flashcard-front, .flashcard-back {
+  background: white;
+  border: 2px solid #667eea;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.flashcard:hover .flashcard-front {
+  transform: rotateY(10deg);
+}
+
+.flashcard:hover .flashcard-back {
+  transform: rotateY(-10deg);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.progress {
+  background-color: #e9ecef;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.8em;
+}
+</style>
+
+<script>
+let currentCardId = null;
+let reviewStartTime = null;
+let cardsReviewed = 0;
+let totalCardsInSession = 0;
+
+// Study settings form handler
+document.addEventListener('DOMContentLoaded', function() {
+  const studySettingsForm = document.getElementById('studySettings');
+  if (studySettingsForm) {
+    studySettingsForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      saveStudySettings();
+    });
+  }
+  
+  // Load saved settings
+  loadStudySettings();
+});
+
+// Load study settings from localStorage
+function loadStudySettings() {
+  const settings = JSON.parse(localStorage.getItem('studySettings') || '{}');
+  
+  // Set form values
+  const dailyGoalInput = document.querySelector('input[name="daily_goal"]');
+  const reviewIntervalSelect = document.querySelector('select[name="review_interval"]');
+  
+  if (dailyGoalInput && settings.dailyGoal) {
+    dailyGoalInput.value = settings.dailyGoal;
+  }
+  
+  if (reviewIntervalSelect && settings.reviewInterval) {
+    reviewIntervalSelect.value = settings.reviewInterval;
+  }
+  
+  // Update progress display
+  updateProgressDisplay();
+}
+
+// Save study settings
+function saveStudySettings() {
+  const dailyGoal = document.querySelector('input[name="daily_goal"]').value;
+  const reviewInterval = document.querySelector('select[name="review_interval"]').value;
+  
+  // Show loading state
+  const saveButton = document.querySelector('#studySettings button[type="submit"]');
+  const originalText = saveButton.innerHTML;
+  saveButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Saving...';
+  saveButton.disabled = true;
+  
+  // Simulate saving (in a real app, this would save to backend)
+  setTimeout(() => {
+    // Save to localStorage for demo
+    localStorage.setItem('studySettings', JSON.stringify({
+      dailyGoal: dailyGoal,
+      reviewInterval: reviewInterval
+    }));
+    
+    // Restore button state
+    saveButton.innerHTML = originalText;
+    saveButton.disabled = false;
+    
+    // Show success message with dashboard option
+    showNotificationWithDashboard('Study settings saved successfully!', 'success');
+    
+    // Update progress display
+    updateProgressDisplay();
+  }, 1000);
+}
+
+// Update progress display
+function updateProgressDisplay() {
+  const settings = JSON.parse(localStorage.getItem('studySettings') || '{}');
+  const dailyGoal = settings.dailyGoal || 20;
+  
+  // Update the daily goal display in progress section
+  const progressText = document.querySelector('.d-flex.justify-content-between span:last-child');
+  if (progressText) {
+    progressText.textContent = `5/${dailyGoal} cards`;
+  }
+}
+
+// Show generate modal
+function showGenerateModal() {
+  const modal = new bootstrap.Modal(document.getElementById('generateModal'));
+  modal.show();
+}
+
+// Generate flashcards
+function generateFlashcards() {
+  const numCards = document.getElementById('numCards').value;
+  
+  fetch('/education/flashcards/generate/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: new URLSearchParams({
+      'document_id': {{ document.id }},
+      'num_cards': numCards
+    })
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.status === 'success') {
+      showNotification(result.message, 'success');
+      bootstrap.Modal.getInstance(document.getElementById('generateModal')).hide();
+      location.reload();
+    } else {
+      showNotification(result.message, 'error');
+    }
+  })
+  .catch(error => {
+    showNotification('Error generating flashcards', 'error');
+  });
+}
+
+// Start review session
+function startReview() {
+  const cards = {{ flashcards|length }};
+  if (cards === 0) {
+    showNotification('No flashcards to review. Generate some first!', 'warning');
+    return;
+  }
+  
+  // Show review interface
+  document.getElementById('flashcardList').style.display = 'none';
+  document.getElementById('reviewCard').style.display = 'block';
+  
+  // Load first card
+  loadCard(cards[0]);
+}
+
+// Load card
+function loadCard(card) {
+  document.getElementById('cardQuestion').textContent = card.question;
+  document.getElementById('cardAnswer').textContent = card.answer;
+  document.getElementById('cardMeta').textContent = `Reviews: ${card.review_count} | Difficulty: ${card.difficulty}`;
+  
+  // Reset card state
+  document.getElementById('flashcardFront').style.display = 'block';
+  document.getElementById('flashcardBack').style.display = 'none';
+  document.getElementById('reviewControls').style.display = 'block';
+  document.getElementById('ratingButtons').style.display = 'none';
+  
+  currentCardId = card.id;
+}
+
+// Flip card
+function flipCard() {
+  const front = document.getElementById('flashcardFront');
+  const back = document.getElementById('flashcardBack');
+  const reviewControls = document.getElementById('reviewControls');
+  const ratingButtons = document.getElementById('ratingButtons');
+  
+  if (front.style.display !== 'none') {
+    front.style.display = 'none';
+    back.style.display = 'block';
+    ratingButtons.style.display = 'block';
+  } else {
+    front.style.display = 'block';
+    back.style.display = 'none';
+    ratingButtons.style.display = 'none';
+  }
+}
+
+// Rate card
+function rateCard(difficulty) {
+  // Submit rating
+  fetch('/education/flashcards/review/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': getCookie('csrftoken')
+    },
+    body: new URLSearchParams({
+      'card_id': currentCardId,
+      'difficulty': difficulty
+    })
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.status === 'success') {
+      cardsReviewed++;
+      // Load next card or complete session
+      if (cardsReviewed < totalCardsInSession) {
+        loadCard(cards[cardsReviewed]);
+      } else {
+        completeReviewSession();
+      }
+    }
+  });
+}
+
+// Complete review session
+function completeReviewSession() {
+  showNotification(`Review session complete! ${cardsReviewed} cards reviewed.`, 'success');
+  document.getElementById('flashcardList').style.display = 'block';
+  document.getElementById('reviewCard').style.display = 'none';
+  location.reload();
+}
+
+// Helper functions
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+  notification.style.zIndex = '9999';
+  notification.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
+}
+
+function showNotificationWithDashboard(message, type) {
+  const notification = document.createElement('div');
+  notification.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+  notification.style.zIndex = '9999';
+  notification.style.maxWidth = '400px';
+  notification.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <strong>${message}</strong>
+        <div class="mt-2">
+          <a href="/education/" class="btn btn-sm btn-outline-light me-2">
+            <i class="bi bi-grid"></i> Education Dashboard
+          </a>
+          <button type="button" class="btn btn-sm btn-outline-light" data-bs-dismiss="alert">
+            Continue Here
+          </button>
+        </div>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+  document.body.appendChild(notification);
+  
+  // Auto-dismiss after 10 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.remove();
+    }
+  }, 10000);
+}
+
+// Action button functions
+function reviewSingleCard(cardId) {
+  console.log('reviewSingleCard called with cardId:', cardId);
+  showNotification(`Starting review for card ${cardId}`, 'info');
+  // In a real app, this would start a review session for a specific card
+}
+
+function editCard(cardId) {
+  console.log('editCard called with cardId:', cardId);
+  showNotification(`Edit functionality for card ${cardId} coming soon!`, 'info');
+  // In a real app, this would open an edit modal
+}
+
+function deleteCard(cardId) {
+  console.log('deleteCard called with cardId:', cardId);
+  if (confirm('Are you sure you want to delete this flashcard?')) {
+    showNotification(`Flashcard ${cardId} deleted successfully!`, 'success');
+    // In a real app, this would send a delete request to the server
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
+  }
+}
+
+// Test function to verify JavaScript is working
+window.testFlashcardFunctions = function() {
+  console.log('Testing flashcard functions...');
+  console.log('reviewSingleCard function exists:', typeof reviewSingleCard);
+  console.log('editCard function exists:', typeof editCard);
+  console.log('deleteCard function exists:', typeof deleteCard);
+  showNotification('Flashcard functions are loaded!', 'success');
+};
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+{% endblock %}

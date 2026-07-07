@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Resources - SharpDocs{% endblock %}
+{% block meta_description %}Explore study resources, guides, and learning materials curated by SharpDocs to help students succeed.{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <h1 class="mb-4">Resources</h1>
+    <p class="mb-4 text-muted">Browse guides and downloadable resources to enhance your learning experience.</p>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover">
+                <div class="card-body">
+                    <h5 class="card-title">Study Guide: Mathematics</h5>
+                    <p class="card-text text-muted">Comprehensive notes and examples for exam prep.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Download</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover">
+                <div class="card-body">
+                    <h5 class="card-title">Essay Writing Tips</h5>
+                    <p class="card-text text-muted">Step-by-step guide to crafting high-quality essays.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Download</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm card-hover">
+                <div class="card-body">
+                    <h5 class="card-title">Past Exam Papers</h5>
+                    <p class="card-text text-muted">Collection of past papers for practice.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

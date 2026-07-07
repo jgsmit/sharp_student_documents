@@ -1,0 +1,673 @@
+{% extends "base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+{% load dict_extras %}
+{% load seo_tags %}
+
+<!-- Template updated for fresh database - split filter fixed -->
+
+{% block title %}{{ seo_title|default:"Browse Documents - SharpDocs" }}{% endblock %}
+{% block meta_description %}{{ seo_description|default:"Search and browse academic documents by subject, course, author, ISBN, and more. Find notes, papers, and study guides." }}{% endblock %}
+{% block meta_keywords %}SharpDocs, {{ seo_filter_label|default:"student documents" }}, study guides, notes, past papers{% endblock %}
+{% block meta_robots %}{% if request.GET %}noindex, follow{% else %}index, follow{% endif %}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{% canonical_url %}">{% endblock %}
+{% block og_title %}{{ seo_title|default:"Browse Documents - SharpDocs" }}{% endblock %}
+{% block og_description %}{{ seo_description|default:"Browse student documents, notes, and study guides on SharpDocs." }}{% endblock %}
+{% block twitter_title %}{{ seo_title|default:"Browse Documents - SharpDocs" }}{% endblock %}
+{% block twitter_description %}{{ seo_description|default:"Browse student documents, notes, and study guides on SharpDocs." }}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": "{% canonical_url %}#collection",
+      "name": "{{ seo_title|default:'Browse Documents - SharpDocs'|escapejs }}",
+      "description": "{{ seo_description|default:'Browse student documents, notes, and study guides on SharpDocs.'|escapejs }}",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "SharpDocs"
+      }
+    },
+    {
+      "@type": "ItemList",
+      "name": "{{ seo_filter_label|default:'student documents'|escapejs }}",
+      "numberOfItems": {{ result_count|default:0 }},
+      "itemListOrder": "https://schema.org/ItemListOrderAscending",
+      "itemListElement": [
+        {% for document in documents %}
+        {
+          "@type": "ListItem",
+          "position": {{ forloop.counter }},
+          "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'documents:document_detail' document.slug %}",
+          "name": "{{ document.title|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'home' %}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Documents",
+          "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'documents:document_list' %}"
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h2 mb-3">
+                <i class="bi bi-collection"></i> Browse Documents
+            </h1>
+            <h2 class="h4 fw-semibold mb-2">{{ search_heading }}</h2>
+            <p class="text-muted mb-3">{{ search_intro }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <section class="brand-discovery-panel rounded-4 p-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-lg-8">
+                        <h3 class="h5 fw-bold mb-2">Find study materials faster on SharpDocs</h3>
+                        <p class="mb-0 text-muted">
+                            Browse by subject, document type, academic level, and price to find the exact notes, past papers, and study guides you need.
+                        </p>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                            {% for subject_name in featured_subjects %}
+                                <a href="?subject={{ subject_name|urlencode }}" class="brand-chip">{{ subject_name }}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-light border rounded-4 mb-0">
+                <strong>{{ result_count|default:0 }}</strong> documents found
+                {% if result_count %}
+                    from <strong>{{ index_start }}</strong> to <strong>{{ index_end }}</strong>
+                {% endif %}
+                {% if search_query %}
+                    for <strong>"{{ search_query }}"</strong>
+                {% endif %}
+                on SharpDocs.
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="bi bi-search"></i> Quick Search
+                    </h5>
+                </div>
+                <div class="card-body p-3">
+                    <form method="get" action="{% url 'documents:document_list' %}" class="row g-3" id="searchForm">
+                        <div class="col-md-6">
+                            <label for="query" class="form-label">Search</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="query" name="q" 
+                                       value="{{ request.GET.q|default:'' }}" 
+                                       placeholder="Search by title, author, ISBN...">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search_type" class="form-label">In</label>
+                            <select class="form-select" name="search_type">
+                                <option value="all" {% if request.GET.search_type == 'all' %}selected{% endif %}>All Fields</option>
+                                <option value="title" {% if request.GET.search_type == 'title' %}selected{% endif %}>Title</option>
+                                <option value="content" {% if request.GET.search_type == 'content' %}selected{% endif %}>Content</option>
+                                <option value="author" {% if request.GET.search_type == 'author' %}selected{% endif %}>Author</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+                                    <i class="bi bi-sliders"></i> Advanced Search
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Search Section -->
+                        <div class="collapse mt-3" id="advancedSearch">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-semibold mb-3">Advanced Filters</h6>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label for="category" class="form-label">Category</label>
+                                            <select class="form-select" id="category" name="category">
+                                                <option value="">All Categories</option>
+                                                {% for category in categories %}
+                                                    <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="document_type" class="form-label">Document Type</label>
+                                            <select class="form-select" id="document_type" name="document_type">
+                                                <option value="">All Types</option>
+                                                {% for type, label in document_types %}
+                                                    <option value="{{ type }}" {% if request.GET.document_type == type %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="academic_level" class="form-label">Academic Level</label>
+                                            <select class="form-select" id="academic_level" name="academic_level">
+                                                <option value="">All Levels</option>
+                                                {% for level, label in academic_levels %}
+                                                    <option value="{{ level }}" {% if request.GET.academic_level == level %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="subject" class="form-label">Subject</label>
+                                            <input type="text" class="form-control" id="subject" name="subject" value="{{ request.GET.subject|default:'' }}" placeholder="e.g., Mathematics">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="author" class="form-label">Author</label>
+                                            <input type="text" class="form-control" id="author" name="author" value="{{ request.GET.author|default:'' }}" placeholder="Author or lecturer">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="university" class="form-label">University</label>
+                                            <input type="text" class="form-control" id="university" name="university" value="{{ request.GET.university|default:'' }}" placeholder="School or campus">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="min_price" class="form-label">Min Price</label>
+                                            <input type="number" class="form-control" id="min_price" name="min_price" value="{{ request.GET.min_price|default:'' }}" step="0.01" min="0">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="max_price" class="form-label">Max Price</label>
+                                            <input type="number" class="form-control" id="max_price" name="max_price" value="{{ request.GET.max_price|default:'' }}" step="0.01" min="0">
+                                        </div>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-search"></i> Apply Filters
+                                        </button>
+                                        <a href="{% url 'documents:document_list' %}" class="btn btn-outline-secondary ms-2">
+                                            <i class="bi bi-x-circle"></i> Clear Filters
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section with Sidebar -->
+    {% if documents %}
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="row">
+            {% for document in documents %}
+                <div class="col-lg-6 col-md-6 mb-4">
+                    <div class="card h-100 document-card shadow-sm border-0">
+                        <div class="card-body p-3">
+                            <!-- Title and Price -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title text-primary fw-semibold mb-0">
+                                    <a href="{% url 'documents:document_detail' document.slug %}" class="text-decoration-none text-primary">
+                                        {{ document.title|truncatechars:60 }}
+                                    </a>
+                                </h5>
+                                <strong class="text-success h5 mb-0">${{ document.price|floatformat:2 }}</strong>
+                            </div>
+                            
+
+                            <!-- Meta Info -->
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                {% if document.category %}
+                                    <span class="badge bg-light text-dark">{{ document.category.name }}</span>
+                                {% endif %}
+                                {% if document.get_academic_level_display %}
+                                    <span class="badge bg-info text-white">{{ document.get_academic_level_display }}</span>
+                                {% endif %}
+                                {% if document.pages %}
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-file-earmark-text"></i> {{ document.pages }} pages
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+
+                            <!-- Rating -->
+                            {% if document.average_rating %}
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="text-warning me-2">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= document.average_rating %}
+                                                    <i class="bi bi-star-fill"></i>
+                                                {% else %}
+                                                    <i class="bi bi-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        <small class="text-muted">({{ document.average_rating|floatformat:1 }}/5)</small>
+                                        {% if document.reviews_count %}
+                                            <span class="text-muted ms-1">({{ document.reviews_count }} reviews)</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+
+                            <!-- Preview -->
+                            <div class="card-preview mb-3">
+                                {% if document.preview_text %}
+                                    <div class="text-muted small p-3 bg-light rounded">
+                                        <div class="preview-text">
+                                            {{ document.preview_text|truncatewords:80|safe }}
+                                        </div>
+                                        
+                                        {% if document.preview_text|wordcount > 80 %}
+                                            <div class="mt-2 pt-2 border-top">
+                                                <small class="text-primary">
+                                                    <i class="bi bi-book"></i> Extended preview available
+                                                </small>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                
+
+                                {% if document.description %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <strong>What you'll learn:</strong> {{ document.description|truncatewords:20 }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+                                
+
+                                {% if document.tags %}
+                                    <div class="mt-2">
+                                        {% for tag in document.tags|slice:":3" %}
+                                            <span class="badge bg-light text-dark me-1" style="font-size: 0.7rem;">{{ tag.strip }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+
+                            <!-- Additional Info -->
+                            <div class="row g-2 mb-3">
+                                {% if document.subject %}
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Subject</small>
+                                        <span class="fw-semibold">{{ document.subject|truncatechars:15 }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if document.course_code %}
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">Course Code</small>
+                                        <span class="fw-semibold">{{ document.course_code }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Seller</small>
+                                    <span class="fw-semibold">{{ document.seller.username }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Uploaded</small>
+                                    <span class="fw-semibold">{{ document.created_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+
+                            <div class="small text-muted mb-3">
+                                <i class="bi bi-shield-check me-1"></i>
+                                <strong>Usage:</strong> {{ document.get_license_type_display }}
+                            </div>
+                             
+
+                            <!-- Actions -->
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'documents:document_detail' document.slug %}" class="btn btn-primary">
+                                    <i class="bi bi-eye"></i> View Details
+                                </a>
+                                {% if user.is_authenticated and user == document.seller %}
+                                    <a href="{% url 'documents:edit_document' document.id %}" class="btn btn-outline-warning">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+                </div>
+                
+        <!-- Pagination -->
+        {% if is_paginated %}
+            <nav aria-label="Document pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li>
+                            <a href="?{% param_replace page_obj.previous_page_number %}" class="page-link">
+                                <i class="bi bi-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a href="?{% param_replace num %}" class="page-link">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li>
+                            <a href="?{% param_replace page_obj.next_page_number %}" class="page-link">
+                                Next <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+            <div class="col-lg-4">
+              <!-- Quick Filters -->
+              <div class="card border-0 bg-light mb-4">
+        <div class="card-header bg-white">
+          <h6 class="mb-0 fw-semibold">
+            <i class="bi bi-funnel"></i> Quick Filters
+          </h6>
+        </div>
+        <div class="card-body">
+                  <div class="mb-3">
+                    <h6 class="fw-semibold">Document Types</h6>
+                    {% for type, label in document_types %}
+                      <a href="?document_type={{ type }}" class="d-block text-decoration-none text-muted mb-1">
+                        <i class="bi bi-file-earmark"></i> {{ label }}
+                      </a>
+                    {% endfor %}
+                  </div>
+                  
+                  <div class="mb-3">
+                    <h6 class="fw-semibold">Academic Levels</h6>
+                    {% for level, label in academic_levels %}
+                      <a href="?academic_level={{ level }}" class="d-block text-decoration-none text-muted mb-1">
+                        <i class="bi bi-mortarboard"></i> {{ label }}
+                      </a>
+                    {% endfor %}
+                  </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">Popular Subjects</h6>
+            <a href="?subject=Mathematics" class="d-block text-decoration-none text-muted mb-1">Mathematics</a>
+            <a href="?subject=Computer%20Science" class="d-block text-decoration-none text-muted mb-1">Computer Science</a>
+            <a href="?subject=Business" class="d-block text-decoration-none text-muted mb-1">Business</a>
+            <a href="?subject=Engineering" class="d-block text-decoration-none text-muted mb-1">Engineering</a>
+            <a href="?subject=Medicine" class="d-block text-decoration-none text-muted mb-1">Medicine</a>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">Price Range</h6>
+            <a href="?max_price=5" class="d-block text-decoration-none text-muted mb-1">Under $5</a>
+            <a href="?min_price=5&max_price=20" class="d-block text-decoration-none text-muted mb-1">$5 - $20</a>
+            <a href="?min_price=20" class="d-block text-decoration-none text-muted mb-1">Over $20</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Prompt -->
+      {% if user.is_authenticated and user.is_seller %}
+        <div class="card border-0 bg-success text-white">
+          <div class="card-body text-center">
+            <i class="bi bi-cloud-upload display-4 mb-3"></i>
+            <h5 class="mb-2">Have documents to sell?</h5>
+            <p class="mb-3">Upload your study materials and start earning!</p>
+            <a href="{% url 'documents:upload_document' %}" class="btn btn-light">
+              <i class="bi bi-plus-circle"></i> Upload Document
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-collection fa-3x text-muted mb-3"></i>
+            <h3 class="text-muted">No Documents Available</h3>
+            <p class="text-muted">
+                Be the first to upload a document or check back later for new content.
+            </p>
+            <div class="mt-4">
+                {% if user.is_authenticated and user.is_seller %}
+                    <a href="{% url 'documents:upload_document' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-cloud-upload"></i> Upload First Document
+                    </a>
+                {% elif not user.is_authenticated %}
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-plus"></i> Sign Up to Upload
+                    </a>
+                {% else %}
+                    <a href="{% url 'documents:buyer_dashboard' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-bag"></i> Go to Dashboard
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function clearFilters() {
+  document.getElementById('searchForm').reset();
+}
+</script>
+
+<style>
+.brand-discovery-panel {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(25, 135, 84, 0.1));
+    border: 1px solid rgba(13, 110, 253, 0.12);
+}
+
+.brand-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid rgba(13, 110, 253, 0.12);
+    color: #0d6efd;
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: all 0.2s ease;
+}
+
+.brand-chip:hover {
+    color: #0b5ed7;
+    border-color: rgba(13, 110, 253, 0.28);
+    transform: translateY(-1px);
+}
+
+.document-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 500px;
+}
+
+.document-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.top-0 {
+    top: 0;
+}
+
+.start-0 {
+    left: 0;
+}
+
+.end-0 {
+    right: 0;
+}
+
+.m-2 {
+    margin: 0.5rem;
+}
+
+.display-4 {
+    font-size: 3rem;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-1 {
+    gap: 0.25rem;
+}
+
+.me-1 {
+    margin-right: 0.25rem;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.border-0 {
+    border: 0 !important;
+}
+
+/* Professional card styling */
+.card-img-top {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Rating stars */
+.bi-star-fill, .bi-star {
+    font-size: 0.9em;
+}
+
+/* Price styling */
+.fs-4 {
+    font-size: 1.5rem;
+}
+
+/* Best Value badge */
+.bg-success {
+    background-color: #198754 !important;
+}
+
+/* Preview styling */
+.card-preview {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background-color: #fafafa;
+    padding: 12px;
+    height: 180px;
+    overflow-y: auto;
+}
+
+.card-preview pre {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.document-preview {
+    max-height: 180px;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.document-preview .preview-text {
+    color: #495057;
+}
+
+.document-preview .border-top {
+    border-color: #dee2e6 !important;
+}
+
+/* Grid layout improvements */
+.g-4 {
+    gap: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .document-card {
+        margin-bottom: 1rem;
+        min-height: 400px;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-preview {
+        height: 140px;
+    }
+}
+
+@media (max-width: 576px) {
+    .document-card {
+        min-height: 350px;
+    }
+    
+    .card-preview {
+        height: 120px;
+    }
+}
+</style>
+{% endblock %}

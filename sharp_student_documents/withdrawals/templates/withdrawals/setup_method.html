@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Setup Withdrawal Method - SharpDocs{% endblock %}
+{% block meta_description %}Add a withdrawal method to receive your earnings from SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-plus-circle"></i> Add Withdrawal Method
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card border-0 h-100 text-center payment-method-card" onclick="selectMethod('paypal')">
+                <div class="card-body">
+                  <div class="mb-3">
+                    <i class="bi bi-paypal display-4 text-info"></i>
+                  </div>
+                  <h5 class="card-title">PayPal</h5>
+                  <p class="card-text text-muted">
+                    Scheduled payouts (14th & 28th)<br>
+                    <small>Easy setup • Familiar • Global</small>
+                  </p>
+                  <div class="text-info">
+                    <small><i class="bi bi-check-circle"></i> Available Now</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card border-0 h-100 text-center payment-method-card disabled-method" onclick="showComingSoon()">
+                <div class="card-body">
+                  <div class="mb-3">
+                    <i class="bi bi-bank display-4 text-secondary"></i>
+                  </div>
+                  <h5 class="card-title">Bank Transfer</h5>
+                  <p class="card-text text-muted">
+                    Direct to your bank<br>
+                    <small>Lowest fees • Secure • Coming Soon</small>
+                  </p>
+                  <div class="text-warning">
+                    <small><i class="bi bi-clock"></i> Coming Soon</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-12 mb-3">
+              <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Stripe Connect</strong> is temporarily unavailable while we upgrade our payment infrastructure. 
+                Please use PayPal for now. We'll notify you when Stripe is available again.
+              </div>
+            </div>
+          </div>
+
+          <form method="post" id="setupMethodForm">
+            {% csrf_token %}
+            <input type="hidden" name="method_type" id="methodType" value="">
+            
+            <!-- Stripe Setup -->
+            <div id="stripeSetup" class="method-setup" style="display: none;">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <strong>Stripe Connect</strong> is our recommended payment method. It offers the lowest fees and fastest processing times. You'll be redirected to Stripe to securely connect your account.
+                <br><br>
+                <small class="text-muted">
+                  <strong>Note:</strong> If you see an error about "Connect not enabled", please ensure your Stripe account is configured for Connect platform integration.
+                </small>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary btn-lg">
+                  <i class="bi bi-stripe"></i> Connect Stripe Account
+                </button>
+              </div>
+            </div>
+
+            <!-- PayPal Setup -->
+            <div id="paypalSetup" class="method-setup" style="display: none;">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <strong>PayPal</strong> is used for scheduled payouts (14th & 28th). Enter your PayPal email address below.
+              </div>
+              <div class="mb-3">
+                <label for="paypalEmail" class="form-label">PayPal Email Address</label>
+                <input type="email" class="form-control" id="paypalEmail" name="paypal_email" 
+                       placeholder="your-email@paypal.com" required>
+                <small class="form-text text-muted">Make sure this is the email you use for PayPal</small>
+              </div>
+              <div class="text-center">
+                <button type="submit" class="btn btn-info btn-lg">
+                  <i class="bi bi-paypal"></i> Add PayPal Account
+                </button>
+              </div>
+            </div>
+
+            <!-- Bank Setup (Coming Soon) -->
+            <div id="bankSetup" class="method-setup" style="display: none;">
+              <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Direct Bank Transfer</strong> is coming soon! We're working on implementing secure bank transfers for even lower fees.
+              </div>
+              <div class="text-center">
+                <button type="button" class="btn btn-secondary btn-lg" disabled>
+                  <i class="bi bi-bank"></i> Coming Soon
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function selectMethod(method) {
+  // Remove selected class from all cards
+  document.querySelectorAll('.payment-method-card').forEach(card => {
+    card.classList.remove('border-primary', 'bg-light');
+  });
+  
+  // Add selected class to clicked card
+  event.currentTarget.classList.add('border-primary', 'bg-light');
+  
+  // Hide all setup forms
+  document.querySelectorAll('.method-setup').forEach(setup => {
+    setup.style.display = 'none';
+  });
+  
+  // Show selected setup form
+  document.getElementById(method + 'Setup').style.display = 'block';
+  document.getElementById('methodType').value = method;
+}
+
+// Auto-select PayPal on load (Stripe temporarily disabled)
+document.addEventListener('DOMContentLoaded', function() {
+  selectMethod('paypal');
+});
+
+function showComingSoon() {
+  // Show coming soon message for bank transfer
+  alert('Direct bank transfers are coming soon! For now, please use PayPal for scheduled payouts.');
+}
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.payment-method-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.payment-method-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.payment-method-card.selected {
+  border-color: #667eea;
+  background-color: #f8f9ff;
+}
+
+.payment-method-card.disabled-method {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.payment-method-card.disabled-method:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.method-setup {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.display-4 {
+  font-size: 3rem;
+}
+
+.card {
+  transition: transform 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+</style>
+{% endblock %}

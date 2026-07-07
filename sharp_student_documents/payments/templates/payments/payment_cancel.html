@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Payment Cancelled - Retry Checkout | SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+
+    <!-- Icon -->
+    <div class="mb-4">
+        <span class="display-1 text-danger">X</span>
+    </div>
+
+    <!-- Message -->
+    <h2 class="text-danger fw-bold">Payment Cancelled</h2>
+    <p class="text-muted">
+        Your payment for <strong>{{ order.document.title }}</strong> was not completed.  
+        Don’t worry — you have not been charged.
+    </p>
+
+    <p><strong>Status:</strong> {{ order.status|title }}</p>
+
+    <!-- CTA Buttons -->
+    <div class="d-flex justify-content-center gap-2 mt-4 flex-wrap">
+        <a href="{% url 'checkout' order.id %}" class="btn btn-primary btn-lg">
+            Retry Checkout
+        </a>
+        <a href="{% url 'document_detail' order.document.slug %}" class="btn btn-warning btn-lg">
+            Back to Document
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg">
+            🏠 Home
+        </a>
+    </div>
+
+    <!-- Support -->
+    <p class="small mt-4">
+        Need assistance? <a href="{% url 'contact' %}" class="fw-bold">Contact Support</a>.
+    </p>
+
+</div>
+{% endblock %}

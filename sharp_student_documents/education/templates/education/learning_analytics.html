@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Learning Analytics - SharpDocs{% endblock %}
+{% block meta_description %}Track your learning progress and performance with detailed analytics on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-graph-up"></i> Learning Analytics
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Overview -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 bg-primary text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ total_documents }}</h2>
+          <p class="mb-0">Total Documents</p>
+          <small>In your library</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-success text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ completed_count }}</h2>
+          <p class="mb-0">Completed</p>
+          <small>Documents studied</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-info text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ study_hours }}</h2>
+          <p class="mb-0">Study Hours</p>
+          <small>Total time spent</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-warning text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ avg_score }}%</h2>
+          <p class="mb-0">Average Score</p>
+          <small>Performance metric</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Charts -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0">Learning Progress</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="progressChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0">Subject Distribution</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="subjectChart" width="400" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Study Activity</h5>
+        </div>
+        <div class="card-body">
+          {% if recent_activities %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Document</th>
+                    <th>Activity</th>
+                    <th>Date</th>
+                    <th>Duration</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for activity in recent_activities %}
+                  <tr>
+                    <td>{{ activity.document.title|truncatechars:30 }}</td>
+                    <td>
+                      <span class="badge bg-{{ activity.type|default:'secondary' }}">
+                        {{ activity.get_type_display|default:activity.type|title }}
+                      </span>
+                    </td>
+                    <td>{{ activity.date|date:"M d, Y" }}</td>
+                    <td>{{ activity.duration|default:"-" }}</td>
+                    <td>
+                      {% if activity.score %}
+                        <span class="badge bg-{{ activity.score|score_color }}">{{ activity.score }}%</span>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <i class="bi bi-graph-up display-1 text-muted mb-3"></i>
+              <h5 class="text-muted">No activity yet</h5>
+              <p class="text-muted">Start studying to see your learning analytics here</p>
+              <a href="{% url 'documents:document_list' %}" class="btn btn-primary">
+                Browse Documents
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Progress Chart
+const progressCtx = document.getElementById('progressChart').getContext('2d');
+new Chart(progressCtx, {
+  type: 'line',
+  data: {
+    labels: {{ chart_labels|safe }},
+    datasets: [{
+      label: 'Study Hours',
+      data: {{ chart_data|safe }},
+      borderColor: 'rgb(75, 192, 192)',
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      tension: 0.1
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Weekly Study Progress'
+      }
+    }
+  }
+});
+
+// Subject Distribution Chart
+const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+new Chart(subjectCtx, {
+  type: 'doughnut',
+  data: {
+    labels: {{ subject_labels|safe }},
+    datasets: [{
+      data: {{ subject_data|safe }},
+      backgroundColor: [
+        '#FF6384',
+        '#36A2EB',
+        '#FFCE56',
+        '#4BC0C0',
+        '#9966FF'
+      ]
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: {
+        display: true,
+        text: 'Study Time by Subject'
+      }
+    }
+  }
+});
+
+// Score color helper function
+function getScoreColor(score) {
+  if (score >= 90) return 'success';
+  if (score >= 80) return 'info';
+  if (score >= 70) return 'warning';
+  return 'danger';
+}
+</script>
+{% endblock %}

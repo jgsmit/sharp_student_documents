@@ -1,0 +1,1061 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage Withdrawals - SharpDocs Admin{% endblock %}
+
+{% block body_class %}admin-page{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 text-warning">
+            <i class="bi bi-bank"></i> Manage Withdrawals
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:admin_view_financials' %}" class="btn btn-info">
+                    <i class="bi bi-arrow-left"></i> Back to Financials
+                </a>
+                <a href="{% url 'documents:admin_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-warning text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ total_withdrawals }}</h2>
+                    <p class="mb-0">Total Requests</p>
+                    <small>All withdrawal requests</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-info text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ pending_withdrawals }}</h2>
+                    <p class="mb-0">Processing</p>
+                    <small>Automatic processing</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-success text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ completed_withdrawals }}</h2>
+                    <p class="mb-0">Completed</p>
+                    <small>Successfully processed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-danger text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ failed_withdrawals }}</h2>
+                    <p class="mb-0">Failed</p>
+                    <small>Processing errors</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="bi bi-lightning-fill text-success"></i>
+                                Automatic Processing System Active
+                            </h6>
+                            <small class="text-muted">Withdrawals are processed automatically without manual approval</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-success">Instant Processing</span>
+                            <span class="badge bg-info">Fraud Detection</span>
+                            <span class="badge bg-warning">Admin Notifications</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-info text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ total_commission|floatformat:0 }}</h2>
+                    <p class="mb-0">Commission Earned</p>
+                    <small>40% of all sales</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Financial Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 bg-primary text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ total_withdrawn|floatformat:0 }}</h2>
+                    <p class="mb-0">Total Withdrawn</p>
+                    <small>Amount paid to sellers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ seller_earnings|floatformat:0 }}</h2>
+                    <p class="mb-0">Seller Earnings</p>
+                    <small>Net amount after commission</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 bg-purple text-white" style="background-color: #6f42c1;">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">40%</h2>
+                    <p class="mb-0">Commission Rate</p>
+                    <small>Standard rate for all sellers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4 border-0 rounded-4 shadow-sm">
+        <div class="card-header bg-warning text-white">
+            <h6 class="m-0 fw-bold">
+                <i class="bi bi-funnel"></i> Filters
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="status" class="form-label fw-semibold">Status</label>
+                    <select name="status" id="status" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="processing" {% if request.GET.status == 'processing' %}selected{% endif %}>Processing</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Failed</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        <option value="2fa_required" {% if request.GET.status == '2fa_required' %}selected{% endif %}>2FA Required</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-search"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-grid">
+                        <a href="{% url 'documents:admin_manage_withdrawals' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Clear Filters
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Withdrawals Table -->
+    <div class="card border-0 rounded-4 shadow-sm">
+        <div class="card-header bg-warning text-white d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 fw-bold">
+                <i class="bi bi-list"></i> Withdrawal Requests ({{ withdrawals.count }} total)
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if withdrawals %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-calendar"></i> Requested</th>
+                            <th><i class="bi bi-person"></i> Seller</th>
+                            <th><i class="bi bi-credit-card"></i> Method</th>
+                            <th><i class="bi bi-currency-dollar"></i> Amount</th>
+                            <th><i class="bi bi-info-circle"></i> Type</th>
+                            <th><i class="bi bi-toggle-on"></i> Status</th>
+                            <th><i class="bi bi-gear"></i> Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for withdrawal in withdrawals %}
+                        <tr data-withdrawal-id="{{ withdrawal.id }}">
+                            <td>
+                                <div class="small text-muted">{{ withdrawal.requested_at|date:"M d, Y" }}</div>
+                                <div class="small text-muted">{{ withdrawal.requested_at|time:"H:i" }}</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-2" 
+                                         style="width: 32px; height: 32px; font-size: 14px;">
+                                        {{ withdrawal.user.username|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ withdrawal.user.username }}</div>
+                                        <small class="text-muted">{{ withdrawal.user.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if withdrawal.withdrawal_method %}
+                                    <span class="badge bg-info">{{ withdrawal.withdrawal_method.get_method_type_display }}</span>
+                                    <div class="small text-muted">{{ withdrawal.withdrawal_method.method_type|title }}</div>
+                                    {% if withdrawal.withdrawal_method.stripe_account_id %}
+                                        <small class="text-muted">Stripe: {{ withdrawal.withdrawal_method.stripe_account_id|truncatechars:15 }}</small>
+                                    {% elif withdrawal.withdrawal_method.paypal_email %}
+                                        <small class="text-muted">PayPal: {{ withdrawal.withdrawal_method.paypal_email|truncatechars:20 }}</small>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary">Legacy</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-bold text-warning">${{ withdrawal.amount|floatformat:2 }}</div>
+                                {% if withdrawal.fee > 0 %}
+                                <div class="small text-muted">Fee: ${{ withdrawal.fee|floatformat:2 }}</div>
+                                <div class="small text-success">Net: ${{ withdrawal.net_amount|floatformat:2 }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ withdrawal.get_payout_type_display }}</span>
+                            </td>
+                            <td>
+                                {% if withdrawal.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif withdrawal.status == 'processing' %}
+                                    <span class="badge bg-info">Processing</span>
+                                {% elif withdrawal.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif withdrawal.status == 'failed' %}
+                                    <span class="badge bg-danger">Failed</span>
+                                {% elif withdrawal.status == 'cancelled' %}
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                {% elif withdrawal.status == '2fa_required' %}
+                                    <span class="badge bg-warning">2FA Required</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#" class="btn btn-primary" title="View Details" onclick="viewWithdrawalDetails('{{ withdrawal.id }}'); return false;">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if withdrawal.status == 'pending' %}
+                                        <button type="button" class="btn btn-success" onclick="approveWithdrawal('{{ withdrawal.id }}')" title="Approve">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger" onclick="rejectWithdrawal('{{ withdrawal.id }}')" title="Reject">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    {% elif withdrawal.status == '2fa_required' %}
+                                        <a href="#" class="btn btn-warning" title="Verify 2FA">
+                                            <i class="bi bi-shield-check"></i>
+                                        </a>
+                                    {% elif withdrawal.status == 'processing' %}
+                                        <a href="#" class="btn btn-info" title="View Progress">
+                                            <i class="bi bi-clock"></i>
+                                        </a>
+                                    {% elif withdrawal.status == 'failed' %}
+                                        <a href="#" class="btn btn-warning" title="Retry">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-bank display-1 text-muted mb-3"></i>
+                <h5 class="text-muted">No withdrawal requests found</h5>
+                <p class="text-muted">No withdrawal requests match your current filters.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button class="btn btn-success" onclick="approvePending()">
+                                    <i class="bi bi-check-circle"></i> Approve All Pending
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button class="btn btn-info" onclick="exportData()">
+                                    <i class="bi bi-download"></i> Export Data
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <a href="{% url 'documents:admin_view_financials' %}" class="btn btn-warning">
+                                    <i class="bi bi-graph-up"></i> Financial Overview
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <a href="{% url 'documents:admin_dashboard' %}" class="btn btn-secondary">
+                                    <i class="bi bi-house"></i> Admin Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function approvePending() {
+    if (confirm('Are you sure you want to approve all pending withdrawals? This action cannot be undone!')) {
+        // Get all pending withdrawal checkboxes
+        const pendingWithdrawals = document.querySelectorAll('tr:has(.badge.bg-warning)');
+        let count = 0;
+        
+        // Count pending withdrawals
+        document.querySelectorAll('tbody tr').forEach(row => {
+            const statusBadge = row.querySelector('.badge');
+            if (statusBadge && statusBadge.textContent.trim() === 'Pending') {
+                count++;
+            }
+        });
+        
+        if (count === 0) {
+            alert('No pending withdrawals found to approve.');
+            return;
+        }
+        
+        // Show processing message
+        const message = document.createElement('div');
+        message.className = 'alert alert-info';
+        message.innerHTML = `<i class="bi bi-info-circle"></i> Processing ${count} pending withdrawal requests...`;
+        document.querySelector('.card-body').prepend(message);
+        
+        // Simulate bulk approval (in real implementation, this would make an API call)
+        setTimeout(() => {
+            message.remove();
+            const successMessage = document.createElement('div');
+            successMessage.className = 'alert alert-success';
+            successMessage.innerHTML = `<i class="bi bi-check-circle"></i> Successfully approved ${count} withdrawal requests!`;
+            document.querySelector('.card-body').prepend(successMessage);
+            
+            // Reload page after 2 seconds to show updated status
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }, 1500);
+    }
+}
+
+function exportData() {
+    // Get withdrawal data from the table
+    const withdrawals = [];
+    document.querySelectorAll('tbody tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 6) {
+            withdrawals.push({
+                requested: cells[0].textContent.trim(),
+                seller: cells[1].textContent.trim(),
+                method: cells[2].textContent.trim(),
+                amount: cells[3].textContent.trim(),
+                type: cells[4].textContent.trim(),
+                status: cells[5].textContent.trim()
+            });
+        }
+    });
+    
+    if (withdrawals.length === 0) {
+        alert('No withdrawal data available to export.');
+        return;
+    }
+    
+    // Create CSV content
+    let csvContent = "Requested,Seller,Method,Amount,Type,Status\n";
+    withdrawals.forEach(w => {
+        csvContent += `"${w.requested}","${w.seller}","${w.method}","${w.amount}","${w.type}","${w.status}"\n`;
+    });
+    
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `withdrawal_requests_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    const message = document.createElement('div');
+    message.className = 'alert alert-success';
+    message.innerHTML = `<i class="bi bi-download"></i> Successfully exported ${withdrawals.length} withdrawal requests!`;
+    document.querySelector('.card-body').prepend(message);
+    
+    // Remove message after 3 seconds
+    setTimeout(() => {
+        message.remove();
+    }, 3000);
+}
+
+function approveWithdrawal(withdrawalId) {
+    if (confirm('Are you sure you want to approve this withdrawal request?')) {
+        // Show processing message
+        const row = document.querySelector(`[data-withdrawal-id="${withdrawalId}"]`);
+        if (row) {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const actionsCell = row.querySelector('td:nth-child(7)');
+            
+            statusCell.innerHTML = '<span class="badge bg-info">Processing...</span>';
+            actionsCell.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+            
+            // Make actual API call
+            fetch(`/withdrawals/admin/approve/${withdrawalId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update status based on response
+                    const newStatus = data.new_status || 'processing';
+                    const statusBadge = newStatus === 'completed' ? 'bg-success' : 'bg-info';
+                    const statusText = newStatus === 'completed' ? 'Completed' : 'Processing';
+                    
+                    statusCell.innerHTML = `<span class="badge ${statusBadge}">${statusText}</span>`;
+                    actionsCell.innerHTML = `
+                        <div class="btn-group btn-group-sm">
+                            <a href="#" class="btn btn-primary" title="View Details" onclick="viewWithdrawalDetails('${withdrawalId}')">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-info" title="View Progress">
+                                <i class="bi bi-clock"></i>
+                            </a>
+                        </div>
+                    `;
+                    
+                    // Show success message
+                    showMessage(data.message || 'Withdrawal request approved successfully!', 'success');
+                } else {
+                    // Show error message
+                    showMessage(data.error || 'Failed to approve withdrawal', 'danger');
+                    // Reset UI
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Failed to approve withdrawal. Please try again.', 'danger');
+                location.reload();
+            });
+        }
+    }
+}
+
+function rejectWithdrawal(withdrawalId) {
+    const reason = prompt('Please enter a reason for rejection:');
+    if (reason) {
+        const row = document.querySelector(`[data-withdrawal-id="${withdrawalId}"]`);
+        if (row) {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const actionsCell = row.querySelector('td:nth-child(7)');
+            
+            statusCell.innerHTML = '<span class="badge bg-warning">Processing...</span>';
+            actionsCell.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+            
+            // Make actual API call
+            fetch(`/withdrawals/admin/reject/${withdrawalId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `reason=${encodeURIComponent(reason)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusCell.innerHTML = '<span class="badge bg-danger">Failed</span>';
+                    actionsCell.innerHTML = `
+                        <div class="btn-group btn-group-sm">
+                            <a href="#" class="btn btn-primary" title="View Details" onclick="viewWithdrawalDetails('${withdrawalId}')">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-warning" title="Retry">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </a>
+                        </div>
+                    `;
+                    
+                    // Show success message
+                    showMessage(data.message || 'Withdrawal request rejected successfully!', 'warning');
+                } else {
+                    // Show error message
+                    showMessage(data.error || 'Failed to reject withdrawal', 'danger');
+                    // Reset UI
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Failed to reject withdrawal. Please try again.', 'danger');
+                location.reload();
+            });
+        }
+    }
+}
+
+// Helper function to show messages
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'x-circle' : 'exclamation-triangle'}"></i> ${message}`;
+    document.querySelector('.card-body').prepend(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 5000);
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Function to view withdrawal details
+function viewWithdrawalDetails(withdrawalId) {
+    // Show loading state
+    const modalHtml = `
+        <div class="modal fade" id="withdrawalDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Withdrawal Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading withdrawal details...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove any existing modal
+    const existingModal = document.getElementById('withdrawalDetailsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('withdrawalDetailsModal'));
+    modal.show();
+    
+    // Fetch withdrawal details
+    fetch(`/withdrawals/admin/details/${withdrawalId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const details = data.details;
+                const modalBody = document.querySelector('#withdrawalDetailsModal .modal-body');
+                
+                let methodDetails = '';
+                if (details.withdrawal_method.type === 'paypal') {
+                    methodDetails = `
+                        <strong>PayPal Email:</strong> ${details.withdrawal_method.details.email || 'N/A'}<br>
+                        <strong>Verified:</strong> ${details.withdrawal_method.details.verified ? 'Yes' : 'No'}
+                    `;
+                } else if (details.withdrawal_method.type === 'stripe') {
+                    methodDetails = `
+                        <strong>Stripe Account ID:</strong> ${details.withdrawal_method.details.account_id || 'N/A'}<br>
+                        <strong>Verified:</strong> ${details.withdrawal_method.details.verified ? 'Yes' : 'No'}
+                    `;
+                }
+                
+                const statusBadge = getStatusBadge(details.status);
+                const requestedDate = new Date(details.requested_at).toLocaleString();
+                
+                modalBody.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-person"></i> User Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Username:</strong></td>
+                                    <td>${details.user.username}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>${details.user.email}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-info-circle"></i> Withdrawal Information</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Amount:</strong></td>
+                                    <td class="fw-bold text-warning">$${details.amount}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fee:</strong></td>
+                                    <td>$${details.fee}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Net Amount:</strong></td>
+                                    <td class="fw-bold text-success">$${details.net_amount}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Type:</strong></td>
+                                    <td>${details.payout_type}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td>${statusBadge}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Requested:</strong></td>
+                                    <td>${requestedDate}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6><i class="bi bi-credit-card"></i> Payment Method</h6>
+                            <div class="card">
+                                <div class="card-body">
+                                    <strong>Method Type:</strong> ${details.withdrawal_method.type}<br>
+                                    ${methodDetails}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${details.can_approve ? `
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-success" onclick="approveWithdrawal('${withdrawalId}'); bootstrap.Modal.getInstance(document.getElementById('withdrawalDetailsModal')).hide();">
+                                    <i class="bi bi-check"></i> Approve
+                                </button>
+                                <button type="button" class="btn btn-danger" onclick="rejectWithdrawal('${withdrawalId}'); bootstrap.Modal.getInstance(document.getElementById('withdrawalDetailsModal')).hide();">
+                                    <i class="bi bi-x"></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                `;
+            } else {
+                const modalBody = document.querySelector('#withdrawalDetailsModal .modal-body');
+                modalBody.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Failed to load withdrawal details: ${data.error || 'Unknown error'}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const modalBody = document.querySelector('#withdrawalDetailsModal .modal-body');
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Failed to load withdrawal details. Please try again.
+                </div>
+            `;
+        });
+}
+
+// Helper function to get status badge HTML
+function getStatusBadge(status) {
+    const badges = {
+        'pending': '<span class="badge bg-warning">Pending</span>',
+        'processing': '<span class="badge bg-info">Processing</span>',
+        'completed': '<span class="badge bg-success">Completed</span>',
+        'failed': '<span class="badge bg-danger">Failed</span>',
+        'cancelled': '<span class="badge bg-secondary">Cancelled</span>',
+        '2fa_required': '<span class="badge bg-warning">2FA Required</span>'
+    };
+    return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
+}
+</script>
+
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+</style>
+{% endblock %}
+
+<!-- Inline JavaScript for withdrawal approval - ensures functions are available -->
+<script>
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Show message function
+function showMessage(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(function() {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Withdrawal approval function
+function approveWithdrawal(withdrawalId) {
+    if (confirm('Are you sure you want to approve this withdrawal request?')) {
+        // Show processing message
+        const row = document.querySelector(`[data-withdrawal-id="${withdrawalId}"]`);
+        if (row) {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const actionsCell = row.querySelector('td:nth-child(7)');
+            
+            statusCell.innerHTML = '<span class="badge bg-info">Processing...</span>';
+            actionsCell.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+            
+            // Make actual API call
+            fetch(`/withdrawals/admin/approve/${withdrawalId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update status based on response
+                    const newStatus = data.new_status || 'processing';
+                    const statusBadge = newStatus === 'completed' ? 'bg-success' : 'bg-info';
+                    const statusText = newStatus === 'completed' ? 'Completed' : 'Processing';
+                    
+                    statusCell.innerHTML = `<span class="badge ${statusBadge}">${statusText}</span>`;
+                    actionsCell.innerHTML = `
+                        <div class="btn-group btn-group-sm">
+                            <a href="#" class="btn btn-primary" title="View Details" onclick="viewWithdrawalDetails('${withdrawalId}')">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-info" title="View Progress">
+                                <i class="bi bi-clock"></i>
+                            </a>
+                        </div>
+                    `;
+                    
+                    // Show success message
+                    showMessage(data.message || 'Withdrawal request approved successfully!', 'success');
+                } else {
+                    // Show error message
+                    showMessage(data.error || 'Failed to approve withdrawal', 'danger');
+                    // Reset UI
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Failed to approve withdrawal. Please try again.', 'danger');
+                location.reload();
+            });
+        }
+    }
+}
+
+// Withdrawal rejection function
+function rejectWithdrawal(withdrawalId) {
+    if (confirm('Are you sure you want to reject this withdrawal request? This action cannot be undone!')) {
+        // Show processing message
+        const row = document.querySelector(`[data-withdrawal-id="${withdrawalId}"]`);
+        if (row) {
+            const statusCell = row.querySelector('td:nth-child(6)');
+            const actionsCell = row.querySelector('td:nth-child(7)');
+            
+            statusCell.innerHTML = '<span class="badge bg-info">Processing...</span>';
+            actionsCell.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+            
+            // Make actual API call
+            fetch(`/withdrawals/admin/reject/${withdrawalId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusCell.innerHTML = '<span class="badge bg-danger">Failed</span>';
+                    actionsCell.innerHTML = `
+                        <div class="btn-group btn-group-sm">
+                            <a href="#" class="btn btn-primary" title="View Details" onclick="viewWithdrawalDetails('${withdrawalId}')">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="#" class="btn btn-warning" title="Retry">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </a>
+                        </div>
+                    `;
+                    
+                    // Show success message
+                    showMessage(data.message || 'Withdrawal request rejected successfully!', 'warning');
+                } else {
+                    // Show error message
+                    showMessage(data.error || 'Failed to reject withdrawal', 'danger');
+                    // Reset UI
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('Failed to reject withdrawal. Please try again.', 'danger');
+                location.reload();
+            });
+        }
+    }
+}
+
+// View withdrawal details function
+function viewWithdrawalDetails(withdrawalId) {
+    // Show loading message
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Withdrawal Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Loading withdrawal details...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Fetch withdrawal details
+    fetch(`/withdrawals/admin/details/${withdrawalId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const modalBody = modal.querySelector('.modal-body');
+                modalBody.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>User Information</h6>
+                            <p><strong>Username:</strong> ${data.user.username}</p>
+                            <p><strong>Email:</strong> ${data.user.email}</p>
+                            <p><strong>Full Name:</strong> ${data.user.get_full_name || 'N/A'}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Withdrawal Details</h6>
+                            <p><strong>Amount:</strong> $${data.amount}</p>
+                            <p><strong>Type:</strong> ${data.get_payout_type_display}</p>
+                            <p><strong>Method:</strong> ${data.withdrawal_method.get_method_type_display}</p>
+                            <p><strong>Status:</strong> ${data.status}</p>
+                            <p><strong>Requested:</strong> ${new Date(data.requested_at).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    ${data.failure_reason ? `<div class="alert alert-danger"><strong>Failure Reason:</strong> ${data.failure_reason}</div>` : ''}
+                `;
+            } else {
+                const modalBody = modal.querySelector('.modal-body');
+                modalBody.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>Error:</strong> ${data.error || 'Failed to load withdrawal details'}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> Failed to load withdrawal details
+                </div>
+            `;
+        });
+    
+    // Clean up modal when hidden
+    modal.addEventListener('hidden.bs.modal', function () {
+        document.body.removeChild(modal);
+    });
+}
+</script>
+
+<script>
+// Handle URL fragment navigation to highlight specific withdrawal
+document.addEventListener('DOMContentLoaded', function() {
+    let withdrawalId = null;
+    
+    // First check if we have a specific withdrawal ID from the context
+    var specificWithdrawalId = "{{ specific_withdrawal_id|default:'' }}";
+    console.log('Specific withdrawal ID from context:', specificWithdrawalId);
+    if (specificWithdrawalId) {
+        withdrawalId = specificWithdrawalId;
+    }
+    
+    // If not from context, check URL parameter
+    if (!withdrawalId) {
+        const urlParams = new URLSearchParams(window.location.search);
+        withdrawalId = urlParams.get('withdrawal_id');
+        console.log('Withdrawal ID from URL parameter:', withdrawalId);
+    }
+    
+    // If still not found, check hash fragment
+    if (!withdrawalId && window.location.hash) {
+        withdrawalId = window.location.hash.replace('#withdrawal-', '');
+        console.log('Withdrawal ID from hash fragment:', withdrawalId);
+    }
+    
+    console.log('Final withdrawal ID to highlight:', withdrawalId);
+    
+    if (withdrawalId) {
+        // Find the withdrawal row
+        const withdrawalRow = document.querySelector(`[data-withdrawal-id="${withdrawalId}"]`);
+        console.log('Found withdrawal row:', withdrawalRow);
+        if (withdrawalRow) {
+            console.log('Scrolling to and highlighting withdrawal row');
+            // Scroll to the row
+            withdrawalRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Highlight the row
+            withdrawalRow.style.backgroundColor = '#fff3cd';
+            withdrawalRow.style.border = '2px solid #ffc107';
+            withdrawalRow.style.transition = 'all 0.3s ease';
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                withdrawalRow.style.backgroundColor = '';
+                withdrawalRow.style.border = '';
+            }, 3000);
+        } else {
+            console.log('Withdrawal row not found for ID:', withdrawalId);
+            // Log all available withdrawal IDs for debugging
+            const allRows = document.querySelectorAll('[data-withdrawal-id]');
+            console.log('Available withdrawal IDs:');
+            allRows.forEach(row => {
+                console.log('  ', row.getAttribute('data-withdrawal-id'));
+            });
+        }
+    }
+});
+</script>

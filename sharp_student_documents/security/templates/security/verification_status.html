@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Identity Verification Status - SharpDocs{% endblock %}
+{% block meta_description %}Check your identity verification status and history on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-shield-check"></i> Identity Verification Status
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <!-- Current Status -->
+          <div class="mb-4">
+            <h5 class="mb-3">Current Verification Status</h5>
+            {% if is_verified %}
+              <div class="alert alert-success">
+                <i class="bi bi-check-circle"></i>
+                <strong>Verified Seller</strong> - Your identity has been verified and you enjoy increased trust on the marketplace.
+              </div>
+            {% else %}
+              <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Not Verified</strong> - Complete identity verification to increase buyer trust and sales potential.
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Verification History -->
+          <div class="mb-4">
+            <h5 class="mb-3">Verification History</h5>
+            {% if verifications %}
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Status</th>
+                      <th>Submitted</th>
+                      <th>Expires</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for verification in verifications %}
+                    <tr>
+                      <td>
+                        <span class="badge bg-info">{{ verification.get_verification_type_display }}</span>
+                      </td>
+                      <td>
+                        {% if verification.status == 'approved' %}
+                          <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> Approved
+                          </span>
+                        {% elif verification.status == 'pending' %}
+                          <span class="badge bg-warning">
+                            <i class="bi bi-clock"></i> Pending
+                          </span>
+                        {% elif verification.status == 'rejected' %}
+                          <span class="badge bg-danger">
+                            <i class="bi bi-x-circle"></i> Rejected
+                          </span>
+                        {% else %}
+                          <span class="badge bg-secondary">
+                            <i class="bi bi-x-circle"></i> Expired
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td>{{ verification.created_at|date:"M d, Y" }}</td>
+                      <td>
+                        {% if verification.expires_at %}
+                          {{ verification.expires_at|date:"M d, Y" }}
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if verification.status == 'rejected' and verification.rejection_reason %}
+                          <button class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" 
+                                  title="{{ verification.rejection_reason }}">
+                            <i class="bi bi-info-circle"></i> Reason
+                          </button>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="text-center py-4">
+                <i class="bi bi-shield-x fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No verification submissions yet.</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Actions -->
+          <div class="text-center">
+            {% if not is_verified %}
+              <a href="{% url 'security:verify_identity' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Submit Verification
+              </a>
+            {% else %}
+              <a href="{% url 'security:verify_identity' %}" class="btn btn-outline-primary">
+                <i class="bi bi-plus-circle"></i> Submit Additional Verification
+              </a>
+            {% endif %}
+            <a href="{% url 'security:settings' %}" class="btn btn-outline-secondary ms-2">
+              <i class="bi bi-arrow-left"></i> Back to Settings
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Benefits Sidebar -->
+    <div class="col-md-4">
+      <div class="card border-0 bg-light">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-star text-warning"></i> Verification Benefits
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="bi bi-graph-up text-success"></i> Increased Sales
+            </h6>
+            <p class="small">Verified sellers see up to 300% increase in sales due to higher buyer confidence.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="bi bi-shield-check text-info"></i> Buyer Trust
+            </h6>
+            <p class="small">Buyers are more likely to purchase from verified sellers.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="bi bi-star text-warning"></i> Featured Listings
+            </h6>
+            <p class="small">Verified sellers get priority placement in search results.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="bi bi-award text-primary"></i> Seller Badge
+            </h6>
+            <p class="small">Display a verified badge on your profile and listings.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Verification Types -->
+      <div class="card border-0 bg-light mt-4">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-card-list"></i> Accepted Verification Types
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small mb-0">
+            <li class="mb-2">
+              <i class="bi bi-check-circle text-success"></i> Government ID
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-check-circle text-success"></i> Student ID
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-check-circle text-success"></i> University Email
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-check-circle text-success"></i> Phone Number
+            </li>
+            <li class="mb-0">
+              <i class="bi bi-check-circle text-success"></i> Social Media
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+}
+</style>
+
+<script>
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
+{% endblock %}

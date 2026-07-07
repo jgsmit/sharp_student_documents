@@ -1,0 +1,604 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Financial Management - SharpDocs Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 text-success">
+            <i class="bi bi-currency-dollar"></i> Financial Management
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:admin_dashboard' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dashboard
+                </a>
+                <a href="{% url 'documents:admin_commission_tracking' %}" class="btn btn-info">
+                    <i class="bi bi-percentage"></i> Track Commission
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Overview Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-success text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ total_revenue|floatformat:0 }}</h2>
+                    <p class="mb-0">Total Revenue</p>
+                    <small>All successful payments</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-info text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ total_commission|floatformat:0 }}</h2>
+                    <p class="mb-0">Commission Earned</p>
+                    <small>40% of sales revenue</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-warning text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ total_withdrawn|floatformat:0 }}</h2>
+                    <p class="mb-0">Total Withdrawn</p>
+                    <small>Completed withdrawals</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-primary text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ net_profit|floatformat:0 }}</h2>
+                    <p class="mb-0">Net Profit</p>
+                    <small>Revenue minus withdrawals</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Financial Metrics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ seller_earnings|floatformat:0 }}</h2>
+                    <p class="mb-0">Seller Earnings</p>
+                    <small>Net amount paid to sellers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 bg-dark text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ completed_orders }}</h2>
+                    <p class="mb-0">Completed Orders</p>
+                    <small>{{ order_completion_rate|floatformat:1 }}% completion rate</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 bg-purple text-white" style="background-color: #6f42c1;">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">40%</h2>
+                    <p class="mb-0">Commission Rate</p>
+                    <small>Standard rate for all sellers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Consistency Alert -->
+    {% if total_revenue > 0 and total_commission > 0 %}
+        {% if total_commission > total_revenue %}
+        <div class="alert alert-danger border-2 border-danger" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+                <div>
+                    <h6 class="alert-heading mb-1">⚠️ Data Inconsistency Detected</h6>
+                    <p class="mb-0">
+                        Revenue: ${{ total_revenue|floatformat:2 }}, 
+                        Commission: ${{ total_commission|floatformat:2 }}
+                        <br>
+                        <small>Commission exceeds revenue - indicates data synchronization issues between Orders and Sales tables.</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Pending Actions Alert -->
+    {% if pending_payments > 0 or pending_withdrawals > 0 %}
+    <div class="alert alert-warning border-2 border-warning" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+            <div>
+                <h6 class="alert-heading mb-1">⚠️ Pending Financial Actions</h6>
+                <p class="mb-0">
+                    {% if pending_payments > 0 %}{{ pending_payments }} pending payment{{ pending_payments|pluralize }}{% endif %}
+                    {% if pending_payments > 0 and pending_withdrawals > 0 %} and {% endif %}
+                    {% if pending_withdrawals > 0 %}{{ pending_withdrawals }} pending withdrawal{{ pending_withdrawals|pluralize }}{% endif %}
+                    require attention.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Financial Breakdown -->
+    <div class="row mb-4">
+        <!-- Monthly Revenue Chart -->
+        <div class="col-md-8">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-graph-up"></i> Monthly Revenue (Last 6 Months)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for month_data in monthly_revenue %}
+                        <div class="col-md-2 text-center">
+                            <div class="fw-bold text-success">${{ month_data.revenue|floatformat:0 }}</div>
+                            <small class="text-muted">{{ month_data.month }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Methods -->
+        <div class="col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-credit-card"></i> Payment Methods
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if payment_methods %}
+                    {% for method in payment_methods %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-semibold">{{ method.payment_method|title }}</span>
+                        <span class="badge bg-info">${{ method.total|floatformat:0 }}</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-info-circle"></i> No payment data available
+                    </p>
+                    <small class="text-muted">No successful payments found in the system</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-gear"></i> Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="{% url 'documents:admin_manage_withdrawals' %}" class="btn btn-warning btn-lg w-100">
+                                <i class="bi bi-bank"></i> Manage Withdrawals
+                            </a>
+                            <p class="text-muted small mt-2 mb-0">Approve or reject withdrawal requests from sellers</p>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'documents:admin_manage_users' %}" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-people"></i> Manage Users
+                            </a>
+                            <p class="text-muted small mt-2 mb-0">View and manage user accounts</p>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'documents:admin_manage_documents' %}" class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-file-earmark"></i> Manage Documents
+                            </a>
+                            <p class="text-muted small mt-2 mb-0">Review and manage document listings</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-receipt"></i> Sales Overview
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'documents:admin_manage_payments' %}" class="btn btn-light btn-sm">
+                            <i class="bi bi-list-ul"></i> View All Transactions
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <h3 class="text-primary">{{ total_transactions }}</h3>
+                            <p class="text-muted mb-0">Total Transactions</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-success">{{ completed_orders }}</h3>
+                            <p class="text-muted mb-0">Completed Orders</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h3 class="text-info">{{ order_completion_rate|floatformat:1 }}%</h3>
+                            <p class="text-muted mb-0">Completion Rate</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'documents:admin_manage_payments' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-receipt"></i> Manage Sales Transactions
+                        </a>
+                        <p class="text-muted small mt-2 mb-0">View detailed transaction history and payment records</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commission Breakdown -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-percentage"></i> Commission Breakdown
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-light text-dark">40% Standard Rate</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-4">
+                        <div class="col-md-3">
+                            <h4 class="text-success">${{ total_revenue|floatformat:2 }}</h4>
+                            <p class="text-muted mb-0">Gross Revenue</p>
+                            <small class="text-muted">Total sales amount</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">${{ total_commission|floatformat:2 }}</h4>
+                            <p class="text-muted mb-0">Commission Earned</p>
+                            <small class="text-muted">40% of gross revenue</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">${{ seller_earnings|floatformat:2 }}</h4>
+                            <p class="text-muted mb-0">Seller Earnings</p>
+                            <small class="text-muted">93% of gross revenue</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-primary">{{ completed_orders }}</h4>
+                            <p class="text-muted mb-0">Commission Transactions</p>
+                            <small class="text-muted">Sales with commission</small>
+                        </div>
+                    </div>
+                    
+                    {% if commission_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Commission Rate</th>
+                                    <th>Transactions</th>
+                                    <th>Total Sales</th>
+                                    <th>Commission Earned</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in commission_stats %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-info">{{ stat.commission_rate_percentage }}%</span>
+                                    </td>
+                                    <td>{{ stat.count }}</td>
+                                    <td>${{ stat.total_sales|floatformat:2 }}</td>
+                                    <td class="fw-bold text-success">${{ stat.total_commission|floatformat:2 }}</td>
+                                    <td>
+                                        {% if stat.total_sales > 0 %}
+                                        {{ stat.commission_percentage|floatformat:2 }}%
+                                        {% else %}
+                                        0.00%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-percentage"></i> No commission data available
+                    </p>
+                    <small class="text-muted">No sales transactions with commission found</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-trophy"></i> Top Sellers by Revenue
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if top_sellers %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Seller</th>
+                                    <th>Revenue</th>
+                                    <th>Orders</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for seller in top_sellers %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 32px; height: 32px; font-size: 14px;">
+                                                {{ seller.document__seller__username|first|upper }}
+                                            </div>
+                                            <strong>{{ seller.document__seller__username }}</strong>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-success">${{ seller.total_revenue|floatformat:2 }}</td>
+                                    <td>{{ seller.order_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No seller data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Documents -->
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-star"></i> Top Documents by Revenue
+                        <small class="text-white-50 ms-2">({{ top_documents_total }} total)</small>
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <!-- Search Form -->
+                        <form method="GET" action="{% url 'documents:admin_view_financials' %}" class="d-flex">
+                            <input type="text" 
+                                   name="top_documents_search" 
+                                   value="{{ top_documents_search_query }}" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="Search documents..." 
+                                   style="width: 200px;">
+                            <button type="submit" class="btn btn-sm btn-light">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                            {% if top_documents_search_query %}
+                            <a href="{% url 'documents:admin_view_financials' %}" class="btn btn-sm btn-outline-light">
+                                <i class="bi bi-x"></i> Clear
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if top_documents %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Seller</th>
+                                    <th>Revenue</th>
+                                    <th>Sales</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doc in top_documents %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold text-primary">{{ doc.document__title|truncatechars:20 }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 28px; height: 28px; font-size: 12px;">
+                                                {{ doc.document__seller__username|first|upper }}
+                                            </div>
+                                            <small>{{ doc.document__seller__username }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-success">${{ doc.total_revenue|floatformat:2 }}</td>
+                                    <td>{{ doc.order_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination Controls for Top Documents -->
+                    {% if top_documents_is_paginated %}
+                    <nav aria-label="Top Documents pagination" class="mt-3">
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <!-- Previous -->
+                            {% if top_documents_has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?top_documents_page={{ top_documents.previous_page_number }}{% if top_documents_search_query %}&top_documents_search={{ top_documents_search_query }}{% endif %}" tabindex="-1">
+                                        <i class="bi bi-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                                </li>
+                            {% endif %}
+                            
+                            <!-- Page Numbers -->
+                            {% for num in top_documents.paginator.page_range %}
+                                {% if num == top_documents.number %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?top_documents_page={{ num }}{% if top_documents_search_query %}&top_documents_search={{ top_documents_search_query }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Next -->
+                            {% if top_documents_has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?top_documents_page={{ top_documents.next_page_number }}{% if top_documents_search_query %}&top_documents_search={{ top_documents_search_query }}{% endif %}">
+                                        Next <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    <!-- Pagination Info -->
+                    <div class="text-center text-muted small mt-2">
+                        Showing {{ top_documents.start_index }}-{{ top_documents.end_index }} 
+                        of {{ top_documents.paginator.count }} documents
+                        {% if top_documents_search_query %}
+                        for "{{ top_documents_search_query }}"
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-star"></i> No document data available
+                    </p>
+                    <small class="text-muted">No paid orders found in the system</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal Status -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-pie-chart"></i> Withdrawal Status Breakdown
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if withdrawal_status %}
+                    {% for status in withdrawal_status %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <strong class="text-capitalize">{{ status.status }}</strong>
+                            <small class="text-muted ms-2">({{ status.count }} request{{ status.count|pluralize }})</small>
+                        </div>
+                        <span class="badge bg-warning">${{ status.total|floatformat:0 }}</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-pie-chart"></i> No withdrawal data available
+                    </p>
+                    <small class="text-muted">No withdrawal requests found in the system</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'documents:admin_manage_payments' %}" class="btn btn-primary">
+                            <i class="bi bi-credit-card"></i> Manage Payments
+                        </a>
+                        <a href="{% url 'documents:admin_manage_withdrawals' %}" class="btn btn-warning">
+                            <i class="bi bi-bank"></i> Manage Withdrawals
+                        </a>
+                        <a href="{% url 'documents:admin_manage_documents' %}" class="btn btn-success">
+                            <i class="bi bi-file-earmark"></i> Manage Documents
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+
+.alert {
+    border-left: 4px solid;
+}
+</style>
+{% endblock %}

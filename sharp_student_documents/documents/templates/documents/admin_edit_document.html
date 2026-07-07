@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Document - {{ document.title }} - SharpDocs Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">✏️ Edit Document: {{ document.title }}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{{ back_url }}" class="btn btn-sm btn-secondary">← Back to Documents</a>
+                <a href="{% url 'documents:admin_view_user' document.seller.id %}" class="btn btn-sm btn-info">View User</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Info -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">📝 Edit Document</h6>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                {{ form.title.label_tag }}
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="text-danger">{{ form.title.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.price.label_tag }}
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                    <div class="text-danger">{{ form.price.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                {{ form.category.label_tag }}
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.document_type.label_tag }}
+                                {{ form.document_type }}
+                                {% if form.document_type.errors %}
+                                    <div class="text-danger">{{ form.document_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.academic_level.label_tag }}
+                                {{ form.academic_level }}
+                                {% if form.academic_level.errors %}
+                                    <div class="text-danger">{{ form.academic_level.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                {{ form.subject.label_tag }}
+                                {{ form.subject }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.course_code.label_tag }}
+                                {{ form.course_code }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.year.label_tag }}
+                                {{ form.year }}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                {{ form.author.label_tag }}
+                                {{ form.author }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.isbn.label_tag }}
+                                {{ form.isbn }}
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                {{ form.university.label_tag }}
+                                {{ form.university }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.tags.label_tag }}
+                                {{ form.tags }}
+                                <small class="form-text text-muted">Separate tags with commas</small>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                {{ form.license_type.label_tag }}
+                                {{ form.license_type }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.license_note.label_tag }}
+                                {{ form.license_note }}
+                                <small class="form-text text-muted">Optional extra usage terms shown to buyers</small>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            {{ form.file.label_tag }}
+                            {{ form.file }}
+                            <small class="form-text text-muted">Leave empty to keep current file</small>
+                            {% if form.file.errors %}
+                                <div class="text-danger">{{ form.file.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ back_url }}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Update Document
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Current Document Info -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">📄 Current Document</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Title:</strong> {{ document.title }}</p>
+                    <p><strong>Price:</strong> ${{ document.price|floatformat:2 }}</p>
+                    <p><strong>Category:</strong> {{ document.category.name|default:"No Category" }}</p>
+                    <p><strong>Type:</strong> {{ document.get_document_type_display|default:"N/A" }}</p>
+                    <p><strong>Level:</strong> {{ document.get_academic_level_display|default:"N/A" }}</p>
+                    <p><strong>Pages:</strong> {{ document.page_count|default:"N/A" }}</p>
+                    <p><strong>Created:</strong> {{ document.created_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Updated:</strong> {{ document.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+
+            <!-- Seller Info -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">👤 Seller Information</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Username:</strong> {{ document.seller.username }}</p>
+                    <p><strong>Email:</strong> {{ document.seller.email }}</p>
+                    <p><strong>Joined:</strong> {{ document.seller.date_joined|date:"M d, Y" }}</p>
+                    <div class="mt-2">
+                        <a href="{% url 'documents:admin_view_user' document.seller.id %}" class="btn btn-sm btn-info">View Seller Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Actions -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">⚠️ Admin Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Admin Edit Mode:</strong> You are editing this document as an administrator.
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="{{ document.get_absolute_url }}" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> View Document
+                        </a>
+                        <a href="{% url 'documents:admin_delete_document' document.id %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete Document
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-control, .form-select {
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+{% load static %}
+{% load seo_tags %}
+
+{% block title %}{{ document.title }} | SharpDocs{% endblock %}
+{% block meta_description %}{{ seo_description|default:document.description|truncatewords:28 }}{% endblock %}
+{% block meta_keywords %}{{ seo_keywords|default:"SharpDocs, student documents, study guides, notes, past papers" }}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{% canonical_url %}">{% endblock %}
+{% block og_title %}{{ document.title }} | SharpDocs{% endblock %}
+{% block og_description %}{{ seo_description|default:document.description|truncatewords:28 }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_image %}{% absolute_static 'images/og-preview.png' %}{% endblock %}
+{% block twitter_title %}{{ document.title }} | SharpDocs{% endblock %}
+{% block twitter_description %}{{ seo_description|default:document.description|truncatewords:24 }}{% endblock %}
+{% block twitter_image %}{% absolute_static 'images/og-preview.png' %}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Product",
+      "@id": "{{ request.build_absolute_uri }}#product",
+      "name": "{{ document.title|escapejs }}",
+      "description": "{{ seo_description|escapejs }}",
+      "category": "{{ document.category.name|default:'Student Document'|escapejs }}",
+      "brand": {
+        "@type": "Brand",
+        "name": "SharpDocs"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "{{ request.build_absolute_uri }}",
+        "price": "{{ document.price }}",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "{{ request.build_absolute_uri }}"
+      }{% if document.average_rating and document.reviews_count %},
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ document.average_rating|floatformat:1 }}",
+        "reviewCount": "{{ document.reviews_count }}"
+      }{% endif %}
+    },
+    {
+      "@type": "CreativeWork",
+      "@id": "{{ request.build_absolute_uri }}#creativework",
+      "name": "{{ document.title|escapejs }}",
+      "description": "{{ seo_description|escapejs }}",
+      "headline": "{{ document.title|escapejs }}",
+      "author": {
+        "@type": "Person",
+        "name": "{{ document.seller.get_full_name|default:document.seller.username|escapejs }}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "SharpDocs",
+        "url": "{{ request.scheme }}://{{ request.get_host }}"
+      },
+      "datePublished": "{{ document.created_at|date:'Y-m-d' }}",
+      "dateModified": "{{ document.created_at|date:'Y-m-d' }}",
+      "inLanguage": "en-US",
+      "learningResourceType": "{{ document.get_document_type_display|default:'Study Guide'|escapejs }}",
+      "educationalLevel": "{{ document.get_academic_level_display|escapejs }}",
+      "about": [
+        {% if document.subject %}"{{ document.subject|escapejs }}"{% endif %}
+        {% if document.subject and document.course_code %},{% endif %}
+        {% if document.course_code %}"{{ document.course_code|escapejs }}"{% endif %}
+      ],
+      "keywords": "{{ seo_keywords|escapejs }}"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'home' %}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Documents",
+          "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'documents:document_list' %}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{{ document.title|truncatechars:60|escapejs }}",
+          "item": "{{ request.build_absolute_uri }}"
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'documents:document_list' %}">Documents</a></li>
+      {% if document.category %}
+        <li class="breadcrumb-item"><a href="{% url 'documents:category_detail' document.category.slug %}">{{ document.category.name }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active">{{ document.title|truncatechars:30 }}</li>
+    </ol>
+  </nav>
+
+  <section class="seo-hero rounded-4 p-4 p-lg-5 mb-4">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-12">
+        <h1 class="fw-bold mb-3">{{ document.title }}</h1>
+        <p class="lead mb-3">{{ seo_description }}</p>
+        <div class="d-flex flex-wrap gap-2">
+          {% if detail_labels %}
+            {% for label in detail_labels %}
+              <span class="detail-chip">{{ label }}</span>
+            {% endfor %}
+          {% endif %}
+          {% if document.category %}
+            <span class="detail-chip">{{ document.category.name }}</span>
+          {% endif %}
+          {% if document.pages %}
+            <span class="detail-chip">{{ document.pages }} pages</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <div class="row">
+    <div class="col-lg-7 mb-4">
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h2 class="h4 fw-bold mb-2">Document Overview</h2>
+              <div class="d-flex flex-wrap align-items-center gap-3 text-muted small">
+                <span><i class="bi bi-person-circle"></i> by <strong>{{ document.seller.get_full_name|default:document.seller.username }}</strong></span>
+                {% if document.pages %}
+                  <span><i class="bi bi-file-earmark"></i> {{ document.pages }} pages</span>
+                {% endif %}
+                <span><i class="bi bi-calendar"></i> {{ document.created_at|date:"M d, Y" }}</span>
+              </div>
+            </div>
+            {% if document.category %}
+              <span class="badge bg-primary rounded-pill">{{ document.category.name }}</span>
+            {% endif %}
+          </div>
+
+          {% if document.average_rating %}
+          <div class="mb-3">
+            {% for i in "12345"|make_list %}
+              {% if forloop.counter <= document.average_rating|floatformat:0 %}
+                <i class="bi bi-star-fill text-warning"></i>
+              {% else %}
+                <i class="bi bi-star text-warning"></i>
+              {% endif %}
+            {% endfor %}
+            <span class="text-muted ms-2">({{ document.reviews_count }} reviews)</span>
+          </div>
+          {% endif %}
+
+          {% if document.description %}
+            <div class="document-description rounded-4 p-4 mb-4">
+              <h3 class="h5 fw-semibold mb-2">About This Document</h3>
+              <p class="mb-0">{{ document.description }}</p>
+            </div>
+          {% endif %}
+
+          <div class="mb-4">
+            <h3 class="h5 fw-semibold mb-3"><i class="bi bi-eye"></i> Document Preview</h3>
+            {% if document.preview_text %}
+              <div class="document-preview border rounded-3 p-3 bg-light"
+                   style="max-height:400px; overflow-y:auto;"
+                   oncontextmenu="return false;" onselectstart="return false;" onmousedown="return false;">
+                <pre class="mb-0 text-muted">{{ document.preview_text|truncatewords:100 }}</pre>
+              </div>
+            {% else %}
+              <div class="text-center p-4 bg-light rounded-3">
+                <i class="bi bi-file-earmark-text display-1 text-muted mb-3"></i>
+                <p class="text-muted">Preview not available for this document type</p>
+              </div>
+            {% endif %}
+            <div class="alert alert-info mt-3 mb-0">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>Preview Only:</strong> Purchase required to access the full document content.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5 mb-4">
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden sticky-top" style="top: 20px;">
+        <div class="card-header bg-gradient text-white py-3">
+          <div class="text-center">
+            <div class="h2 mb-1 fw-bold">${{ document.price }}</div>
+            <small>One-time purchase</small>
+          </div>
+        </div>
+        <div class="card-body p-4">
+          {% if user.is_authenticated %}
+            {% if document.seller == user or can_download %}
+              <div class="alert alert-success mb-3">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>You have access to this document!</strong>
+              </div>
+              {% if document.seller == user %}
+              <a href="{% url 'documents:download_owner_document' document.id %}" 
+                 class="btn btn-success btn-lg w-100 mb-3" 
+                 title="Download Your Document">
+                <i class="bi bi-download"></i> Download Your Document
+              </a>
+              {% elif user_order %}
+              <a href="{% url 'documents:download_document' user_order.id %}" 
+                 class="btn btn-success btn-lg w-100 mb-3" 
+                 title="Download Full Document">
+                <i class="bi bi-download"></i> Download Full Document
+              </a>
+              {% else %}
+              <div class="alert alert-warning mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>You purchased this document but the order record is missing.</strong>
+                <br><small>Please contact support for assistance.</small>
+              </div>
+              {% endif %}
+            {% else %}
+              <div class="alert alert-success mb-3" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>PayPal accepts all cards:</strong> Visa, Mastercard, Amex, Discover, Apple Pay, Google Pay, and more. No PayPal account required!
+              </div>
+              <form action="{% url 'documents:create_order' document.slug %}" method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                  <label for="payment_method" class="form-label fw-semibold">
+                    <i class="bi bi-credit-card"></i> Payment Method
+                  </label>
+                  <select name="payment_method" id="payment_method" class="form-select form-select-lg">
+                    <option value="paypal" selected>PayPal (All Cards Accepted)</option>
+                    <option value="stripe" disabled>Direct Card Payments (Coming Soon)</option>
+                  </select>
+                </div>
+
+                <div class="mb-4">
+                  <label for="currency" class="form-label fw-semibold">
+                    <i class="bi bi-currency-exchange"></i> Currency
+                  </label>
+                  <select name="currency" id="currency" class="form-select">
+                    <option value="usd">USD ($)</option>
+                    <option value="eur">EUR (€)</option>
+                    <option value="gbp">GBP (£)</option>
+                  </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                  <i class="bi bi-cart-check"></i> Buy Now - ${{ document.price }}
+                </button>
+              </form>
+            {% endif %}
+           {% else %}
+             <div class="text-center mb-4">
+               <i class="bi bi-shield-lock display-4 text-primary mb-3"></i>
+               <h6 class="fw-semibold">Login Required</h6>
+               <p class="text-muted small">Please login or create an account to purchase this document.</p>
+             </div>
+            <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="btn btn-outline-primary btn-lg w-100 mb-2">
+              <i class="bi bi-box-arrow-in-right"></i> Login to Purchase
+            </a>
+            <a href="{% url 'register' %}?next={{ request.path|urlencode }}" class="btn btn-success btn-lg w-100">
+              <i class="bi bi-person-plus"></i> Create Account
+            </a>
+           {% endif %}
+
+           <div class="alert alert-light border mb-3 small">
+             <div class="fw-semibold mb-1">
+               <i class="bi bi-shield-check me-1"></i> Usage Rights
+             </div>
+             <div><strong>{{ document.get_license_type_display }}</strong> — {{ document.license_summary }}</div>
+             <div class="text-muted mt-1">
+               &copy; {{ document.created_at|date:"Y" }} {{ document.seller.get_full_name|default:document.seller.username }}.
+             </div>
+           </div>
+
+           <hr>
+
+           <div class="text-center small">
+             <div class="row g-2">
+              <div class="col-6">
+                <div class="d-flex align-items-center justify-content-center">
+                  <i class="bi bi-shield-check text-success me-1"></i>
+                  <span>Secure Payment</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex align-items-center justify-content-center">
+                  <i class="bi bi-arrow-repeat text-info me-1"></i>
+                  <span>30-Day Guarantee</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex align-items-center justify-content-center">
+                  <i class="bi bi-download text-primary me-1"></i>
+                  <span>Instant Access</span>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="d-flex align-items-center justify-content-center">
+                  <i class="bi bi-headset text-warning me-1"></i>
+                  <span>24/7 Support</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if related_documents %}
+  <section class="mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="h4 fw-bold mb-0">Related Documents On SharpDocs</h2>
+      <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary">Browse More</a>
+    </div>
+    <div class="row g-4">
+      {% for related in related_documents %}
+      <div class="col-md-6 col-xl-3">
+        <article class="card h-100 border-0 shadow-sm">
+          <div class="card-body">
+            <h3 class="h6 fw-semibold mb-2">
+              <a href="{% url 'documents:document_detail' related.slug %}" class="text-decoration-none">{{ related.title }}</a>
+            </h3>
+            <p class="small text-muted mb-3">{{ related.description|truncatewords:18 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-bold text-success">${{ related.price }}</span>
+              <a href="{% url 'documents:document_detail' related.slug %}" class="btn btn-sm btn-outline-primary">View</a>
+            </div>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold mb-0">
+              <i class="bi bi-star-fill text-warning"></i> Customer Reviews
+            </h2>
+            {% if user.is_authenticated and document.can_access_full %}
+              <a href="{% url 'reviews:add_review' document.id %}" class="btn btn-outline-success">
+                <i class="bi bi-plus-circle"></i> Add Review
+              </a>
+            {% endif %}
+          </div>
+          
+          {% if reviews %}
+            <div class="row">
+              {% for review in reviews %}
+              <div class="col-md-6 mb-3">
+                <div class="card border-0 bg-light h-100">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <strong>{{ review.reviewer.get_full_name|default:review.reviewer.username }}</strong>
+                        <div class="text-warning small">
+                          {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating %}
+                              <i class="bi bi-star-fill"></i>
+                            {% else %}
+                              <i class="bi bi-star"></i>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                      </div>
+                      <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="mb-0">{{ review.comment }}</p>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-chat-square-text display-4 text-muted mb-3"></i>
+              <p class="text-muted mb-0">No reviews yet. Be the first to review this document!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.seo-hero {
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.08), rgba(25, 135, 84, 0.12));
+  border: 1px solid rgba(13, 110, 253, 0.12);
+}
+
+.detail-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(13, 110, 253, 0.12);
+  color: #0d6efd;
+  font-size: 0.9rem;
+}
+
+.document-description {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(13, 110, 253, 0.08);
+}
+
+.document-preview {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6 !important;
+}
+
+.document-preview pre {
+  background: transparent;
+  border: none;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.sticky-top {
+  z-index: 100;
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,17 @@
+Hello {{ buyer.username }},
+
+Thank you for your purchase on {{ order.created_at|date:"M d, Y" }}.
+
+Order Details
+-------------
+Order ID: {{ order.id }}
+Document: {{ document.title }}
+Price Paid: ${{ order.amount_paid }}
+
+You can access your purchased documents anytime from your dashboard:
+{{ request_scheme }}://{{ request_host }}{% url 'documents:my_purchases' %}
+
+If you have any issues with your order, please reply to this email or contact support at {{ request_host }}.
+
+Best regards,
+The {{ request_host }} Team

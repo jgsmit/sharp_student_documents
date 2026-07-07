@@ -1,0 +1,5 @@
+<p>A new user has registered on SharpDocs.</p>
+
+<p><strong>Name:</strong> {{ user.get_full_name|default:user.username }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+<p><strong>Seller account:</strong> {% if user.is_seller %}Yes{% else %}No{% endif %}</p>

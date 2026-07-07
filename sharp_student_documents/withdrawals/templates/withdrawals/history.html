@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Withdrawal History - SharpDocs{% endblock %}
+{% block meta_description %}View your complete withdrawal history and track earnings on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-gradient text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0 fw-bold">
+                            <i class="bi bi-clock-history"></i> Withdrawal History
+                        </h4>
+                        <div>
+                            <a href="{% url 'withdrawals:dashboard' %}" class="btn btn-light btn-sm">
+                                <i class="bi bi-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">${{ total_withdrawn|floatformat:2 }}</h3>
+                    <p class="mb-0">Total Withdrawn</p>
+                    <small>All time earnings</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ withdrawals.paginator.count }}</h3>
+                    <p class="mb-0">Total Withdrawals</p>
+                    <small>All withdrawal requests</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ completed_count }}</h3>
+                    <p class="mb-0">Completed</p>
+                    <small>Successfully processed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ pending_count }}</h3>
+                    <p class="mb-0">Pending</p>
+                    <small>Processing or queued</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdrawal History Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="bi bi-list-ul"></i> Withdrawal Records
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <!-- Filter Dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-funnel"></i> Filter
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="?status="all">All Status</a></li>
+                                    <li><a class="dropdown-item" href="?status=completed">Completed</a></li>
+                                    <li><a class="dropdown-item" href="?status=pending">Pending</a></li>
+                                    <li><a class="dropdown-item" href="?status=failed">Failed</a></li>
+                                    <li><a class="dropdown-item" href="?status=cancelled">Cancelled</a></li>
+                                </ul>
+                            </div>
+                            <!-- Export Button -->
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if withdrawals %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><i class="bi bi-calendar"></i> Date</th>
+                                        <th><i class="bi bi-currency-dollar"></i> Amount</th>
+                                        <th><i class="bi bi-credit-card"></i> Method</th>
+                                        <th><i class="bi bi-info-circle"></i> Type</th>
+                                        <th><i class="bi bi-toggle-on"></i> Status</th>
+                                        <th><i class="bi bi-eye"></i> Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for withdrawal in withdrawals %}
+                                    <tr>
+                                        <td>
+                                            <div class="small text-muted">{{ withdrawal.requested_at|date:"M d, Y" }}</div>
+                                            <div class="small text-muted">{{ withdrawal.requested_at|time:"H:i" }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold">${{ withdrawal.amount|floatformat:2 }}</div>
+                                            <div class="small text-muted">
+                                                Fee: ${{ withdrawal.fee|floatformat:2 }}
+                                            </div>
+                                            <div class="small text-success">
+                                                Net: ${{ withdrawal.net_amount|floatformat:2 }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if withdrawal.withdrawal_method %}
+                                                <span class="badge bg-primary">{{ withdrawal.withdrawal_method.get_method_type_display }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Legacy</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ withdrawal.get_payout_type_display }}</span>
+                                        </td>
+                                        <td>
+                                            {% if withdrawal.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif withdrawal.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif withdrawal.status == 'processing' %}
+                                                <span class="badge bg-info">Processing</span>
+                                            {% elif withdrawal.status == 'failed' %}
+                                                <span class="badge bg-danger">Failed</span>
+                                            {% elif withdrawal.status == 'cancelled' %}
+                                                <span class="badge bg-secondary">Cancelled</span>
+                                            {% elif withdrawal.status == '2fa_required' %}
+                                                <span class="badge bg-warning">2FA Required</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ withdrawal.get_status_display }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'withdrawals:details' withdrawal.id %}" class="btn btn-outline-primary btn-sm" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                {% if withdrawal.status == 'completed' %}
+                                                    <a href="#" class="btn btn-outline-success btn-sm" title="Download Receipt">
+                                                        <i class="bi bi-download"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if withdrawals.has_other_pages %}
+                        <nav aria-label="Withdrawal history pagination" class="mt-3">
+                            <ul class="pagination justify-content-center">
+                                {% if withdrawals.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ withdrawals.previous_page_number }}">
+                                            <i class="bi bi-chevron-left"></i> Previous
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in withdrawals.paginator.page_range %}
+                                    {% if withdrawals.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if withdrawals.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ withdrawals.next_page_number }}">
+                                            Next <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+
+                        <!-- Pagination Info -->
+                        <div class="text-center text-muted small mt-2">
+                            Showing {{ withdrawals.start_index }}-{{ withdrawals.end_index }} 
+                            of {{ withdrawals.paginator.count }} withdrawals
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">No Withdrawal History</h5>
+                            <p class="text-muted">You haven't made any withdrawal requests yet.</p>
+                            <a href="{% url 'withdrawals:request' %}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Request Withdrawal
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Export functionality
+document.querySelector('.btn-outline-primary').addEventListener('click', function() {
+    // Simple CSV export
+    const rows = document.querySelectorAll('table tbody tr');
+    let csv = 'Date,Amount,Method,Type,Status,Net Amount,Fee\n';
+    
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        const rowData = [
+            cells[0].textContent.trim(),
+            cells[1].textContent.trim(),
+            cells[2].textContent.trim(),
+            cells[3].textContent.trim(),
+            cells[4].textContent.trim(),
+            cells[1].querySelector('.text-success')?.textContent.trim() || '',
+            cells[1].querySelector('.text-muted')?.textContent.trim() || ''
+        ];
+        csv += rowData.join(',') + '\n';
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'withdrawal_history.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+});
+</script>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.card-header .btn {
+    border-radius: 0.25rem;
+}
+
+.pagination .page-link {
+    border-radius: 0.25rem;
+}
+</style>
+{% endblock %}

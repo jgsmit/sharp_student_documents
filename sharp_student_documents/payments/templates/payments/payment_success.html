@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Payment Successful - Download Your Document | SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+
+    <!-- Success Icon -->
+    <div class="mb-4">
+        <span class="display-1 text-success">✓</span>
+    </div>
+
+    <!-- Heading -->
+    <h2 class="text-success fw-bold">Payment Successful 🎉 Alaaaaa</h2>
+    <p class="lead">
+        Thank you! Your payment for <strong>{{ order.document.title }}</strong> was completed successfully.
+    </p>
+
+    <!-- Payment Summary -->
+    <div class="alert alert-success d-inline-block text-start mt-3">
+        <p><strong>Amount Paid:</strong> ${{ order.document.price }}</p>
+        <p><strong>Status:</strong> {{ order.status|title }}</p>
+        <p class="mb-0"><strong>Date:</strong> {{ order.updated_at|date:"M d, Y H:i" }}</p>
+    </div>
+
+    <!-- CTA Buttons -->
+    <div class="d-flex justify-content-center gap-2 mt-4 flex-wrap">
+        <a href="{{ download_url }}" class="btn btn-success btn-lg" target="_blank">
+            Download Document
+        </a>
+        <a href="{% url 'documents:my_purchases' %}" class="btn btn-primary btn-lg">
+            My Purchases
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg">
+            Home
+        </a>
+    </div>
+
+    <!-- Security Note -->
+    <p class="mt-3 text-muted small">
+        For your security, the download link will expire soon. You can always re-download from 
+        <a href="{% url 'documents:my_purchases' %}" class="fw-bold">My Purchases</a>.
+    </p>
+
+</div>
+{% endblock %}

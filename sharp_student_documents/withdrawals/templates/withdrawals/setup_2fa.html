@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Setup 2FA - SharpDocs{% endblock %}
+{% block meta_description %}Enable two-factor authentication for enhanced withdrawal security on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-shield-check"></i> Two-Factor Authentication
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          {% if two_fa.is_enabled %}
+            <!-- 2FA Already Enabled -->
+            <div class="text-center mb-4">
+              <div class="mb-3">
+                <i class="bi bi-shield-check display-1 text-success"></i>
+              </div>
+              <h5 class="text-success">2FA is Enabled</h5>
+              <p class="text-muted">Your account is protected with two-factor authentication.</p>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center">
+                    <h6 class="fw-semibold">Required For</h6>
+                    <p class="mb-0">Withdrawals over ${{ two_fa.required_for_amount|floatformat:0 }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card border-0 bg-light">
+                  <div class="card-body text-center">
+                    <h6 class="fw-semibold">Last Used</h6>
+                    <p class="mb-0">
+                      {% if two_fa.last_used %}
+                        {{ two_fa.last_used|date:"M d, Y H:i" }}
+                      {% else %}
+                        Never
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i>
+              <strong>Backup Codes:</strong> You have {{ two_fa.backup_codes|length }} backup codes remaining. Save them in a secure location.
+            </div>
+
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="disable">
+              <div class="text-center">
+                <button type="submit" class="btn btn-warning" 
+                        onclick="return confirm('Are you sure you want to disable 2FA? This will reduce your account security.')">
+                  <i class="bi bi-shield-x"></i> Disable 2FA
+                </button>
+              </div>
+            </form>
+
+          {% else %}
+            <!-- 2FA Setup -->
+            <div class="text-center mb-4">
+              <div class="mb-3">
+                <i class="bi bi-shield-x display-1 text-warning"></i>
+              </div>
+              <h5 class="text-warning">2FA is Disabled</h5>
+              <p class="text-muted">Enable two-factor authentication to protect your withdrawals.</p>
+            </div>
+
+            <div class="alert alert-info mb-4">
+              <i class="bi bi-info-circle"></i>
+              <strong>How 2FA Works:</strong> When you withdraw over $500, you'll need to enter a code from your authenticator app. We recommend Google Authenticator.
+            </div>
+
+            {% if qr_code %}
+              <!-- QR Code Setup -->
+              <form method="post" id="enable2faForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="verify">
+                
+                <div class="row mb-4">
+                  <div class="col-md-6 text-center">
+                    <h6 class="fw-semibold mb-3">Step 1: Scan QR Code</h6>
+                    <div class="mb-3">
+                      <img src="{{ qr_code }}" alt="2FA QR Code" class="img-fluid border rounded" style="max-width: 200px;">
+                    </div>
+                    <p class="text-muted">Scan with Google Authenticator or similar app</p>
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="fw-semibold mb-3">Step 2: Enter Verification Code</h6>
+                    <div class="mb-3">
+                      <input type="text" class="form-control form-control-lg text-center" 
+                             name="verification_token" placeholder="000000" maxlength="6" 
+                             pattern="[0-9]{6}" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                      <i class="bi bi-check-circle"></i> Verify and Enable 2FA
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Backup Codes -->
+                <div class="alert alert-warning">
+                  <h6 class="fw-semibold mb-3">
+                    <i class="bi bi-key"></i> Backup Codes
+                  </h6>
+                  <p class="mb-2">Save these backup codes in a secure location. You can use them if you lose access to your authenticator app.</p>
+                  <div class="row">
+                    {% for code in backup_codes %}
+                    <div class="col-md-3 col-6 mb-2">
+                      <div class="border rounded p-2 text-center font-monospace">
+                        {{ code }}
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <small class="text-muted">Each code can only be used once.</small>
+                </div>
+              </form>
+
+            {% else %}
+              <!-- Enable 2FA Button -->
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="enable">
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="bi bi-shield-plus"></i> Enable 2FA
+                  </button>
+                </div>
+              </form>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auto-focus on verification code input
+document.addEventListener('DOMContentLoaded', function() {
+  const verificationInput = document.querySelector('input[name="verification_token"]');
+  if (verificationInput) {
+    verificationInput.focus();
+  }
+});
+
+// Format verification code input
+document.addEventListener('DOMContentLoaded', function() {
+  const verificationInput = document.querySelector('input[name="verification_token"]');
+  if (verificationInput) {
+    verificationInput.addEventListener('input', function(e) {
+      // Only allow numbers
+      this.value = this.value.replace(/[^0-9]/g, '');
+      
+      // Auto-submit when 6 digits entered
+      if (this.value.length === 6) {
+        document.getElementById('enable2faForm').submit();
+      }
+    });
+  }
+});
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.display-1 {
+  font-size: 6rem;
+}
+
+.font-monospace {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.card {
+  transition: transform 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.form-control-lg {
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+</style>
+{% endblock %}

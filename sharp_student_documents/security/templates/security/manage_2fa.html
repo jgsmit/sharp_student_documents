@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage Two-Factor Authentication - SharpDocs{% endblock %}
+{% block meta_description %}Manage user two-factor authentication settings and view 2FA adoption statistics.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">🔑 Two-Factor Authentication Management</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'security:dashboard' %}" class="btn btn-sm btn-outline-secondary">
+                    ← Back to Security Dashboard
+                </a>
+                <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-primary">
+                    Django Admin
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">2FA Enabled</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_2fa_users }}</div>
+                            <div class="text-xs text-gray-500">{{ two_fa_adoption_rate }}% adoption</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">2FA Disabled</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users|add:"-"|add:total_2fa_users }}</div>
+                            <div class="text-xs text-gray-500">Need protection</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Backup Codes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_backup_codes }}</div>
+                            <div class="text-xs text-gray-500">Generated</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-key fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User 2FA Management -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users-cog"></i> User 2FA Management
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Search and Filter -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" placeholder="Search users..." id="userSearch">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="enabled">2FA Enabled</option>
+                                <option value="disabled">2FA Disabled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-primary" onclick="filterUsers()">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>2FA Status</th>
+                                    <th>Last Used</th>
+                                    <th>Backup Codes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user_2fa in user_2fa_list %}
+                                <tr data-status="{% if user_2fa.is_enabled %}enabled{% else %}disabled{% endif %}" data-username="{{ user_2fa.user.username|lower }}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
+                                                {{ user_2fa.user.username|slice:":2"|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ user_2fa.user.username }}</div>
+                                                <small class="text-muted">
+                                                    {% if user_2fa.user.is_staff %}
+                                                        <span class="badge bg-warning">Staff</span>
+                                                    {% endif %}
+                                                    {% if user_2fa.user.is_superuser %}
+                                                        <span class="badge bg-danger">Superuser</span>
+                                                    {% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ user_2fa.user.email }}</td>
+                                    <td>
+                                        {% if user_2fa.is_enabled %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> Enabled
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-times-circle"></i> Disabled
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user_2fa.last_used %}
+                                            {{ user_2fa.last_used|date:"M d, Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">Never</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user_2fa.backup_codes %}
+                                            <span class="badge bg-info">{{ user_2fa.backup_codes|length }} codes</span>
+                                        {% else %}
+                                            <span class="text-muted">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewUserDetails('{{ user_2fa.user.id }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if user_2fa.is_enabled %}
+                                                <button class="btn btn-outline-warning btn-sm" onclick="disableUser2FA('{{ user_2fa.user.id }}')">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-outline-success btn-sm" onclick="enableUser2FA('{{ user_2fa.user.id }}')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            {% endif %}
+                                            <button class="btn btn-outline-danger btn-sm" onclick="resetUser2FA('{{ user_2fa.user.id }}')">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                        <p class="mb-0">No users found</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if is_paginated %}
+                    <nav aria-label="2FA users pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userDetailsModalLabel">User 2FA Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <!-- Content loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.border-left-primary { border-left: 0.25rem solid #4e73df !important; }
+.border-left-success { border-left: 0.25rem solid #1cc88a !important; }
+.border-left-warning { border-left: 0.25rem solid #f6c23e !important; }
+.border-left-info { border-left: 0.25rem solid #36b9cc !important; }
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.btn-group-sm > .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+</style>
+
+<script>
+function filterUsers() {
+    const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#usersTable tbody tr');
+    
+    rows.forEach(row => {
+        const username = row.dataset.username;
+        const status = row.dataset.status;
+        
+        const matchesSearch = !searchTerm || username.includes(searchTerm);
+        const matchesStatus = !statusFilter || status === statusFilter;
+        
+        row.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+}
+
+function viewUserDetails(userId) {
+    // Load user details via AJAX
+    fetch(`/security/api/user-2fa-details/${userId}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('userDetailsContent').innerHTML = formatUserDetails(data.data);
+                new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
+            } else {
+                alert('Error loading user details: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading user details:', error);
+            alert('Error loading user details');
+        });
+}
+
+function enableUser2FA(userId) {
+    if (confirm('Are you sure you want to enable 2FA for this user?')) {
+        // Send enable request
+        fetch(`/security/api/enable-user-2fa/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error enabling 2FA: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error enabling 2FA:', error);
+            alert('Error enabling 2FA');
+        });
+    }
+}
+
+function disableUser2FA(userId) {
+    if (confirm('Are you sure you want to disable 2FA for this user? This will reduce their account security.')) {
+        // Send disable request
+        fetch(`/security/api/disable-user-2fa/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error disabling 2FA: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error disabling 2FA:', error);
+            alert('Error disabling 2FA');
+        });
+    }
+}
+
+function resetUser2FA(userId) {
+    if (confirm('Are you sure you want to reset 2FA for this user? This will generate new secret and backup codes.')) {
+        // Send reset request
+        fetch(`/security/api/reset-user-2fa/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error resetting 2FA: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error resetting 2FA:', error);
+            alert('Error resetting 2FA');
+        });
+    }
+}
+
+function formatUserDetails(data) {
+    return `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>User Information</h6>
+                <p><strong>Username:</strong> ${data.username}</p>
+                <p><strong>Email:</strong> ${data.email}</p>
+                <p><strong>2FA Status:</strong> ${data.is_enabled ? '<span class="badge bg-success">Enabled</span>' : '<span class="badge bg-secondary">Disabled</span>'}</p>
+                <p><strong>Created:</strong> ${data.created_at}</p>
+            </div>
+            <div class="col-md-6">
+                <h6>2FA Details</h6>
+                <p><strong>Secret Key:</strong> ${data.secret_key ? '***' + data.secret_key.slice(-4) : 'Not set'}</p>
+                <p><strong>Last Used:</strong> ${data.last_used || 'Never'}</p>
+                <p><strong>Backup Codes:</strong> ${data.backup_codes_count || 0} available</p>
+            </div>
+        </div>
+    `;
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Auto-filter on search input
+document.getElementById('userSearch').addEventListener('input', filterUsers);
+</script>
+{% endblock %}

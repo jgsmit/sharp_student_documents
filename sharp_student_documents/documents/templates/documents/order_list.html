@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}My Orders - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-bold mb-4">📦 My Orders</h2>
+
+  {% if orders %}
+    <div class="list-group">
+      {% for order in orders %}
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">{{ order.document.title }}</h5>
+            <p class="mb-1 text-muted small">
+              Ordered on {{ order.created_at|date:"M d, Y H:i" }}
+            </p>
+            <span class="badge 
+              {% if order.status == 'paid' %} bg-success 
+              {% elif order.status == 'pending' %} bg-warning text-dark 
+              {% else %} bg-secondary {% endif %}">
+              {{ order.status|title }}
+            </span>
+          </div>
+          {% if order.status == "paid" %}
+            <a class="btn btn-success btn-sm shadow-sm"
+               href="{% url 'documents:download_document' order.id %}">
+              ⬇️ Download
+            </a>
+          {% else %}
+            <span class="text-muted small">Awaiting payment</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center" role="alert">
+      You haven’t purchased anything yet.  
+      <a href="{% url 'documents:document_list' %}" class="alert-link">Browse documents</a> to get started.
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+{% load static %}
+{% load pwa %}
+
+{% block title %}{{ title }} - SharpDocs{% endblock %}
+{% block meta_description %}{{ meta_description|default:"Professional document marketplace with educational tools." }}{% endblock %}
+
+{% block extra_head %}
+{% progressive_web_app_meta %}
+<style>
+    /* Dark Mode CSS Variables */
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --bg-tertiary: #e9ecef;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --text-muted: #adb5bd;
+        --border-color: #dee2e6;
+        --card-bg: #ffffff;
+        --navbar-bg: #ffffff;
+        --navbar-text: #212529;
+        --btn-primary-bg: #667eea;
+        --btn-primary-text: #ffffff;
+        --hover-bg: #f8f9fa;
+        --shadow: rgba(0, 0, 0, 0.1);
+        --gradient-start: #667eea;
+        --gradient-end: #764ba2;
+    }
+    
+    [data-theme="dark"] {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --bg-tertiary: #404040;
+        --text-primary: #ffffff;
+        --text-secondary: #b3b3b3;
+        --text-muted: #808080;
+        --border-color: #404040;
+        --card-bg: #2d2d2d;
+        --navbar-bg: #1a1a1a;
+        --navbar-text: #ffffff;
+        --btn-primary-bg: #667eea;
+        --btn-primary-text: #ffffff;
+        --hover-bg: #404040;
+        --shadow: rgba(0, 0, 0, 0.3);
+        --gradient-start: #667eea;
+        --gradient-end: #764ba2;
+    }
+    
+    /* Base Dark Mode Styles */
+    body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .navbar {
+        background-color: var(--navbar-bg) !important;
+        border-color: var(--border-color) !important;
+        box-shadow: 0 2px 4px var(--shadow) !important;
+    }
+    
+    .navbar .navbar-brand,
+    .navbar .nav-link {
+        color: var(--navbar-text) !important;
+    }
+    
+    .navbar .nav-link:hover {
+        color: var(--btn-primary-bg) !important;
+    }
+    
+    .card {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        box-shadow: 0 4px 8px var(--shadow) !important;
+    }
+    
+    .card-header {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .card-body {
+        color: var(--text-primary) !important;
+    }
+    
+    .btn-primary {
+        background-color: var(--btn-primary-bg) !important;
+        border-color: var(--btn-primary-bg) !important;
+        color: var(--btn-primary-text) !important;
+    }
+    
+    .btn-secondary {
+        background-color: var(--bg-tertiary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--btn-primary-bg) !important;
+        color: var(--btn-primary-bg) !important;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--btn-primary-bg) !important;
+        color: var(--btn-primary-text) !important;
+    }
+    
+    .form-control {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .form-control:focus {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--btn-primary-bg) !important;
+        color: var(--text-primary) !important;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+    }
+    
+    .form-select {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .table {
+        color: var(--text-primary) !important;
+    }
+    
+    .table th {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .table td {
+        border-color: var(--border-color) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: var(--hover-bg) !important;
+    }
+    
+    .alert {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .modal {
+        background-color: var(--bg-primary) !important;
+    }
+    
+    .modal-content {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    .modal-header {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .modal-body {
+        background-color: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .dropdown-menu {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        box-shadow: 0 8px 16px var(--shadow) !important;
+    }
+    
+    .dropdown-item {
+        color: var(--text-primary) !important;
+    }
+    
+    .dropdown-item:hover {
+        background-color: var(--hover-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .pagination .page-link {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .pagination .page-link:hover {
+        background-color: var(--hover-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: var(--btn-primary-bg) !important;
+        border-color: var(--btn-primary-bg) !important;
+    }
+    
+    .badge {
+        background-color: var(--bg-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .progress {
+        background-color: var(--bg-tertiary) !important;
+    }
+    
+    .list-group-item {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .list-group-item:hover {
+        background-color: var(--hover-bg) !important;
+    }
+    
+    /* Dark Mode Toggle Button */
+    .dark-mode-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-text);
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px var(--shadow);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .dark-mode-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px var(--shadow);
+    }
+    
+    .dark-mode-toggle:active {
+        transform: scale(0.95);
+    }
+    
+    /* Dark Mode Specific Adjustments */
+    [data-theme="dark"] .text-muted {
+        color: var(--text-muted) !important;
+    }
+    
+    [data-theme="dark"] .text-secondary {
+        color: var(--text-secondary) !important;
+    }
+    
+    [data-theme="dark"] .bg-light {
+        background-color: var(--bg-secondary) !important;
+    }
+    
+    [data-theme="dark"] .bg-white {
+        background-color: var(--card-bg) !important;
+    }
+    
+    [data-theme="dark"] .border {
+        border-color: var(--border-color) !important;
+    }
+    
+    /* Smooth transitions */
+    * {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+    
+    /* Dark Mode for specific components */
+    [data-theme="dark"] .hero-section {
+        background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%) !important;
+    }
+    
+    [data-theme="dark"] .feature-card {
+        background: var(--card-bg) !important;
+        border: 1px solid var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .testimonial-card {
+        background: var(--bg-secondary) !important;
+        border: 1px solid var(--border-color) !important;
+    }
+    
+    /* Dark Mode for forms */
+    [data-theme="dark"] .form-check-input {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .form-check-input:checked {
+        background-color: var(--btn-primary-bg) !important;
+        border-color: var(--btn-primary-bg) !important;
+    }
+    
+    /* Dark Mode for alerts */
+    [data-theme="dark"] .alert-success {
+        background-color: rgba(40, 167, 69, 0.2) !important;
+        border-color: rgba(40, 167, 69, 0.3) !important;
+        color: #71dd8a !important;
+    }
+    
+    [data-theme="dark"] .alert-warning {
+        background-color: rgba(255, 193, 7, 0.2) !important;
+        border-color: rgba(255, 193, 7, 0.3) !important;
+        color: #ffda6a !important;
+    }
+    
+    [data-theme="dark"] .alert-danger {
+        background-color: rgba(220, 53, 69, 0.2) !important;
+        border-color: rgba(220, 53, 69, 0.3) !important;
+        color: #f86c6b !important;
+    }
+    
+    [data-theme="dark"] .alert-info {
+        background-color: rgba(23, 162, 184, 0.2) !important;
+        border-color: rgba(23, 162, 184, 0.3) !important;
+        color: #74c0fc !important;
+    }
+    
+    /* Dark Mode for code blocks */
+    [data-theme="dark"] pre,
+    [data-theme="dark"] code {
+        background-color: var(--bg-tertiary) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* Dark Mode for scrollbars */
+    [data-theme="dark"] ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    [data-theme="dark"] ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+    
+    [data-theme="dark"] ::-webkit-scrollbar-thumb {
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+    }
+    
+    [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+    
+    /* PWA Install Prompt Styling */
+    .pwa-install-prompt {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 8px 24px var(--shadow);
+        max-width: 320px;
+        z-index: 999;
+        display: none;
+    }
+    
+    .pwa-install-prompt.show {
+        display: block;
+    }
+    
+    .pwa-install-prompt h6 {
+        color: var(--text-primary);
+        margin-bottom: 8px;
+    }
+    
+    .pwa-install-prompt p {
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+    
+    .pwa-install-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .pwa-install-buttons button {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .pwa-install-btn {
+        background: var(--btn-primary-bg);
+        color: var(--btn-primary-text);
+    }
+    
+    .pwa-dismiss-btn {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+    
+    .pwa-install-buttons button:hover {
+        opacity: 0.8;
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+{% endblock %}
+
+<!-- Dark Mode Toggle Button -->
+<button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+    <i class="bi bi-moon-fill" id="darkModeIcon"></i>
+</button>
+
+<!-- PWA Install Prompt -->
+<div class="pwa-install-prompt" id="pwaInstallPrompt">
+    <h6><i class="bi bi-download"></i> Install SharpDocs</h6>
+    <p>Install our app for offline access and a better experience!</p>
+    <div class="pwa-install-buttons">
+        <button class="pwa-install-btn" onclick="installPWA()">Install</button>
+        <button class="pwa-dismiss-btn" onclick="dismissPWAInstall()">Not now</button>
+    </div>
+</div>
+
+<script>
+// Dark Mode functionality
+function toggleDarkMode() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Update icon
+    const icon = document.getElementById('darkModeIcon');
+    icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    
+    // Save user preference
+    if (navigator.sendBeacon) {
+        const data = new FormData();
+        data.append('theme', newTheme);
+        navigator.sendBeacon('/api/save-theme/', data);
+    }
+}
+
+// Initialize dark mode
+function initializeDarkMode() {
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+    
+    document.documentElement.setAttribute('data-theme', theme);
+    
+    // Update icon
+    const icon = document.getElementById('darkModeIcon');
+    icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+}
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        
+        const icon = document.getElementById('darkModeIcon');
+        icon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    }
+});
+
+// PWA Install functionality
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show install prompt after a delay
+    setTimeout(() => {
+        const prompt = document.getElementById('pwaInstallPrompt');
+        if (prompt && !localStorage.getItem('pwaInstallDismissed')) {
+            prompt.classList.add('show');
+        }
+    }, 3000);
+});
+
+function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the A2HS prompt');
+                localStorage.setItem('pwaInstalled', 'true');
+            } else {
+                console.log('User dismissed the A2HS prompt');
+            }
+            deferredPrompt = null;
+            
+            // Hide prompt
+            document.getElementById('pwaInstallPrompt').classList.remove('show');
+        });
+    }
+}
+
+function dismissPWAInstall() {
+    localStorage.setItem('pwaInstallDismissed', 'true');
+    document.getElementById('pwaInstallPrompt').classList.remove('show');
+}
+
+// Check if app is already installed
+if (localStorage.getItem('pwaInstalled')) {
+    const prompt = document.getElementById('pwaInstallPrompt');
+    if (prompt) {
+        prompt.style.display = 'none';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDarkMode();
+    
+    // Check if running as PWA
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('Running as PWA');
+        document.body.classList.add('pwa-mode');
+    }
+    
+    // Service Worker registration for offline functionality
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/serviceworker.js')
+                .then(function(registration) {
+                    console.log('ServiceWorker registration successful');
+                    
+                    // Check for updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // Show update notification
+                                showUpdateNotification();
+                            }
+                        });
+                    });
+                })
+                .catch(function(error) {
+                    console.log('ServiceWorker registration failed');
+                });
+        });
+    }
+});
+
+// Show update notification
+function showUpdateNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+    notification.innerHTML = `
+        <strong>New version available!</strong><br>
+        Refresh to get the latest features.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn btn-sm btn-primary ms-2" onclick="refreshApp()">Refresh</button>
+    `;
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 10000);
+}
+
+function refreshApp() {
+    window.location.reload();
+}
+
+// Handle online/offline status
+window.addEventListener('online', () => {
+    console.log('App is online');
+    document.body.classList.remove('offline-mode');
+});
+
+window.addEventListener('offline', () => {
+    console.log('App is offline');
+    document.body.classList.add('offline-mode');
+});
+
+// Initialize online/offline status
+if (!navigator.onLine) {
+    document.body.classList.add('offline-mode');
+}
+</script>
+{% endblock %}

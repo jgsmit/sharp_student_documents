@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Payment Failed - Retry Secure Checkout | SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+  
+  <!-- Error Icon -->
+  <div class="mb-4">
+    <span class="display-1 text-danger">X</span>
+  </div>
+
+  <!-- Error Message -->
+  <h2 class="text-danger fw-bold">Payment Failed or Cancelled</h2>
+  <p class="text-muted">
+    Don’t worry — if you were charged, your payment will be automatically refunded.  
+    You can try again below or contact our support team.
+  </p>
+
+  <!-- Retry / CTA Buttons -->
+  <div class="d-flex justify-content-center gap-2 my-4 flex-wrap">
+    <a href="{% url 'payments:checkout' order.id %}" class="btn btn-primary btn-lg">
+      Retry Checkout
+    </a>
+    <a href="{% url 'documents:document_list' %}" class="btn btn-outline-secondary btn-lg">
+      Browse Documents
+    </a>
+    <a href="{% url 'documents:my_purchases' %}" class="btn btn-success btn-lg">
+      My Purchases
+    </a>
+  </div>
+
+  <!-- Support Link -->
+  <p class="small mt-3">
+    Need help? <a href="{% url 'reviews:contact' %}" class="fw-bold">Contact Support</a>
+  </p>
+
+</div>
+{% endblock %}

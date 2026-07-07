@@ -1,0 +1,113 @@
+<footer class="site-footer mt-5 pt-5">
+  <div class="container">
+    <div class="row">
+
+      <!-- About / Logo -->
+      <div class="col-md-3 mb-4">
+        <h5 class="fw-bold mb-3 text-uppercase">SharpDocs</h5>
+        <p class="small">
+          Access high-quality student notes, guides, and past papers. Learn smarter, not harder.
+        </p>
+        <p class="mb-0 small">&copy; {% now "Y" %} SharpDocs. All rights reserved.</p>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-md-3 mb-4">
+        <h6 class="fw-bold mb-3">Quick Links</h6>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'home' %}" class="footer-link">Home</a></li>
+          <li><a href="{% url 'documents:document_list' %}" class="footer-link">Documents</a></li>
+          {% if not user.is_authenticated %}
+            <li><a href="{% url 'register' %}" class="footer-link">Become a Seller</a></li>
+          {% elif user.is_seller %}
+            <li><a href="{% url 'documents:seller_dashboard' %}" class="footer-link">Seller Dashboard</a></li>
+          {% else %}
+            <li><a href="{% url 'documents:buyer_dashboard' %}" class="footer-link">My Dashboard</a></li>
+          {% endif %}
+          <li><a href="{% url 'reviews:contact' %}" class="footer-link">Contact</a></li>
+        </ul>
+      </div>
+
+      <!-- Resources -->
+      <div class="col-md-3 mb-4">
+        <h6 class="fw-bold mb-3">Resources</h6>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'reviews:faq' %}" class="footer-link">FAQ</a></li>
+          <li><a href="{% url 'reviews:help_center' %}" class="footer-link">Help Center</a></li>
+          <li><a href="{% url 'reviews:terms' %}" class="footer-link">Terms & Conditions</a></li>
+          <li><a href="{% url 'reviews:privacy' %}" class="footer-link">Privacy Policy</a></li>
+        </ul>
+      </div>
+
+      <!-- Newsletter / Social -->
+      <div class="col-md-3 mb-4">
+        <h6 class="fw-bold mb-3">Stay Updated</h6>
+        <p class="small">Subscribe to our newsletter for the latest updates and offers.</p>
+        <form class="d-flex mb-3">
+          <input type="email" class="form-control form-control-sm me-2" placeholder="Your email">
+          <button class="btn btn-success btn-sm">Subscribe</button>
+        </form>
+
+        <div class="d-flex mt-2">
+          <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
+          <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
+          <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="bi bi-linkedin"></i></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</footer>
+
+<style>
+/* Footer with dark gradient (half blue + half green) */
+.site-footer {
+  background: linear-gradient(135deg, #003366 0%, #00796b 100%);
+  color: #f1f1f1;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+.site-footer .footer-link {
+  color: #cfd8dc;
+  text-decoration: none;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.site-footer .footer-link:hover {
+  color: #4dd0e1;
+  transform: translateX(4px);
+}
+
+.site-footer .social-icon {
+  color: #cfd8dc;
+  margin-right: 10px;
+  font-size: 1.2rem;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.site-footer .social-icon:hover {
+  color: #4caf50;
+  transform: scale(1.2);
+}
+
+/* Newsletter input styling */
+.site-footer input.form-control {
+  background-color: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+}
+.site-footer input::placeholder {
+  color: #ccc;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .site-footer {
+    text-align: center;
+  }
+  .social-icon {
+    margin-right: 15px;
+  }
+}
+</style>

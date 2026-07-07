@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}View User - {{ user.username }} - SharpDocs Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">👤 User Details: {{ user.username }}</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:admin_manage_users' %}" class="btn btn-sm btn-secondary">← Back to Users</a>
+                <a href="{% url 'documents:admin_edit_user' user.id %}" class="btn btn-sm btn-warning">✏️ Edit User</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Information -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">📋 User Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Username:</strong> {{ user.username }}</p>
+                            <p><strong>Email:</strong> {{ user.email }}</p>
+                            <p><strong>First Name:</strong> {{ user.first_name|default:"Not set" }}</p>
+                            <p><strong>Last Name:</strong> {{ user.last_name|default:"Not set" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>User Type:</strong>
+                                {% if user.is_staff %}
+                                    <span class="badge bg-warning">Staff</span>
+                                {% elif user.is_seller %}
+                                    <span class="badge bg-success">Seller</span>
+                                {% else %}
+                                    <span class="badge bg-info">Buyer</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Status:</strong>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y H:i" }}</p>
+                            <p><strong>Last Login:</strong> {{ user.last_login|date:"M d, Y H:i"|default:"Never" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">💰 Financial Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Spent</div>
+                        <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_spent|floatformat:2 }}</div>
+                    </div>
+                    <div class="text-center mb-3">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Earned</div>
+                        <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_earned|floatformat:2 }}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Net Balance</div>
+                        <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_earned|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">📄 Documents</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_documents }}</div>
+                    <div class="text-xs text-gray-500">Documents uploaded</div>
+                    <hr>
+                    <a href="{% url 'documents:admin_user_documents' user.id %}" class="btn btn-sm btn-info">View Documents</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">🛒 Orders</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
+                    <div class="text-xs text-gray-500">Orders placed</div>
+                    <hr>
+                    <a href="{% url 'documents:admin_user_orders' user.id %}" class="btn btn-sm btn-success">View Orders</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">⭐ Reviews</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_reviews }}</div>
+                    <div class="text-xs text-gray-500">Reviews written</div>
+                    <hr>
+                    <a href="{% url 'documents:admin_user_reviews' user.id %}" class="btn btn-sm btn-warning">View Reviews</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">📄 Recent Documents</h6>
+                </div>
+                <div class="card-body">
+                    {% if user_documents %}
+                    <div class="list-group list-group-flush">
+                        {% for doc in user_documents|slice:":5" %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ doc.title }}</h6>
+                                <small class="text-muted">${{ doc.price }} | {{ doc.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <a href="{{ doc.get_absolute_url }}" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No documents uploaded</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">🛒 Recent Orders</h6>
+                </div>
+                <div class="card-body">
+                    {% if user_orders %}
+                    <div class="list-group list-group-flush">
+                        {% for order in user_orders|slice:":5" %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ order.document.title }}</h6>
+                                <small class="text-muted">${{ order.amount_paid }} | {{ order.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <span class="badge bg-{{ order.status|yesno:'success,warning,secondary' }}">{{ order.status }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No orders placed</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

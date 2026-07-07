@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Sales History - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">📈 Sales History</h2>
+    <a href="{% url 'sales:export_sales_csv' %}" class="btn btn-sm btn-success">
+      ⬇️ Export CSV
+    </a>
+  </div>
+
+  <!-- Summary KPIs -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Total Sales</h6>
+          <h3 class="fw-bold">{{ total_sales }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h6 class="text-muted">Total Earnings</h6>
+          <h3 class="text-success fw-bold">${{ total_earnings }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Report -->
+  <h4 class="mt-4">Monthly Report</h4>
+  {% if monthly_sales %}
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Month</th>
+            <th>Sales Count</th>
+            <th>Earnings</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in monthly_sales %}
+          <tr>
+            <td>{{ m.month|date:"F Y" }}</td>
+            <td>{{ m.sales_count }}</td>
+            <td>${{ m.earnings }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">No sales data yet.</p>
+  {% endif %}
+
+  <!-- All Sales -->
+  <h4 class="mt-4">All Sales</h4>
+  {% if sales %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Document</th>
+            <th>Buyer</th>
+            <th>Amount</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sale in sales %}
+          <tr>
+            <td>{{ sale.document.title }}</td>
+            <td>{{ sale.buyer.username }}</td>
+            <td>${{ sale.amount }}</td>
+            <td>{{ sale.created_at|date:"M d, Y H:i" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">No sales yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

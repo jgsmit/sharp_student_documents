@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Education Dashboard - SharpDocs{% endblock %}
+{% block meta_description %}Access your study tools, flashcards, notes, and learning analytics on SharpDocs education platform.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-mortarboard"></i> Education Dashboard
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 bg-primary text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ purchased_documents|length }}</h2>
+          <p class="mb-0">Purchased Documents</p>
+          <small>Available for study</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-success text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ uploaded_documents|length }}</h2>
+          <p class="mb-0">Uploaded Documents</p>
+          <small>Your content</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-info text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">
+            {% for doc in purchased_documents %}
+              {% if forloop.first %}{{ doc.has_notes }}{% endif %}
+            {% empty %}0{% endfor %}
+          </h2>
+          <p class="mb-0">Total Notes</p>
+          <small>Created</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-warning text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">
+            {% for doc in purchased_documents %}
+              {% if forloop.first %}{{ doc.has_flashcards }}{% endif %}
+            {% empty %}0{% endfor %}
+          </h2>
+          <p class="mb-0">Total Flashcards</p>
+          <small>Created</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Purchased Documents -->
+  {% if purchased_documents %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="bi bi-bag-check"></i> Your Purchased Documents
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for document in purchased_documents %}
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100 border-0 bg-light">
+                <div class="card-body">
+                  <h6 class="fw-semibold text-primary mb-2">{{ document.title|truncatechars:50 }}</h6>
+                  <p class="text-muted small mb-3">{{ document.description|truncatewords:15 }}</p>
+                  
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <small class="text-muted">
+                      <i class="bi bi-file-earmark"></i> {{ document.pages|default:"N/A" }} pages
+                      {% if document.category %}
+                        <span class="ms-2"><i class="bi bi-tag"></i> {{ document.category.name }}</span>
+                      {% endif %}
+                    </small>
+                    <span class="badge bg-success">${{ document.price }}</span>
+                  </div>
+
+                  <!-- Study Tools -->
+                  <div class="d-grid gap-2">
+                    <a href="{% url 'education:flashcard_system' document.id %}" class="btn btn-outline-primary btn-sm">
+                      <i class="bi bi-card-stack"></i> Flashcards
+                      {% if document.has_flashcards > 0 %}
+                        <span class="badge bg-primary ms-1">{{ document.has_flashcards }}</span>
+                      {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'education:note_editor' document.id %}" class="btn btn-outline-success btn-sm">
+                      <i class="bi bi-journal-text"></i> My Notes
+                      {% if document.has_notes > 0 %}
+                        <span class="badge bg-success ms-1">{{ document.has_notes }}</span>
+                      {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'education:study_planner' %}" class="btn btn-outline-info btn-sm">
+                      <i class="bi bi-calendar3"></i> Study Plan
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Uploaded Documents (for sellers) -->
+  {% if uploaded_documents %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="bi bi-upload"></i> Your Uploaded Documents
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for document in uploaded_documents %}
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100 border-0 bg-light">
+                <div class="card-body">
+                  <h6 class="fw-semibold text-primary mb-2">{{ document.title|truncatechars:50 }}</h6>
+                  <p class="text-muted small mb-3">{{ document.description|truncatewords:15 }}</p>
+                  
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <small class="text-muted">
+                      <i class="bi bi-file-earmark"></i> {{ document.pages|default:"N/A" }} pages
+                      {% if document.category %}
+                        <span class="ms-2"><i class="bi bi-tag"></i> {{ document.category.name }}</span>
+                      {% endif %}
+                    </small>
+                    <span class="badge bg-success">${{ document.price }}</span>
+                  </div>
+
+                  <!-- Study Tools -->
+                  <div class="d-grid gap-2">
+                    <a href="{% url 'education:flashcard_system' document.id %}" class="btn btn-outline-primary btn-sm">
+                      <i class="bi bi-card-stack"></i> Flashcards
+                      {% if document.has_flashcards > 0 %}
+                        <span class="badge bg-primary ms-1">{{ document.has_flashcards }}</span>
+                      {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'education:note_editor' document.id %}" class="btn btn-outline-success btn-sm">
+                      <i class="bi bi-journal-text"></i> My Notes
+                      {% if document.has_notes > 0 %}
+                        <span class="badge bg-success ms-1">{{ document.has_notes }}</span>
+                      {% endif %}
+                    </a>
+                    
+                    <a href="{% url 'education:study_planner' %}" class="btn btn-outline-info btn-sm">
+                      <i class="bi bi-calendar3"></i> Study Plan
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Empty State -->
+  {% if not purchased_documents and not uploaded_documents %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 bg-light text-center py-5">
+        <div class="card-body">
+          <i class="bi bi-mortarboard display-1 text-muted mb-3"></i>
+          <h5 class="text-muted mb-3">No Documents Available</h5>
+          <p class="text-muted mb-4">
+            {% if user.is_seller %}
+              You haven't uploaded any documents yet, or you haven't purchased any study materials.
+            {% else %}
+              Start by purchasing some documents to access study tools like flashcards and notes.
+            {% endif %}
+          </p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'documents:document_list' %}" class="btn btn-primary">
+              <i class="bi bi-search"></i> Browse Documents
+            </a>
+            {% if user.is_seller %}
+              <a href="{% url 'documents:upload_document' %}" class="btn btn-outline-primary">
+                <i class="bi bi-upload"></i> Upload Document
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+</style>
+{% endblock %}

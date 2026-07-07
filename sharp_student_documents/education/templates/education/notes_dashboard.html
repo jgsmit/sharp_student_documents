@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notes Dashboard - SharpDocs{% endblock %}
+{% block meta_description %}View and manage all your study notes in one place on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h4 class="mb-0 fw-bold">
+                <i class="bi bi-journal-text"></i> Notes Dashboard
+              </h4>
+              <p class="mb-0">All your study notes in one place</p>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="btn-group">
+                <a href="/education/" class="btn btn-outline-light btn-sm">
+                  <i class="bi bi-grid"></i> Education Dashboard
+                </a>
+                <button class="btn btn-outline-light btn-sm" onclick="showNotification('Search functionality coming soon!', 'info')">
+                  <i class="bi bi-search"></i> Search
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 bg-primary text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ total_notes }}</h2>
+          <p class="mb-0">Total Notes</p>
+          <small>All documents</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-success text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ total_documents_with_notes }}</h2>
+          <p class="mb-0">Documents</p>
+          <small>With notes</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-info text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">{{ recent_notes|length }}</h2>
+          <p class="mb-0">Recent Notes</p>
+          <small>Last updated</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-warning text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">
+            {% if total_notes > 0 %}
+              {% widthratio total_notes total_documents_with_notes 1 %}
+            {% else %}
+              0
+            {% endif %}
+          </h2>
+          <p class="mb-0">Avg Notes</p>
+          <small>Per document</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Notes -->
+  {% if recent_notes %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="bi bi-clock-history"></i> Recent Notes
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for note in recent_notes %}
+            <div class="col-md-6 col-lg-4 mb-3">
+              <div class="card h-100 border-0 bg-light">
+                <div class="card-body">
+                  <h6 class="fw-semibold text-primary mb-2">{{ note.title|truncatechars:50 }}</h6>
+                  <p class="text-muted small mb-2">{{ note.content|truncatewords:15 }}</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="bi bi-file-earmark"></i> {{ note.document.title|truncatechars:30 }}
+                    </small>
+                    <small class="text-muted">{{ note.updated_at|date:"M d, Y" }}</small>
+                  </div>
+                  <div class="mt-2">
+                    <a href="{% url 'education:note_editor' note.document.id %}" class="btn btn-outline-primary btn-sm">
+                      <i class="bi bi-pencil"></i> Edit
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Notes by Document -->
+  {% if notes_by_document %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="bi bi-folder"></i> Notes by Document
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            {% for doc_id, doc_data in notes_by_document.items %}
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100 border-0 bg-light">
+                <div class="card-body">
+                  <h6 class="fw-semibold text-primary mb-2">{{ doc_data.document.title|truncatechars:50 }}</h6>
+                  <p class="text-muted small mb-3">{{ doc_data.document.description|truncatewords:15 }}</p>
+                  
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <small class="text-muted">
+                      <i class="bi bi-journal-text"></i> {{ doc_data.total_notes }} notes
+                    </small>
+                    {% if doc_data.document.category %}
+                      <span class="badge bg-secondary">{{ doc_data.document.category.name }}</span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Latest Note Preview -->
+                  {% if doc_data.notes %}
+                    <div class="mb-3 p-2 bg-white rounded">
+                      <small class="text-muted d-block mb-1">Latest note:</small>
+                      <strong>{{ doc_data.notes.0.title|truncatechars:40 }}</strong>
+                      <p class="mb-0 small text-muted">{{ doc_data.notes.0.content|truncatewords:10 }}</p>
+                    </div>
+                  {% endif %}
+
+                  <!-- Action Buttons -->
+                  <div class="d-grid gap-2">
+                    <a href="{% url 'education:note_editor' doc_data.document.id %}" class="btn btn-primary btn-sm">
+                      <i class="bi bi-pencil"></i> Edit Notes
+                    </a>
+                    <a href="{% url 'education:flashcard_system' doc_data.document.id %}" class="btn btn-outline-secondary btn-sm">
+                      <i class="bi bi-card-stack"></i> Flashcards
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Empty State -->
+  {% if not notes_by_document and not recent_notes %}
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 bg-light text-center py-5">
+        <div class="card-body">
+          <i class="bi bi-journal-text display-1 text-muted mb-3"></i>
+          <h5 class="text-muted mb-3">No Notes Yet</h5>
+          <p class="text-muted mb-4">
+            Start taking notes on your purchased documents to build your personal study library.
+          </p>
+          <div class="d-flex justify-content-center gap-2">
+            <a href="/education/" class="btn btn-primary">
+              <i class="bi bi-grid"></i> Education Dashboard
+            </a>
+            <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary">
+              <i class="bi bi-search"></i> Browse Documents
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+</style>
+
+<script>
+// Show notification function
+function showNotification(message, type) {
+  const notification = document.createElement('div');
+  notification.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+  notification.style.zIndex = '9999';
+  notification.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
+}
+</script>
+{% endblock %}

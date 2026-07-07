@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Profile - SharpDocs{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 700px;">
+  <div class="card shadow-sm p-4">
+    <h2 class="mb-4 text-center">👤 Your Profile</h2>
+
+    <!-- Show non-field errors if any -->
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label">{{ field.label }}</label>
+          {{ field|add_class:"form-control" }}
+          {% if field.help_text %}
+            <div class="form-text">{{ field.help_text }}</div>
+          {% endif %}
+          {% for error in field.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      <button class="btn btn-success w-100" type="submit">💾 Save Changes</button>
+    </form>
+
+    <div class="mt-4 text-center">
+      <a href="{% url 'home' %}" class="btn btn-outline-secondary">⬅ Back to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

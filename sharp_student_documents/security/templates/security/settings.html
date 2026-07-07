@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Security Settings - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="fas fa-shield-alt"></i> Security Settings
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          
+          <form method="post">
+            {% csrf_token %}
+            
+            <!-- Two-Factor Authentication -->
+            <div class="mb-5">
+              <h5 class="mb-3">
+                <i class="fas fa-mobile-alt"></i> Two-Factor Authentication
+              </h5>
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                Add an extra layer of security to your account with 2FA.
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="2fa_enabled" disabled>
+                    <label class="form-check-label" for="2fa_enabled">
+                      Enable Two-Factor Authentication
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <span class="badge bg-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 2FA Disabled
+                  </span>
+                </div>
+              </div>
+              
+              <div class="mt-3">
+                <a href="{% url 'security:2fa_setup' %}" class="btn btn-primary">
+                  <i class="fas fa-plus-circle"></i> Enable 2FA
+                </a>
+              </div>
+            </div>
+
+            <!-- Document Watermarking -->
+            <div class="mb-5">
+              <h5 class="mb-3">
+                <i class="fas fa-image"></i> Document Watermarking
+              </h5>
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> 
+                Automatically add watermarks to your document previews to prevent unauthorized sharing.
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="watermark_enabled" 
+                           name="is_enabled" value="on"
+                           {% if watermark_settings.is_enabled %}checked{% endif %}>
+                    <label class="form-check-label" for="watermark_enabled">
+                      Enable Watermarking
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  {% if watermark_settings.is_enabled %}
+                    <span class="badge bg-info">
+                      <i class="fas fa-droplet"></i> Watermarking Active
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary">
+                      <i class="fas fa-droplet"></i> Watermarking Inactive
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Watermark Settings -->
+            <div id="watermark-settings" class="{% if not watermark_settings.is_enabled and not request.GET.from_trust_security %}collapse{% endif %}">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="watermark_text" class="form-label">Custom Watermark Text</label>
+                  <input type="text" name="watermark_text" id="watermark_text" 
+                         class="form-control" value="{{ watermark_settings.watermark_text }}"
+                         placeholder="Leave blank for default">
+                  <small class="form-text text-muted">
+                    Default: © Your Username - SharpDocs
+                  </small>
+                </div>
+                <div class="col-md-6">
+                  <label for="watermark_opacity" class="form-label">Opacity (%)</label>
+                  <input type="range" name="watermark_opacity" id="watermark_opacity" 
+                         class="form-range" min="10" max="100" value="{{ watermark_settings.watermark_opacity }}">
+                  <div class="d-flex justify-content-between">
+                    <small>10%</small>
+                    <small>{{ watermark_settings.watermark_opacity }}%</small>
+                    <small>100%</small>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="watermark_position" class="form-label">Position</label>
+                  <select name="watermark_position" id="watermark_position" class="form-select">
+                    <option value="center" {% if watermark_settings.watermark_position == 'center' %}selected{% endif %}>Center</option>
+                    <option value="top_left" {% if watermark_settings.watermark_position == 'top_left' %}selected{% endif %}>Top Left</option>
+                    <option value="top_right" {% if watermark_settings.watermark_position == 'top_right' %}selected{% endif %}>Top Right</option>
+                    <option value="bottom_left" {% if watermark_settings.watermark_position == 'bottom_left' %}selected{% endif %}>Bottom Left</option>
+                    <option value="bottom_right" {% if watermark_settings.watermark_position == 'bottom_right' %}selected{% endif %}>Bottom Right</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label for="watermark_size" class="form-label">Font Size</label>
+                  <input type="range" name="watermark_size" id="watermark_size" 
+                         class="form-range" min="10" max="50" value="{{ watermark_settings.watermark_size }}">
+                  <div class="d-flex justify-content-between">
+                    <small>10px</small>
+                    <small>{{ watermark_settings.watermark_size }}px</small>
+                    <small>50px</small>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="watermark_color" class="form-label">Watermark Color</label>
+                  <div class="input-group">
+                    <input type="color" name="watermark_color" id="watermark_color" 
+                           class="form-control form-control-color" value="{{ watermark_settings.watermark_color }}">
+                    <input type="text" name="watermark_color_text" id="watermark_color_text" 
+                           class="form-control" value="{{ watermark_settings.watermark_color }}"
+                           placeholder="#CCCCCC">
+                  </div>
+                  <small class="form-text text-muted">Choose watermark color</small>
+                </div>
+                <div class="col-md-6">
+                  <label for="watermark_rotation" class="form-label">Rotation Angle</label>
+                  <input type="range" name="watermark_rotation" id="watermark_rotation" 
+                         class="form-range" min="0" max="90" value="{{ watermark_settings.watermark_rotation }}">
+                  <div class="d-flex justify-content-between">
+                    <small>0°</small>
+                    <small>{{ watermark_settings.watermark_rotation }}°</small>
+                    <small>90°</small>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Additional Options</label>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="include_user_info" id="include_user_info" 
+                           value="on" {% if watermark_settings.include_user_info %}checked{% endif %}>
+                    <label class="form-check-label" for="include_user_info">
+                      Include User ID
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="include_timestamp" id="include_timestamp" 
+                           value="on" {% if watermark_settings.include_timestamp %}checked{% endif %}>
+                    <label class="form-check-label" for="include_timestamp">
+                      Include Timestamp
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="auto_watermark" id="auto_watermark" 
+                           value="on" {% if watermark_settings.auto_watermark %}checked{% endif %}>
+                    <label class="form-check-label" for="auto_watermark">
+                      Auto-watermark New Uploads
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="alert alert-info">
+                    <h6 class="mb-2"><i class="fas fa-info-circle"></i> Watermark Preview</h6>
+                    <p class="mb-2 small">Your watermark will appear as:</p>
+                    <div class="border rounded p-2 bg-light text-center">
+                      <small class="text-muted" style="opacity: 0.{{ watermark_settings.watermark_opacity|stringformat:"02d" }};">
+                        {% if watermark_settings.watermark_text %}
+                          {{ watermark_settings.watermark_text }}
+                        {% else %}
+                          © {{ user.username }} - SharpDocs
+                        {% endif %}
+                        {% if watermark_settings.include_user_info %} | User: {{ user.username }}{% endif %}
+                        {% if watermark_settings.include_timestamp %} | {% now "Y-m-d H:i" %}{% endif %}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Password Management -->
+            <div class="mb-5">
+              <h5 class="mb-3">
+                <i class="fas fa-key"></i> Password Management
+              </h5>
+              <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> 
+                Keep your account secure by regularly updating your password.
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="d-flex align-items-center mb-3">
+                    <span class="me-3">Current Password Status:</span>
+                    <span class="badge bg-info">
+                      <i class="fas fa-check-circle"></i> Active
+                    </span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <small class="text-muted">Last changed:</small>
+                    <small class="ms-2">{{ user.last_login|date:"Y-m-d"|default:"Never" }}</small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="d-grid gap-2">
+                    <a href="{% url 'password_change' %}" class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-key"></i> Change Password
+                    </a>
+                    <a href="{% url 'password_reset' %}" class="btn btn-outline-warning btn-sm">
+                      <i class="fas fa-undo"></i> Forgot Password
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Identity Verification Status -->
+            <div class="mb-5">
+              <h5 class="mb-3">
+                <i class="fas fa-user-check"></i> Identity Verification
+              </h5>
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="d-flex align-items-center">
+                    <span class="me-3">Verification Status:</span>
+                    {% if is_verified %}
+                      <span class="badge bg-success">
+                        <i class="fas fa-check-circle"></i> Verified Seller
+                      </span>
+                    {% else %}
+                      <span class="badge bg-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Not Verified
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <a href="{% url 'security:verify_identity' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-plus-circle"></i> Verify Identity
+                  </a>
+                </div>
+              </div>
+              
+              {% if is_verified %}
+                <div class="alert alert-success mt-3">
+                  <i class="fas fa-check-circle"></i> 
+                  Your identity has been verified! You enjoy increased trust and visibility on the marketplace.
+                </div>
+              {% else %}
+                <div class="alert alert-warning mt-3">
+                  <i class="fas fa-info-circle"></i> 
+                  Verify your identity to earn buyer trust and increase your sales potential by up to 300%.
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Save Button -->
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary btn-lg px-5">
+                <i class="fas fa-save"></i> Save Security Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Security Tips -->
+    <div class="col-md-4">
+      <div class="card border-0 bg-light">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="fas fa-lightbulb"></i> Security Tips
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="fas fa-key text-warning"></i> Strong Password
+            </h6>
+            <p class="small">Use unique passwords with letters, numbers, and symbols.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="fas fa-sync text-info"></i> Update Regularly
+            </h6>
+            <p class="small">Change your password every 3-6 months for security.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="fas fa-mobile-alt text-info"></i> Enable 2FA
+            </h6>
+            <p class="small">Add an extra layer of security with authenticator apps.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="fas fa-image text-warning"></i> Watermark Documents
+            </h6>
+            <p class="small">Protect your content from unauthorized sharing.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="fas fa-user-check text-primary"></i> Verify Identity
+            </h6>
+            <p class="small">Build trust with buyers through identity verification.</p>
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">
+              <i class="fas fa-eye text-danger"></i> Monitor Activity
+            </h6>
+            <p class="small">Regularly check your security logs and account activity.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('watermark_enabled').addEventListener('change', function() {
+  const settings = document.getElementById('watermark-settings');
+  if (this.checked) {
+    settings.classList.remove('collapse');
+  } else {
+    settings.classList.add('collapse');
+  }
+});
+
+// Live opacity preview
+document.getElementById('watermark_opacity').addEventListener('input', function() {
+  const value = this.value;
+  const label = this.parentElement.querySelector('small:nth-child(2)');
+  label.textContent = value + '%';
+});
+
+// Live size preview
+document.getElementById('watermark_size').addEventListener('input', function() {
+  const value = this.value;
+  const label = this.parentElement.querySelector('small:nth-child(2)');
+  label.textContent = value + 'px';
+});
+
+// Live rotation preview
+document.getElementById('watermark_rotation').addEventListener('input', function() {
+  const value = this.value;
+  const label = this.parentElement.querySelector('small:nth-child(2)');
+  label.textContent = value + '°';
+});
+
+// Color picker sync
+document.getElementById('watermark_color').addEventListener('input', function() {
+  document.getElementById('watermark_color_text').value = this.value;
+});
+
+document.getElementById('watermark_color_text').addEventListener('input', function() {
+  if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+    document.getElementById('watermark_color').value = this.value;
+  }
+});
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.form-check-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.form-check-slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.form-check-input:checked + .form-check-label .form-check-slider {
+  background-color: #667eea;
+}
+
+.form-check-input:checked + .form-check-label .form-check-slider:before {
+  transform: translateX(26px);
+}
+
+.form-range::-webkit-slider-thumb {
+  background: #667eea;
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

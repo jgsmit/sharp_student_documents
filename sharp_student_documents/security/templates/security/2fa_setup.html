@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Two-Factor Authentication Setup - SharpDocs{% endblock %}
+{% block meta_description %}Set up two-factor authentication for enhanced account security on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold text-center">
+            <i class="bi bi-shield-lock"></i> Set Up Two-Factor Authentication
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <div class="alert alert-info">
+              <h5 class="alert-heading">
+                <i class="bi bi-info-circle"></i> Enhanced Security
+              </h5>
+              <p class="mb-0">
+                Enable 2FA to add an extra layer of security to your account. 
+                You'll need a verification code from your authenticator app when logging in.
+              </p>
+            </div>
+          </div>
+
+          <!-- QR Code Display -->
+          <div class="text-center mb-4">
+            <h5 class="mb-3">1. Scan QR Code</h5>
+            <div class="d-inline-block p-3 border rounded">
+              <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" class="img-fluid">
+            </div>
+            <p class="text-muted small">
+              Use Google Authenticator, Authy, or any TOTP app
+            </p>
+          </div>
+
+          <!-- Secret Key -->
+          <div class="text-center mb-4">
+            <h5 class="mb-3">2. Or Enter Secret Key</h5>
+            <div class="form-group">
+              <div class="input-group">
+                <input type="text" value="{{ secret_key }}" readonly class="form-control font-monospace">
+                <button class="btn btn-outline-secondary" onclick="copySecret()">
+                  <i class="bi bi-clipboard"></i> Copy
+                </button>
+              </div>
+              <small class="form-text text-muted">
+                Copy this secret key and enter it manually in your authenticator app
+              </small>
+            </div>
+          </div>
+
+          <!-- Backup Codes -->
+          <div class="mb-4">
+            <h5 class="mb-3">3. Save Backup Codes</h5>
+            <div class="alert alert-warning">
+              <h6 class="alert-heading">
+                <i class="bi bi-exclamation-triangle"></i> Important: Save These Codes
+              </h6>
+              <p class="mb-2">
+                Save these backup codes in a secure location. 
+                You can use them if you lose access to your authenticator device.
+              </p>
+              <div class="row">
+                {% for code in backup_codes %}
+                <div class="col-md-6 mb-2">
+                  <div class="p-2 border rounded text-center font-monospace">
+                    <strong>{{ code }}</strong>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Enable 2FA Form -->
+          <form method="post" action="{% url 'security:enable_2fa' %}">
+            {% csrf_token %}
+            <input type="hidden" name="secret" value="{{ secret_key }}">
+            
+            <div class="mb-3">
+              <h5 class="mb-3">4. Verify Setup</h5>
+              <label for="code" class="form-label">Enter 6-digit code from your authenticator app:</label>
+              <div class="input-group">
+                <input type="text" name="code" id="code" class="form-control form-control-lg text-center" 
+                       maxlength="6" pattern="[0-9]{6}" required>
+                <button type="submit" class="btn btn-primary btn-lg">
+                  <i class="bi bi-check-circle"></i> Enable 2FA
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copySecret() {
+  const secretInput = document.querySelector('input[value="{{ secret_key }}"]');
+  secretInput.select();
+  document.execCommand('copy');
+  
+  // Show feedback
+  const button = event.target;
+  const originalText = button.innerHTML;
+  button.innerHTML = '<i class="bi bi-check"></i> Copied!';
+  button.classList.add('btn-success');
+  button.classList.remove('btn-outline-secondary');
+  
+  setTimeout(() => {
+    button.innerHTML = originalText;
+    button.classList.remove('btn-success');
+    button.classList.add('btn-outline-secondary');
+  }, 2000);
+}
+
+// Auto-format code input
+document.getElementById('code').addEventListener('input', function(e) {
+  // Remove any non-digit characters
+  this.value = this.value.replace(/[^0-9]/g, '');
+});
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.font-monospace {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+.input-group .form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

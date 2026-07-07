@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Advanced Search - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">🔍 Advanced Search</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:document_list' %}" class="btn btn-sm btn-secondary">← Back to Documents</a>
+                <a href="{% url 'home' %}" class="btn btn-sm btn-info">Home</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">🔍 Search Filters</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'documents:advanced_search' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Search Query -->
+                        <div class="mb-3">
+                            <label for="query" class="form-label">Search Query</label>
+                            <input type="text" class="form-control" id="query" name="q" 
+                                   value="{{ search_form.query.value|default:'' }}" 
+                                   placeholder="Enter keywords, title, author, ISBN...">
+                        </div>
+
+                        <!-- Search Type -->
+                        <div class="mb-3">
+                            <label for="search_type" class="form-label">Search In</label>
+                            <select class="form-select" id="search_type" name="search_type">
+                                <option value="all" {% if search_form.search_type.value == 'all' %}selected{% endif %}>All Fields</option>
+                                <option value="title" {% if search_form.search_type.value == 'title' %}selected{% endif %}>Title Only</option>
+                                <option value="content" {% if search_form.search_type.value == 'content' %}selected{% endif %}>Content Only</option>
+                                <option value="tags" {% if search_form.search_type.value == 'tags' %}selected{% endif %}>Tags Only</option>
+                                <option value="author" {% if search_form.search_type.value == 'author' %}selected{% endif %}>Author Only</option>
+                                <option value="isbn" {% if search_form.search_type.value == 'isbn' %}selected{% endif %}>ISBN Only</option>
+                            </select>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" 
+                                            {% if search_form.category.value == category.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Document Type -->
+                        <div class="mb-3">
+                            <label for="document_type" class="form-label">Document Type</label>
+                            <select class="form-select" id="document_type" name="document_type">
+                                <option value="">All Types</option>
+                                <option value="notes" {% if search_form.document_type.value == 'notes' %}selected{% endif %}>Notes</option>
+                                <option value="assignment" {% if search_form.document_type.value == 'assignment' %}selected{% endif %}>Assignment</option>
+                                <option value="exam" {% if search_form.document_type.value == 'exam' %}selected{% endif %}>Exam</option>
+                                <option value="lab_report" {% if search_form.document_type.value == 'lab_report' %}selected{% endif %}>Lab Report</option>
+                                <option value="thesis" {% if search_form.document_type.value == 'thesis' %}selected{% endif %}>Thesis</option>
+                                <option value="research" {% if search_form.document_type.value == 'research' %}selected{% endif %}>Research Paper</option>
+                                <option value="case_study" {% if search_form.document_type.value == 'case_study' %}selected{% endif %}>Case Study</option>
+                                <option value="presentation" {% if search_form.document_type.value == 'presentation' %}selected{% endif %}>Presentation</option>
+                                <option value="other" {% if search_form.document_type.value == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Academic Level -->
+                        <div class="mb-3">
+                            <label for="academic_level" class="form-label">Academic Level</label>
+                            <select class="form-select" id="academic_level" name="academic_level">
+                                <option value="">All Levels</option>
+                                <option value="high_school" {% if search_form.academic_level.value == 'high_school' %}selected{% endif %}>High School</option>
+                                <option value="undergraduate" {% if search_form.academic_level.value == 'undergraduate' %}selected{% endif %}>Undergraduate</option>
+                                <option value="graduate" {% if search_form.academic_level.value == 'graduate' %}selected{% endif %}>Graduate</option>
+                                <option value="postgraduate" {% if search_form.academic_level.value == 'postgraduate' %}selected{% endif %}>Postgraduate</option>
+                                <option value="phd" {% if search_form.academic_level.value == 'phd' %}selected{% endif %}>PhD</option>
+                                <option value="professional" {% if search_form.academic_level.value == 'professional' %}selected{% endif %}>Professional</option>
+                            </select>
+                        </div>
+
+                        <!-- Subject & Course Code -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" 
+                                       value="{{ search_form.subject.value|default:'' }}" 
+                                       placeholder="e.g., Mathematics, Physics...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="course_code" class="form-label">Course Code</label>
+                                <input type="text" class="form-control" id="course_code" name="course_code" 
+                                       value="{{ search_form.course_code.value|default:'' }}" 
+                                       placeholder="e.g., MATH101, PHYS201...">
+                            </div>
+                        </div>
+
+                        <!-- Author & University -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="author" class="form-label">Author</label>
+                                <input type="text" class="form-control" id="author" name="author" 
+                                       value="{{ search_form.author.value|default:'' }}" 
+                                       placeholder="Author name or institution...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="university" class="form-label">University</label>
+                                <input type="text" class="form-control" id="university" name="university" 
+                                       value="{{ search_form.university.value|default:'' }}" 
+                                       placeholder="University name...">
+                            </div>
+                        </div>
+
+                        <!-- ISBN -->
+                        <div class="mb-3">
+                            <label for="isbn" class="form-label">ISBN</label>
+                            <input type="text" class="form-control" id="isbn" name="isbn" 
+                                   value="{{ search_form.isbn.value|default:'' }}" 
+                                   placeholder="978-0-1234567890 or 978-1-234567890...">
+                        </div>
+
+                        <!-- Year Range -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="year_min" class="form-label">Year (From)</label>
+                                <input type="number" class="form-control" id="year_min" name="year_min" 
+                                       value="{{ search_form.year_min.value|default:'' }}" 
+                                       placeholder="e.g., 2020" min="1900" max="{{ current_year }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="year_max" class="form-label">Year (To)</label>
+                                <input type="number" class="form-control" id="year_max" name="year_max" 
+                                       value="{{ search_form.year_max.value|default:'' }}" 
+                                       placeholder="e.g., 2024" min="1900" max="{{ current_year }}">
+                            </div>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="price_min" class="form-label">Min Price ($)</label>
+                                <input type="number" class="form-control" id="price_min" name="price_min" 
+                                       value="{{ search_form.price_min.value|default:'' }}" 
+                                       placeholder="0.00" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="price_max" class="form-label">Max Price ($)</label>
+                                <input type="number" class="form-control" id="price_max" name="price_max" 
+                                       value="{{ search_form.price_max.value|default:'' }}" 
+                                       placeholder="100.00" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="mb-3">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   value="{{ search_form.tags.value|default:'' }}" 
+                                   placeholder="mathematics, calculus, algebra...">
+                            </div>
+
+                        <!-- Sort Options -->
+                        <div class="mb-3">
+                            <label for="sort_by" class="form-label">Sort By</label>
+                            <select class="form-select" id="sort_by" name="sort_by">
+                                <option value="-created_at" {% if search_form.sort_by.value == '-created_at' %}selected{% endif %}>Newest First</option>
+                                <option value="created_at" {% if search_form.sort_by.value == 'created_at' %}selected{% endif %}>Oldest First</option>
+                                <option value="title" {% if search_form.sort_by.value == 'title' %}selected{% endif %}>Title (A-Z)</option>
+                                <option value="-title" {% if search_form.sort_by.value == '-title' %}selected{% endif %}>Title (Z-A)</option>
+                                <option value="price" {% if search_form.sort_by.value == 'price' %}selected{% endif %}>Price (Low to High)</option>
+                                <option value="-price" {% if search_form.sort_by.value == '-price' %}selected{% endif %}>Price (High to Low)</option>
+                                <option value="average_rating" {% if search_form.sort_by.value == 'average_rating' %}selected{% endif %}>Highest Rated</option>
+                                <option value="-average_rating" {% if search_form.sort_by.value == '-average_rating' %}selected{% endif %}>Lowest Rated</option>
+                                <option value="reviews_count" {% if search_form.sort_by.value == 'reviews_count' %}selected{% endif %}>Most Reviewed</option>
+                                <option value="-reviews_count" {% if search_form.sort_by.value == '-reviews_count' %}selected{% endif %}>Least Reviewed</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="bi bi-search"></i> Search Documents
+                            </button>
+                            <a href="{% url 'documents:document_list' %}" class="btn btn-secondary flex-fill">
+                                <i class="bi bi-x-circle"></i> Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="col-lg-9">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        📄 Search Results 
+                        {% if search_form.query.value %}
+                            ({{ documents|length }} found)
+                        {% else %}
+                            (All Documents)
+                        {% endif %}
+                    </h6>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-list"></i> Simple View
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if documents %}
+                        {% if search_form.query.value %}
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                Found <strong>{{ documents|length }}</strong> documents matching your search criteria.
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            {% for document in documents %}
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        {% if document.preview_image %}
+                                            <img src="{{ document.preview_image.url }}" class="card-img-top" alt="{{ document.title }}" style="height: 200px; object-fit: cover;">
+                                        {% endif %}
+                                        
+                                        <div class="card-body">
+                                            <h5 class="card-title">
+                                                <a href="{{ document.get_absolute_url }}" class="text-decoration-none text-dark">
+                                                    {{ document.title|truncatechars:50 }}
+                                                </a>
+                                            </h5>
+                                            
+                                            <p class="card-text text-muted small mb-2">
+                                                <i class="bi bi-person"></i> {{ document.seller.username }}
+                                                {% if document.category %}
+                                                    • {{ document.category.name }}
+                                                {% endif %}
+                                                • {{ document.get_academic_level_display|default:"N/A" }}
+                                            </p>
+                                            
+                                            {% if document.average_rating %}
+                                                <div class="mb-2">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= document.average_rating %}
+                                                            <i class="bi bi-star-fill text-warning"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-star text-warning"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <span class="text-muted">({{ document.average_rating|floatformat:1 }}/5)</span>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <p class="card-text">
+                                                {{ document.description|truncatewords:20 }}
+                                            </p>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="text-primary fw-bold">
+                                                    ${{ document.price|floatformat:2 }}
+                                                </div>
+                                                <div>
+                                                    {% if document.tags %}
+                                                        <small class="text-muted">
+                                                            {% for tag in document.tags|slice:":3" %}
+                                                                <span class="badge bg-secondary me-1">{{ tag }}</span>
+                                                            {% endfor %}
+                                                        </small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{{ document.get_absolute_url }}" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-eye"></i> View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <nav aria-label="Document search results pagination">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li>
+                                            <a href="?{% param_replace page_obj.previous_page_number %}" class="page-link">
+                                                <i class="bi bi-chevron-left"></i> Previous
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a href="?{% param_replace num %}" class="page-link">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li>
+                                            <a href="?{% param_replace page_obj.next_page_number %}" class="page-link">
+                                                Next <i class="bi bi-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-search fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No documents found</h5>
+                            <p class="text-muted">
+                                {% if search_form.query.value %}
+                                    Try adjusting your search criteria or browse all documents.
+                                {% else %}
+                                    Start by entering a search query or use the filters above.
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'documents:document_list' %}" class="btn btn-primary">
+                                <i class="bi bi-list"></i> Browse All Documents
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+}
+
+.card-img-top {
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.card-text {
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.pagination .page-link {
+    color: #1a365d;
+    border: 1px solid #dee2e6;
+    padding: 0.375rem 0.75rem;
+    margin: 0 0.25rem;
+    border-radius: 0.375rem;
+}
+
+.pagination .page-link:hover {
+    background-color: #1a365d;
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-control:focus {
+    border-color: #1a365d;
+    box-shadow: 0 0 0 0.2rem rgba(26, 115, 232, 0.25);
+}
+
+.btn-primary {
+    background-color: #1a365d;
+    border-color: #1a365d;
+}
+
+.btn-primary:hover {
+    background-color: #155724;
+    border-color: #155724;
+}
+</style>
+{% endblock %}

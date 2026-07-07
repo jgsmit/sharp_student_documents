@@ -1,0 +1,135 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <!-- Security Dashboard Alert -->
+    <div class="app-list__card">
+        <div class="app-list__card-cover" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="app-list__card-cover-bg">
+                <i class="fas fa-shield-alt" style="font-size: 3rem; color: white;"></i>
+            </div>
+        </div>
+        <div class="app-list__card-body">
+            <h2 class="app-list__card-title">Security Dashboard</h2>
+            <p class="app-list__card-description">
+                Monitor security metrics, fraud detection, identity verification, and 2FA adoption rates.
+            </p>
+            <ul class="app-list__card-features">
+                <li>Real-time security monitoring</li>
+                <li>Fraud detection alerts</li>
+                <li>Identity verification status</li>
+                <li>2FA adoption statistics</li>
+            </ul>
+            <a href="/security/dashboard/" class="app-list__card-button button" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fas fa-shield-alt"></i>
+                Open Security Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Original Django Admin Dashboard Content -->
+    {% include "admin/app_list.html" %}
+</div>
+
+<style>
+.app-list__card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    border: 2px solid #667eea;
+}
+
+.app-list__card-cover {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.app-list__card-cover-bg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.app-list__card-body {
+    padding: 1.5rem;
+}
+
+.app-list__card-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #333;
+}
+
+.app-list__card-description {
+    color: #666;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.app-list__card-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+}
+
+.app-list__card-features li {
+    padding: 0.25rem 0;
+    color: #555;
+    position: relative;
+    padding-left: 1.2rem;
+}
+
+.app-list__card-features li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-weight: bold;
+}
+
+.app-list__card-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.app-list__card-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Ensure it stands out from other app cards */
+.app-list__card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+</style>
+
+{% endblock %}
+
+{# --- Extra styles for admin dashboard --- #}
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+{% endblock %}

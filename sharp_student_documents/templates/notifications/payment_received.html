@@ -1,0 +1,6 @@
+<p>A payment has been received on SharpDocs.</p>
+
+<p><strong>Amount:</strong> {{ payment.amount }}</p>
+<p><strong>Document:</strong> {{ document.title }}</p>
+<p><strong>Buyer:</strong> {{ buyer.username|default:buyer.email }}</p>
+<p><strong>Method:</strong> {{ payment.payment_method }}</p>

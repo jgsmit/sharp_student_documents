@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+{% load static %}
+{% load withdrawals_tags %}
+
+{% block title %}Admin Dashboard - SharpDocs{% endblock %}
+
+{% block body_class %}admin-page{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">🛡️ Admin Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:marketplace_analytics' %}" class="btn btn-sm btn-info">📊 Analytics</a>
+                <a href="{% url 'security:trust_security' %}" class="btn btn-sm btn-danger">🔐 Trust & Security</a>
+                <a href="{% url 'documents:admin_manage_refunds' %}" class="btn btn-sm btn-outline-danger">🧾 Refunds</a>
+                <a href="{% url 'documents:admin_notifications' %}" class="btn btn-sm btn-warning position-relative">
+                    🔔 Notifications
+                    {% unread_notification_count user as unread_count %}
+                    {% if unread_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6em;">{{ unread_count }}</span>
+                    {% endif %}
+                </a>
+                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#systemMaintenanceModal">
+                    🔧 System Maintenance
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Overview Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Users</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users }}</div>
+                            <div class="text-xs text-gray-500">{{ new_users }} new this week</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Revenue</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ total_revenue|floatformat:2 }}</div>
+                            <div class="text-xs text-gray-500">{{ completed_orders }} orders</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Documents</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_documents }}</div>
+                            <div class="text-xs text-gray-500">{{ approved_documents }} approved</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Security Events</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_security_events }}</div>
+                            <div class="text-xs text-gray-500">{{ critical_events }} critical</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Section -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">👥 User Management</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Sellers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_sellers }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Buyers</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_buyers }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Staff</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_staff }}</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mb-2">
+                        <small class="text-muted">Active Users: {{ active_users|length }}</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">2FA Enabled: {{ total_2fa_users }}</small>
+                    </div>
+                    <a href="{% url 'documents:admin_manage_users' %}" class="btn btn-sm btn-primary btn-block">Manage Users</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">💰 Financial Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Revenue</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ total_revenue|floatformat:0 }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ pending_order_value|floatformat:0 }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Withdrawn</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ total_withdrawn|floatformat:0 }}</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mb-2">
+                        <small class="text-muted">Order Completion: {{ order_completion_rate }}%</small>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Pending Withdrawals: {{ pending_withdrawals|length }}</small>
+                    </div>
+                    <a href="{% url 'documents:admin_view_financials' %}" class="btn btn-sm btn-success btn-block">View Financials</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Additional Management Sections -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">📄 Document Management</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_documents }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ approved_documents }}</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Pending Review: {{ pending_documents }}</small>
+                    </div>
+                    <a href="{% url 'documents:admin_manage_documents' %}" class="btn btn-sm btn-info btn-block">Manage Documents</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">⭐ Review Management</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_reviews }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Avg Rating</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ average_rating|floatformat:1 }}</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Pending: {{ pending_reviews }}</small>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'documents:admin_manage_reviews' %}" class="btn btn-sm btn-success w-100">Manage Reviews</a>
+                        <a href="{% url 'documents:admin_manage_refunds' %}" class="btn btn-sm btn-outline-danger w-100">Manage Refunds</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">🔐 Identity Verification</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_verifications }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ approved_verifications }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_verifications }}</div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Fraud Cases: {{ fraud_cases }}</small>
+                    </div>
+                    <a href="{% url 'security:verification_review' %}" class="btn btn-sm btn-primary btn-block">Review Verifications</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Trust & Security Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow border-left-danger">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-danger">🔐 Trust & Security</h6>
+                    <a href="{% url 'security:trust_security' %}" class="btn btn-sm btn-danger">Manage</a>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">2FA</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ users_with_2fa }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Verified</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ verified_sellers }}</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Fraud</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ fraud_cases }}</div>
+                        </div>
+                    </div>
+                    <div class="alert alert-danger py-2">
+                        <small><i class="fas fa-shield-alt"></i> Complete security management system</small>
+                    </div>
+                    <a href="{% url 'security:trust_security' %}" class="btn btn-danger btn-sm w-100">🔐 Trust & Security</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">📈 System Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="mb-3">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Login Success Rate</div>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2">
+                                        <div class="progress-bar bg-info" role="progressbar" aria-valuenow="{{ login_success_rate }}" aria-valuemin="0" aria-valuemax="100">{{ login_success_rate }}%</div>
+                                    </div>
+                                    <small class="text-muted">{{ login_success_rate }}%</small>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Order Completion Rate</div>
+                                <div class="d-flex align-items-center">
+                                    <div class="progress flex-grow-1 me-2">
+                                        <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ order_completion_rate }}" aria-valuemin="0" aria-valuemax="100">{{ order_completion_rate }}%</div>
+                                    </div>
+                                    <small class="text-muted">{{ order_completion_rate }}%</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Today's Logins</div>
+                                <div class="h4 mb-0 font-weight-bold text-gray-800">{{ today_logins }}</div>
+                                <div class="text-xs text-gray-500">Total: {{ total_logins }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">🚨 Critical Issues</h6>
+                </div>
+                <div class="card-body">
+                    {% if critical_events > 0 %}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle"></i> {{ critical_events }} critical security events require immediate attention!
+                    </div>
+                    {% endif %}
+                    {% if pending_verifications > 0 %}
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-user-clock"></i> {{ pending_verifications }} identity verifications pending review
+                    </div>
+                    {% endif %}
+                    {% if pending_withdrawals|length > 0 %}
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-money-bill-wave"></i> {{ pending_withdrawals|length }} withdrawal requests pending approval
+                    </div>
+                    {% endif %}
+                    {% if critical_events == 0 and pending_verifications == 0 and pending_withdrawals|length == 0 %}
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-check-circle"></i> All systems operating normally!
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+
+<!-- System Maintenance Modal -->
+<div class="modal fade" id="systemMaintenanceModal" tabindex="-1" aria-labelledby="systemMaintenanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="systemMaintenanceModalLabel">🔧 System Maintenance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    <form method="post" action="{% url 'documents:database_maintenance' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="list-group-item list-group-item-action text-start" onclick="return confirm('Are you sure you want to run database maintenance? This may take a few minutes.')">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">🗄️ Database Maintenance</h6>
+                                <small class="text-muted">Run cleanup & optimization</small>
+                            </div>
+                            <p class="mb-1">Clean up old logs, optimize database tables</p>
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'documents:email_queue_process' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="list-group-item list-group-item-action text-start" onclick="return confirm('Process pending email notifications?')">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">📧 Email Queue</h6>
+                                <small class="text-muted">Process pending emails</small>
+                            </div>
+                            <p class="mb-1">Send pending notifications and reset emails</p>
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'documents:security_audit' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="list-group-item list-group-item-action text-start" onclick="return confirm('Run security audit? This will check for suspicious activities.')">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">🔍 Security Audit</h6>
+                                <small class="text-muted">Run security checks</small>
+                            </div>
+                            <p class="mb-1">Check for suspicious activities and vulnerabilities</p>
+                        </button>
+                    </form>
+                    <form method="post" action="{% url 'documents:backup_system' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="list-group-item list-group-item-action text-start" onclick="return confirm('Create system backup? This may take several minutes.')">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">💾 Backup System</h6>
+                                <small class="text-muted">Create backup</small>
+                            </div>
+                            <p class="mb-1">Create database and file backups</p>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

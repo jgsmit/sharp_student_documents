@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Commission Tracking - SharpDocs Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 text-info">
+            <i class="bi bi-percentage"></i> Commission Tracking
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:admin_view_financials' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Financial Overview
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commission Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-success text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ total_commission|floatformat:2 }}</h2>
+                    <p class="mb-0">Total Commission Earned</p>
+                    <small>All time commission from sales</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-info text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">${{ monthly_commission|floatformat:2 }}</h2>
+                    <p class="mb-0">This Month's Commission</p>
+                    <small>Commission earned in current month</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-warning text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ commission_transactions }}</h2>
+                    <p class="mb-0">Commission Transactions</p>
+                    <small>Total sales with commission</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-primary text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">40%</h2>
+                    <p class="mb-0">Current Commission Rate</p>
+                    <small>Standard rate for all sellers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commission Breakdown by Rate -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-pie-chart"></i> Commission Breakdown by Rate
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if commission_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Commission Rate</th>
+                                    <th>Transactions</th>
+                                    <th>Total Sales</th>
+                                    <th>Commission Earned</th>
+                                    <th>Percentage</th>
+                                    <th>Average Commission</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in commission_stats %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-info">{{ stat.commission_rate_percentage }}%</span>
+                                    </td>
+                                    <td>{{ stat.count }}</td>
+                                    <td class="fw-bold">${{ stat.total_sales|floatformat:2 }}</td>
+                                    <td class="fw-bold text-success">${{ stat.total_commission|floatformat:2 }}</td>
+                                    <td>
+                                        {% if stat.total_sales > 0 %}
+                                        {{ stat.commission_percentage|floatformat:2 }}%
+                                        {% else %}
+                                        0.00%
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if stat.count > 0 %}
+                                        ${{ stat.average_commission_per_sale|floatformat:2 }}
+                                        {% else %}
+                                        $0.00
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active fw-bold">
+                                    <td>Total</td>
+                                    <td>{{ commission_transactions }}</td>
+                                    <td>${{ total_sales|floatformat:2 }}</td>
+                                    <td class="text-success">${{ total_commission|floatformat:2 }}</td>
+                                    <td>
+                                        {% if total_sales > 0 %}
+                                        {{ commission_percentage_of_revenue|floatformat:2 }}%
+                                        {% else %}
+                                        0.00%
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if commission_transactions > 0 %}
+                                        ${{ average_commission|floatformat:2 }}
+                                        {% else %}
+                                        $0.00
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-percentage"></i> No commission data available
+                    </p>
+                    <small class="text-muted">No sales transactions with commission found</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Commission Trend -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-graph-up"></i> Monthly Commission Trend (Last 12 Months)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for month_data in monthly_commission_trend %}
+                        <div class="col-md-2 col-sm-4 col-6 text-center mb-3">
+                            <div class="p-3 border rounded">
+                                <div class="fw-bold text-success">${{ month_data.commission|floatformat:2 }}</div>
+                                <small class="text-muted">{{ month_data.month }}</small>
+                                <div class="small text-info">{{ month_data.transactions }} sales</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Commission Transactions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-receipt"></i> Recent Commission Transactions
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-light text-dark">Last 20 transactions</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_commission_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Document</th>
+                                    <th>Seller</th>
+                                    <th>Buyer</th>
+                                    <th>Gross Sale</th>
+                                    <th>Commission Rate</th>
+                                    <th>Commission Earned</th>
+                                    <th>Net to Seller</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_commission_transactions %}
+                                <tr>
+                                    <td>{{ transaction.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <div class="fw-semibold text-primary">{{ transaction.document.title|truncatechars:25 }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 24px; height: 24px; font-size: 10px;">
+                                                {{ transaction.seller.username|first|upper }}
+                                            </div>
+                                            <small>{{ transaction.seller.username }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 24px; height: 24px; font-size: 10px;">
+                                                {{ transaction.buyer.username|first|upper }}
+                                            </div>
+                                            <small>{{ transaction.buyer.username }}</small>
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold">${{ transaction.gross_amount|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ transaction.commission_rate_percentage|floatformat:2 }}%</span>
+                                    </td>
+                                    <td class="fw-bold text-success">${{ transaction.commission_amount|floatformat:2 }}</td>
+                                    <td class="text-info">${{ transaction.net_amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-receipt"></i> No commission transactions found
+                    </p>
+                    <small class="text-muted">No sales with commission have been recorded</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Sellers by Commission Generated -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-trophy"></i> Top Sellers by Commission Generated
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if top_sellers_by_commission %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Seller</th>
+                                    <th>Sales</th>
+                                    <th>Total Revenue</th>
+                                    <th>Commission Generated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for seller in top_sellers_by_commission %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 28px; height: 28px; font-size: 12px;">
+                                                {{ seller.seller__username|first|upper }}
+                                            </div>
+                                            <strong>{{ seller.seller__username }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>{{ seller.sales_count }}</td>
+                                    <td class="fw-bold text-success">${{ seller.total_revenue|floatformat:2 }}</td>
+                                    <td class="fw-bold text-info">${{ seller.total_commission|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No seller commission data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Commission Summary Stats -->
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-calculator"></i> Commission Summary Stats
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h4 class="text-info">{{ commission_transactions }}</h4>
+                            <p class="text-muted mb-0">Total Transactions</p>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">${{ total_commission|floatformat:2 }}</h4>
+                            <p class="text-muted mb-0">Total Commission</p>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-primary">${{ average_commission|floatformat:2 }}</h4>
+                            <p class="text-muted mb-0">Average Commission</p>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-warning">{{ commission_rate_percentage|floatformat:1 }}%</h4>
+                            <p class="text-muted mb-0">Effective Rate</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6 class="fw-semibold mb-2">Commission Insights</h6>
+                        <ul class="mb-0">
+                            <li>Commission represents {{ commission_percentage_of_revenue|floatformat:1 }}% of total revenue</li>
+                            <li>Average commission per sale: ${{ average_commission|floatformat:2 }}</li>
+                            <li>Peak commission month: {{ peak_commission_month.month }} (${{ peak_commission_month.commission|floatformat:2 }})</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+</style>
+{% endblock %}

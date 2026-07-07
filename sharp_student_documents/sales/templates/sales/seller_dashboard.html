@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Seller Dashboard - {{ request.user.username }}{% endblock %}
+{% block meta_description %}View your sales earnings, commission details, and manage withdrawals on SharpDocs seller dashboard.{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <!-- Dashboard Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-lg border-0 rounded-4 bg-gradient text-white">
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="fw-bold mb-2">
+                <i class="bi bi-graph-up-arrow"></i> Seller Dashboard
+              </h1>
+              <p class="mb-0 opacity-75">
+                Manage your sales, track earnings, and request withdrawals
+                {% if is_superuser %}
+                  <span class="badge bg-warning text-dark ms-2">Superadmin</span>
+                {% endif %}
+              </p>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="h2 mb-0">${{ stats.wallet_balance|floatformat:2 }}</div>
+              <small>Available Balance</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 bg-success text-white h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Total Earned</h6>
+              <div class="h4 mb-0">${{ stats.total_earned|floatformat:2 }}</div>
+            </div>
+            <i class="bi bi-cash-stack display-6 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 bg-info text-white h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Total Sales</h6>
+              <div class="h4 mb-0">{{ stats.sales_count }}</div>
+            </div>
+            <i class="bi bi-bag-check display-6 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 bg-warning text-white h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Commission Paid</h6>
+              <div class="h4 mb-0">${{ stats.total_commission_paid|floatformat:2 }}</div>
+              <small>{{ commission_rate }}</small>
+            </div>
+            <i class="bi bi-percent display-6 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+      <div class="card border-0 bg-primary text-white h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="card-title mb-0">Avg Sale Price</h6>
+              <div class="h4 mb-0">${{ stats.avg_sale_price|floatformat:2 }}</div>
+            </div>
+            <i class="bi bi-graph-up display-6 opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recent Sales -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-light">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+              <i class="bi bi-receipt"></i> Recent Sales
+            </h6>
+            <a href="{% url 'sales_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if recent_sales %}
+            {% for sale in recent_sales %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <div class="flex-grow-1">
+                <div class="fw-semibold">{{ sale.document.title|truncatechars:30 }}</div>
+                <small class="text-muted">Sold to {{ sale.buyer.username }}</small>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold text-success">${{ sale.net_amount|floatformat:2 }}</div>
+                <small class="text-muted">{{ sale.created_at|date:"M d" }}</small>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-inbox display-4 mb-2"></i>
+              <p class="mb-0">No sales yet. Start uploading documents!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="col-lg-6 mb-4">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-light">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+              <i class="bi bi-clock-history"></i> Recent Transactions
+            </h6>
+            <a href="{% url 'transaction_history' %}" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if recent_transactions %}
+            {% for transaction in recent_transactions %}
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+              <div class="flex-grow-1">
+                <div class="fw-semibold">{{ transaction.description|truncatechars:40 }}</div>
+                <small class="text-muted">{{ transaction.created_at|date:"M d, H:i" }}</small>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold {% if transaction.amount > 0 %}text-success{% else %}text-danger{% endif %}">
+                  {% if transaction.amount > 0 %}+{% endif %}${{ transaction.amount|floatformat:2 }}
+                </div>
+                {% if transaction.commission_amount > 0 %}
+                <small class="text-warning">Fee: ${{ transaction.commission_amount|floatformat:2 }}</small>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-clock-history display-4 mb-2"></i>
+              <p class="mb-0">No transactions yet.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Withdrawal Section -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-light">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">
+              <i class="bi bi-wallet2"></i> Withdrawals
+            </h6>
+            <a href="{% url 'request_withdrawal' %}" class="btn btn-success">
+              <i class="bi bi-plus-circle"></i> Request Withdrawal
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if withdrawal_requests %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Amount</th>
+                    <th>Transaction Fee</th>
+                    <th>Net Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for request in withdrawal_requests %}
+                  <tr>
+                    <td class="fw-semibold">${{ request.amount|floatformat:2 }}</td>
+                    <td class="text-info">${{ request.fee|floatformat:2 }}</td>
+                    <td class="fw-bold text-success">${{ request.net_amount|floatformat:2 }}</td>
+                    <td>
+                      {% if request.status == 'pending' %}
+                        <span class="badge bg-warning">Pending</span>
+                      {% elif request.status == 'approved' %}
+                        <span class="badge bg-success">Approved</span>
+                      {% elif request.status == 'rejected' %}
+                        <span class="badge bg-danger">Rejected</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ request.status|title }}</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ request.created_at|date:"M d, Y" }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-4 text-muted">
+              <i class="bi bi-wallet2 display-4 mb-2"></i>
+              <p class="mb-0">No withdrawal requests yet.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commission Info Alert -->
+  {% if not is_superuser %}
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-start">
+          <i class="bi bi-info-circle-fill me-2 mt-1"></i>
+          <div class="flex-grow-1">
+            <strong>Commission Information:</strong>
+            A 40% platform commission is deducted from all sales (seller earns 60%).
+            Withdrawals are fee-free (you receive your full available balance).
+            <br><small class="text-muted">
+              Superadmins may have different fee policies for platform management purposes.
+            </small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.8em;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load seo_tags %}
+{% block title %}Help Center - SharpDocs{% endblock %}
+{% block meta_description %}Browse SharpDocs help articles for account setup, purchases, selling documents, payments, and support guidance.{% endblock %}
+{% block meta_robots %}{% if request.GET %}noindex, follow{% else %}index, follow{% endif %}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{% canonical_url %}">{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <h1 class="mb-4">Help Center</h1>
+    <p class="mb-4 text-muted">Browse help articles or use search to quickly find answers.</p>
+
+    <!-- Search & Filter -->
+    <form method="get" class="d-flex mb-4">
+        <input type="text" name="q" value="{{ query }}" class="form-control me-2" placeholder="Search articles...">
+        <select name="category" class="form-select me-2">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn btn-primary">Search</button>
+    </form>
+
+    <!-- Articles -->
+    <div class="list-group">
+        {% for article in articles %}
+        <a href="{% url 'reviews:help_article_detail' article.id %}" class="list-group-item list-group-item-action">
+            {{ article.title }}
+        </a>
+        {% empty %}
+        <p class="text-muted">No articles found.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

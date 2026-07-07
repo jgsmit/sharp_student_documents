@@ -1,0 +1,401 @@
+/* ===== Custom Overrides ===== */
+
+/* General body styling */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+  line-height: 1.6;
+}
+
+/* Navbar */
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 1.25rem;
+}
+
+.navbar .nav-link {
+  transition: color 0.2s ease-in-out;
+}
+
+.navbar .nav-link:hover {
+  color: #e2e6ea;
+}
+
+.navbar .nav-link.active {
+  font-weight: 600;
+  border-bottom: 2px solid #fff;
+}
+
+
+/* Cards */
+.card {
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* Buttons */
+.btn {
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-outline-primary {
+  border-width: 2px;
+}
+
+/* Alerts */
+.alert {
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* Forms */
+form label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+
+.form-control {
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13,110,253,0.25);
+}
+
+.text-danger {
+  font-size: 0.85rem;
+}
+
+/* Tables (used in Seller Dashboard & Sales History) */
+.table {
+  font-size: 0.95rem;
+}
+
+.table thead th {
+  font-weight: 600;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+/* Progress bars (Sales Performance) */
+.progress {
+  background-color: #e9ecef;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: width 0.6s ease;
+}
+
+/* Tooltip */
+.tooltip {
+  font-size: 0.85rem;
+}
+
+/* Utility spacing for CTA rows */
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Headings in forms and dashboards */
+h2, h3, h4 {
+  font-weight: 600;
+}
+
+/* ===== Responsive Design ===== */
+
+/* Mobile Devices (≤576px) */
+@media (max-width: 576px) {
+  /* Container adjustments */
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  /* Typography */
+  body {
+    font-size: 14px;
+  }
+  
+  h1 {
+    font-size: 1.75rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+  
+  /* Cards */
+  .card {
+    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+  
+  /* Buttons */
+  .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  /* Forms */
+  .form-control {
+    font-size: 14px;
+  }
+  
+  .form-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Tables */
+  .table {
+    font-size: 0.875rem;
+  }
+  
+  .table th,
+  .table td {
+    padding: 0.5rem;
+    vertical-align: top;
+  }
+  
+  /* Action buttons */
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .action-buttons .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Navbar search fix */
+  .navbar .input-group {
+    flex-direction: column;
+  }
+  
+  .navbar .form-control {
+    width: 100% !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Modal adjustments */
+  .modal-dialog {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+  }
+  
+  /* Pagination */
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .page-link {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Alerts */
+  .alert {
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Progress bars */
+  .progress {
+    height: 0.75rem;
+  }
+  
+  /* Badges */
+  .badge {
+    font-size: 0.7rem;
+  }
+  
+  /* Tooltips */
+  .tooltip {
+    font-size: 0.75rem;
+  }
+}
+
+/* Tablet Devices (577px-768px) */
+@media (min-width: 577px) and (max-width: 768px) {
+  /* Container adjustments */
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  
+  /* Typography */
+  body {
+    font-size: 15px;
+  }
+  
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+  }
+  
+  /* Cards */
+  .card-body {
+    padding: 1.25rem;
+  }
+  
+  /* Tables */
+  .table {
+    font-size: 0.9rem;
+  }
+  
+  /* Action buttons */
+  .action-buttons {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .action-buttons .btn {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  /* Navbar search */
+  .navbar .form-control {
+    width: 200px !important;
+  }
+  
+  /* Modal adjustments */
+  .modal-dialog {
+    max-width: 90%;
+  }
+}
+
+/* Small Desktop (769px-992px) */
+@media (min-width: 769px) and (max-width: 992px) {
+  /* Navbar search */
+  .navbar .form-control {
+    width: 240px !important;
+  }
+  
+  /* Cards */
+  .card {
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Action buttons */
+  .action-buttons {
+    gap: 1rem;
+  }
+}
+
+/* Large Desktop (≥993px) */
+@media (min-width: 993px) {
+  /* Ensure larger screens maintain good proportions */
+  .container {
+    max-width: 1200px;
+  }
+  
+  /* Cards hover effects */
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .navbar {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+  
+  .card-body {
+    padding: 0.75rem;
+  }
+  
+  .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Print styles */
+@media print {
+  .navbar,
+  .dark-mode-toggle,
+  .pwa-install-prompt,
+  .admin-notification-container {
+    display: none !important;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .card {
+    border: 1px solid #000;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  
+  .table {
+    font-size: 10pt;
+  }
+  
+  .btn {
+    border: 1px solid #000;
+    background: white !important;
+    color: black !important;
+  }
+}

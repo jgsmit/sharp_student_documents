@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Withdrawal Dashboard - SharpDocs{% endblock %}
+{% block meta_description %}Manage your withdrawals, payment methods, and track your earnings on SharpDocs.{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-wallet2"></i> Withdrawal Dashboard
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance Overview -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 bg-success text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">${{ balance|floatformat:2 }}</h2>
+          <p class="mb-0">Available Balance</p>
+          <small>Reserved: ${{ reserved_balance|floatformat:2 }}</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-warning text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">${{ pending_balance|floatformat:2 }}</h2>
+          <p class="mb-0">Held Balance</p>
+          <small>Available after 14 days</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-primary text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">${{ total_sold|floatformat:2 }}</h2>
+          <p class="mb-0">Total Sold</p>
+          <small>Gross document revenue</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 bg-info text-white">
+        <div class="card-body text-center">
+          <h2 class="mb-0">${{ total_withdrawn|floatformat:2 }}</h2>
+          <p class="mb-0">Total Withdrawn</p>
+          <small>All time earnings</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Status -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-0 bg-light">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h6 class="mb-0 fw-bold">
+                <i class="bi bi-lightning-fill text-success"></i>
+                Scheduled Payouts Enabled
+              </h6>
+              <small class="text-muted">Earnings are held for 14 days; payouts run on the 14th and 28th</small>
+            </div>
+            <div class="col-md-4 text-end">
+              <span class="badge bg-success">No Withdrawal Fees</span>
+              <span class="badge bg-info">Fraud Protected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Withdrawal Methods -->
+    <div class="col-md-8">
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-semibold">
+              <i class="bi bi-credit-card"></i> Withdrawal Methods
+            </h5>
+            <a href="{% url 'withdrawals:setup_method' %}" class="btn btn-primary btn-sm">
+              <i class="bi bi-plus-circle"></i> Add Method
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if withdrawal_methods %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for method in withdrawal_methods %}
+                  <tr>
+                    <td>
+                      {% if method.method_type == 'stripe' %}
+                        <i class="bi bi-stripe text-primary"></i> Stripe Connect
+                      {% elif method.method_type == 'paypal' %}
+                        <i class="bi bi-paypal text-info"></i> PayPal
+                      {% else %}
+                        <i class="bi bi-bank text-success"></i> Bank Transfer
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if method.method_type == 'stripe' %}
+                        <span class="text-muted">Connected Account</span>
+                      {% elif method.method_type == 'paypal' %}
+                        <span class="text-muted">{{ method.paypal_email }}</span>
+                      {% else %}
+                        <span class="text-muted">{{ method.bank_name }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if method.is_verified %}
+                        <span class="badge bg-success">Verified</span>
+                      {% else %}
+                        <span class="badge bg-warning">Pending</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        {% if method.is_verified %}
+                          <button class="btn btn-outline-primary" onclick="requestWithdrawal('{{ method.id }}')">
+                            <i class="bi bi-cash"></i> Withdraw
+                          </button>
+                        {% else %}
+                          <button class="btn btn-outline-warning" onclick="verifyPayPalMethod('{{ method.id }}')">
+                            <i class="bi bi-check-circle"></i> Verify
+                          </button>
+                          <button class="btn btn-outline-secondary" disabled>
+                            <i class="bi bi-clock"></i> Pending
+                          </button>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-credit-card display-1 text-muted mb-3"></i>
+              <h5 class="text-muted">No withdrawal methods</h5>
+              <p class="text-muted">Add a withdrawal method to start receiving your earnings.</p>
+              <a href="{% url 'withdrawals:setup_method' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Withdrawal Method
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Recent Withdrawals -->
+      <div class="card border-0 rounded-4 mt-3">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-clock-history"></i> Recent Withdrawals
+          </h5>
+        </div>
+        <div class="card-body">
+          {% if recent_withdrawals %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for withdrawal in recent_withdrawals %}
+                  <tr>
+                    <td>{{ withdrawal.requested_at|date:"M d, Y" }}</td>
+                    <td>${{ withdrawal.amount|floatformat:2 }}</td>
+                    <td>
+                      {% if withdrawal.withdrawal_method %}
+                        {% if withdrawal.withdrawal_method.method_type == 'stripe' %}
+                          <i class="bi bi-stripe text-primary"></i> Stripe
+                        {% elif withdrawal.withdrawal_method.method_type == 'paypal' %}
+                          <i class="bi bi-paypal text-info"></i> PayPal
+                        {% else %}
+                          <i class="bi bi-bank text-success"></i> Bank
+                        {% endif %}
+                      {% else %}
+                        <span class="text-muted">Legacy</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <span class="badge bg-{{ withdrawal.payout_type|yesno:'success,info' }}">
+                        {{ withdrawal.get_payout_type_display }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge bg-{% if withdrawal.status == 'completed' %}success{% elif withdrawal.status == 'pending' %}warning{% elif withdrawal.status == 'processing' %}info{% elif withdrawal.status == 'failed' %}danger{% elif withdrawal.status == '2fa_required' %}secondary{% else %}light{% endif %}">
+                        {{ withdrawal.get_status_display }}
+                        {% if withdrawal.status == 'completed' and withdrawal.completed_at %}
+                          <small class="d-block text-muted mt-1">
+                            <i class="bi bi-lightning-fill"></i> Auto-processed
+                          </small>
+                        {% endif %}
+                      </span>
+                    </td>
+                    <td>
+                      <a href="{% url 'withdrawals:details' withdrawal.id %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye"></i> View
+                      </a>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div class="text-center mt-3">
+              <a href="{% url 'withdrawals:history' %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-right-circle"></i> View All History
+              </a>
+            </div>
+          {% else %}
+            <div class="text-center py-4">
+              <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
+              <h5 class="text-muted">No withdrawals yet</h5>
+              <p class="text-muted">Your withdrawal history will appear here.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Side Panel -->
+    <div class="col-md-4">
+      <!-- Quick Actions -->
+      <div class="card border-0 rounded-4 mb-3">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-lightning"></i> Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <a href="{% url 'withdrawals:request' %}" class="btn btn-primary">
+              <i class="bi bi-cash-stack"></i> Request Withdrawal
+              <small class="d-block">Automatic processing</small>
+            </a>
+            <a href="{% url 'withdrawals:setup_method' %}" class="btn btn-outline-info">
+              <i class="bi bi-plus-circle"></i> Add Payment Method
+            </a>
+            <a href="{% url 'security:2fa_setup' %}" class="btn btn-outline-warning">
+              <i class="bi bi-shield-check"></i> Setup 2FA
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2FA Status -->
+      <div class="card border-0 rounded-4 mb-3">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-shield-lock"></i> Security Status
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">Two-Factor Authentication</div>
+              <small class="text-muted">
+                {% if two_fa and two_fa.is_enabled %}
+                  Enabled - Required for withdrawals over ${{ two_fa.required_for_amount|floatformat:0 }}
+                {% else %}
+                  Disabled - Not required
+                {% endif %}
+              </small>
+            </div>
+            <div>
+              {% if two_fa and two_fa.is_enabled %}
+                <span class="badge bg-success">
+                  <i class="bi bi-check-circle"></i> Enabled
+                </span>
+              {% else %}
+                <span class="badge bg-warning">
+                  <i class="bi bi-exclamation-triangle"></i> Disabled
+                </span>
+              {% endif %}
+            </div>
+          </div>
+          <a href="{% url 'security:2fa_setup' %}" class="btn btn-outline-primary w-100">
+            {% if two_fa and two_fa.is_enabled %}
+              <i class="bi bi-gear"></i> Manage 2FA
+            {% else %}
+              <i class="bi bi-plus-circle"></i> Enable 2FA
+            {% endif %}
+          </a>
+        </div>
+      </div>
+
+      <!-- Withdrawal Schedule -->
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <h5 class="mb-0 fw-semibold">
+            <i class="bi bi-calendar-week"></i> Withdrawal Schedule
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="fw-semibold">Payout Dates</div>
+            <small class="text-muted">14th and 28th of each month</small>
+          </div>
+          <div class="mb-3">
+            <div class="fw-semibold">Holding Period</div>
+            <small class="text-muted">Earnings become withdrawable after 14 days</small>
+          </div>
+          <div class="mb-3">
+            <div class="fw-semibold">Processing Fees</div>
+            <small class="text-muted">
+              Withdrawals are fee-free.
+            </small>
+          </div>
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <small>All withdrawals are processed securely and tracked in real-time.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Withdrawal Modal -->
+<div class="modal fade" id="withdrawalModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Request Withdrawal</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="withdrawalForm" method="post" action="{% url 'withdrawals:request' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="withdrawalMethod" class="form-label">Withdrawal Method</label>
+            <select class="form-select" id="withdrawalMethod" name="withdrawal_method" required>
+              <option value="">Select method...</option>
+              {% for method in withdrawal_methods %}
+                {% if method.is_verified %}
+                  <option value="{{ method.id }}">
+                    {% if method.method_type == 'stripe' %}
+                      Stripe Connect
+                    {% elif method.method_type == 'paypal' %}
+                      PayPal ({{ method.paypal_email }})
+                    {% else %}
+                      Bank Transfer
+                    {% endif %}
+                  </option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="amount" class="form-label">Amount ($)</label>
+            <input type="number" class="form-control" id="amount" name="amount" 
+                   min="10" max="{{ balance }}" step="0.01" required>
+            <small class="form-text text-muted">Available: ${{ balance|floatformat:2 }}</small>
+          </div>
+          <div class="mb-3">
+            <label for="payoutType" class="form-label">Payout Type</label>
+            <select class="form-select" id="payoutType" name="payout_type" onchange="updateFeeInfo()">
+              <option value="weekly">Twice Monthly (14th & 28th)</option>
+            </select>
+          </div>
+           <div class="mb-3">
+             <div class="d-flex justify-content-between">
+              <span>Fee:</span>
+              <span id="feeAmount">$0.00</span>
+             </div>
+             <div class="d-flex justify-content-between fw-bold">
+              <span>You'll receive:</span>
+              <span id="netAmount">$0.00</span>
+             </div>
+           </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Request Withdrawal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function requestWithdrawal(methodId) {
+  // Pre-select the withdrawal method
+  document.getElementById('withdrawalMethod').value = methodId;
+  updateFeeInfo();
+  
+  // Show modal
+  const modal = new bootstrap.Modal(document.getElementById('withdrawalModal'));
+  modal.show();
+}
+
+function verifyPayPalMethod(methodId) {
+  // Show confirmation dialog
+  if (confirm('Verify this PayPal account now? This will enable withdrawals.')) {
+    // Send verification request
+    fetch(`/withdrawals/verify-paypal-method/${methodId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('PayPal account verified successfully! Refreshing...');
+        location.reload();
+      } else {
+        alert('Verification failed: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Verification failed. Please try again.');
+    });
+  }
+}
+
+function updateFeeInfo() {
+  const amount = parseFloat(document.getElementById('amount').value) || 0;
+  const methodId = document.getElementById('withdrawalMethod').value;
+  
+  if (amount <= 0 || !methodId) {
+    document.getElementById('feeAmount').textContent = '$0.00';
+    document.getElementById('netAmount').textContent = '$0.00';
+    return;
+  }
+  
+  // No withdrawal fees are charged to sellers.
+  document.getElementById('feeAmount').textContent = '$0.00';
+  document.getElementById('netAmount').textContent = '$' + amount.toFixed(2);
+}
+
+// Update fee calculation when amount or type changes
+document.getElementById('amount').addEventListener('input', updateFeeInfo);
+document.getElementById('withdrawalMethod').addEventListener('change', updateFeeInfo);
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.8em;
+}
+
+.modal-content {
+  border-radius: 12px;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+</style>
+
+{% endblock %}

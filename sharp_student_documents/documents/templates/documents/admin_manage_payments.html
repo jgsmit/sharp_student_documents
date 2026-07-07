@@ -1,0 +1,458 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage Payments - SharpDocs Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 text-primary">
+            <i class="bi bi-receipt"></i> Manage Payments
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:admin_view_financials' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Financial Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-primary text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ total_transactions }}</h2>
+                    <p class="mb-0">Total Transactions</p>
+                    <small>All payment records</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-success text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ completed_payments }}</h2>
+                    <p class="mb-0">Completed</p>
+                    <small>Successful payments</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-warning text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ pending_payments }}</h2>
+                    <p class="mb-0">Pending</p>
+                    <small>Awaiting completion</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 rounded-4 bg-danger text-white">
+                <div class="card-body text-center">
+                    <h2 class="mb-0">{{ failed_payments }}</h2>
+                    <p class="mb-0">Failed</p>
+                    <small>Payment failures</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold">
+                        <i class="bi bi-receipt"></i> Payment Transactions
+                        <small class="text-white-50 ms-2">({{ total_transactions }} total)</small>
+                    </h6>
+                    <div class="d-flex gap-2">
+                        <!-- Search Form -->
+                        <form method="GET" class="d-flex">
+                            <input type="text" 
+                                   name="search" 
+                                   value="{{ search_query }}" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="Search payments..." 
+                                   style="width: 250px;">
+                            <button type="submit" class="btn btn-sm btn-light">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                            {% if search_query %}
+                            <a href="{% url 'documents:admin_manage_payments' %}" class="btn btn-sm btn-outline-light">
+                                <i class="bi bi-x"></i> Clear
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if detailed_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-calendar"></i> Date</th>
+                                    <th><i class="bi bi-file-earmark"></i> Document</th>
+                                    <th><i class="bi bi-person"></i> Buyer</th>
+                                    <th><i class="bi bi-shop"></i> Seller</th>
+                                    <th><i class="bi bi-currency-dollar"></i> Amount</th>
+                                    <th><i class="bi bi-credit-card"></i> Method</th>
+                                    <th><i class="bi bi-info-circle"></i> Status</th>
+                                    <th><i class="bi bi-gear"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in detailed_orders %}
+                                <tr>
+                                    <td>
+                                        <div class="small text-muted">{{ order.created_at|date:"M d, Y" }}</div>
+                                        <div class="small text-muted">{{ order.created_at|time:"H:i" }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if order.document.cover_image %}
+                                                <img src="{{ order.document.cover_image.url }}" alt="{{ order.document.title }}" 
+                                                     class="me-2 rounded" style="width: 30px; height: 30px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="me-2 rounded bg-light d-flex align-items-center justify-content-center" 
+                                                     style="width: 30px; height: 30px;">
+                                                    <i class="bi bi-file-earmark text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-semibold text-primary">{{ order.document.title|truncatechars:25 }}</div>
+                                                <small class="text-muted">{{ order.document.document_type|title }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 28px; height: 28px; font-size: 12px;">
+                                                {{ order.buyer.username|first|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ order.buyer.username }}</div>
+                                                <small class="text-muted">{{ order.buyer.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" 
+                                                 style="width: 28px; height: 28px; font-size: 12px;">
+                                                {{ order.document.seller.username|first|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold">{{ order.document.seller.username }}</div>
+                                                <small class="text-muted">Seller</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">${{ order.amount_paid|floatformat:2 }}</span>
+                                        <div class="small text-muted">{{ order.currency|upper }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ order.payment_method|title }}</span>
+                                    </td>
+                                    <td>
+                                        {% if order.status == 'paid' %}
+                                            <span class="badge bg-success">Paid</span>
+                                        {% elif order.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif order.status == 'failed' %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% elif order.status == 'cancelled' %}
+                                            <span class="badge bg-secondary">Cancelled</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ order.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-info btn-sm" title="View Details" onclick="viewPaymentDetails('{{ order.id }}'); return false;">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if order.status == 'paid' %}
+                                                <a href="#" class="btn btn-success btn-sm" title="Download Receipt" onclick="downloadReceipt('{{ order.id }}'); return false;">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination Controls -->
+                    {% if is_paginated %}
+                    <nav aria-label="Payment pagination" class="mt-3">
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <!-- Previous -->
+                            {% if detailed_orders.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ detailed_orders.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" tabindex="-1">
+                                        <i class="bi bi-chevron-left"></i> Previous
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                                </li>
+                            {% endif %}
+                            
+                            <!-- Page Numbers -->
+                            {% for num in detailed_orders.paginator.page_range %}
+                                {% if num == detailed_orders.number %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Next -->
+                            {% if detailed_orders.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ detailed_orders.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                        Next <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    
+                    <!-- Pagination Info -->
+                    <div class="text-center text-muted small mt-2">
+                        Showing {{ detailed_orders.start_index }}-{{ detailed_orders.end_index }} 
+                        of {{ detailed_orders.paginator.count }} transactions
+                        {% if search_query %}
+                        for "{{ search_query }}"
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <p class="text-muted text-center">
+                        <i class="bi bi-receipt"></i> No payment transactions found
+                    </p>
+                    <small class="text-muted">No payment records found in the system</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.rounded-circle {
+    border-radius: 50%;
+}
+</style>
+
+<!-- JavaScript for payment management -->
+<script>
+const detailsUrlTemplate = "{% url 'documents:admin_payment_details' 0 %}";
+const receiptUrlTemplate = "{% url 'documents:admin_download_receipt' 0 %}";
+
+function buildOrderUrl(urlTemplate, orderId) {
+    return urlTemplate.replace('/0/', `/${orderId}/`);
+}
+
+function escapeHtml(unsafe) {
+    return String(unsafe ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Show message function
+function showMessage(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(function() {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// View payment details function
+function viewPaymentDetails(orderId) {
+    // Show loading message
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Loading payment details...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+
+    const detailsUrl = buildOrderUrl(detailsUrlTemplate, orderId);
+    fetch(detailsUrl, { headers: { 'Accept': 'application/json' } })
+        .then(async (resp) => {
+            const payload = await resp.json().catch(() => null);
+            if (!resp.ok || !payload || payload.success !== true) {
+                const errorMsg = payload && payload.error ? payload.error : `Failed to load details (HTTP ${resp.status})`;
+                throw new Error(errorMsg);
+            }
+            return payload;
+        })
+        .then((data) => {
+            const o = data.order || {};
+            const p = data.payment || null;
+            const buyer = data.buyer || {};
+            const seller = data.seller || {};
+            const doc = data.document || {};
+
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                <div class="mb-2">
+                    <strong>Order #${escapeHtml(o.id)}</strong>
+                    <span class="badge bg-secondary ms-2">${escapeHtml(o.status)}</span>
+                </div>
+                <div class="small text-muted mb-3">Created: ${escapeHtml(o.created_at || '')}</div>
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body p-3">
+                                <div class="fw-semibold mb-2">Document</div>
+                                <div>${escapeHtml(doc.title || '')}</div>
+                                <div class="small text-muted mt-1">Seller: ${escapeHtml(seller.username || '')}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body p-3">
+                                <div class="fw-semibold mb-2">Buyer</div>
+                                <div>${escapeHtml(buyer.username || '')}</div>
+                                <div class="small text-muted">${escapeHtml(buyer.email || '')}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body p-3">
+                                <div class="fw-semibold mb-2">Payment</div>
+                                <div class="small">
+                                    <div><span class="text-muted">Amount Paid:</span> ${escapeHtml(o.amount_paid || '')}</div>
+                                    <div><span class="text-muted">Method:</span> ${escapeHtml((p && p.payment_method) || o.payment_method || '')}</div>
+                                    <div><span class="text-muted">Status:</span> ${escapeHtml((p && p.status) || '')}</div>
+                                    <div><span class="text-muted">Transaction ID:</span> ${escapeHtml((p && p.transaction_id) || o.paypal_payment_id || o.stripe_payment_intent || '')}</div>
+                                    ${(p && p.failure_reason) ? `<div class="mt-2 text-danger"><span class="text-muted">Failure:</span> ${escapeHtml(p.failure_reason)}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .catch((err) => {
+            const modalBody = modal.querySelector('.modal-body');
+            modalBody.innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <strong>Could not load payment details</strong>
+                    <div class="small mt-1">${escapeHtml(err.message || 'Unknown error')}</div>
+                </div>
+            `;
+        });
+    
+    // Clean up modal when hidden
+    modal.addEventListener('hidden.bs.modal', function () {
+        document.body.removeChild(modal);
+    });
+}
+
+// Download receipt function
+function downloadReceipt(orderId) {
+    const receiptUrl = buildOrderUrl(receiptUrlTemplate, orderId);
+    window.location.href = receiptUrl;
+}
+</script>
+{% endblock %}

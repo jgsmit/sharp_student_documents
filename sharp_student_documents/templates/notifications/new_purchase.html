@@ -1,0 +1,7 @@
+<p>A new purchase was created on SharpDocs.</p>
+
+<p><strong>Document:</strong> {{ document.title }}</p>
+<p><strong>Buyer:</strong> {{ buyer.username|default:buyer.email }}</p>
+<p><strong>Amount:</strong> {{ purchase.amount_paid|default:document.price }}</p>
+
+<p>Check the dashboard for the latest order details.</p>

@@ -1,0 +1,35 @@
+User-agent: *
+
+# Public crawlable pages
+Allow: /
+
+# Sitemap
+Sitemap: {{ site_url }}/sitemap.xml
+
+# Admin and internal management
+Disallow: /admin/
+Disallow: /documents/admin/
+Disallow: /documents/admin-dashboard/
+Disallow: /documents/dashboard/
+Disallow: /documents/buyer-dashboard/
+Disallow: /documents/seller-dashboard/
+Disallow: /api/
+
+# Private account and transaction areas
+Disallow: /accounts/profile/
+Disallow: /accounts/password/
+Disallow: /accounts/password_change/
+Disallow: /accounts/password_reset/
+Disallow: /documents/my-purchases/
+Disallow: /documents/seller-documents/
+Disallow: /documents/seller-refunds/
+Disallow: /documents/download/
+Disallow: /documents/download-owner/
+Disallow: /documents/upload/
+Disallow: /documents/analytics/
+Disallow: /payments/
+Disallow: /sales/
+Disallow: /security/
+Disallow: /withdrawals/
+Disallow: /notifications/test/
+Disallow: /notifications/send/

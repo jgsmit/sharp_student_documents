@@ -1,0 +1,645 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block title %}Register - SharpDocs | Join Academic Marketplace{% endblock %}
+{% block meta_description %}Create your free SharpDocs account to start buying and selling student documents. Join thousands of students succeeding with quality study materials.{% endblock %}
+{% block meta_keywords %}register, student account, academic marketplace, SharpDocs, study documents, buy notes, sell documents, university resources{% endblock %}
+{% block meta_robots %}noindex, follow{% endblock %}
+{% block og_title %}Join SharpDocs - Academic Document Marketplace{% endblock %}
+{% block og_description %}Create your free account to access premium student documents and start selling your notes{% endblock %}
+{% block og_type %}website{% endblock %}
+{% block twitter_title %}Join SharpDocs{% endblock %}
+{% block twitter_description %}Create your free account and join the academic marketplace{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modern Registration Styles */
+.register-page {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+    opacity: 0.1;
+}
+
+.register-container {
+    position: relative;
+    z-index: 2;
+    padding: 3rem 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.register-content {
+    color: white;
+    max-width: 500px;
+}
+
+.register-content h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.register-content .subtitle {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.register-card {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.register-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+}
+
+.register-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: white;
+    padding: 2.5rem 2rem;
+    text-align: center;
+}
+
+.register-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2.5rem;
+}
+
+.register-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.register-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.register-body {
+    padding: 2.5rem;
+}
+
+.form-floating-custom {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.form-floating-custom label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 1.25rem 1.5rem;
+    font-weight: 500;
+    color: #64748b;
+    transform-origin: 0 0;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.form-floating-custom input:focus ~ label,
+.form-floating-custom input:not(:placeholder-shown) ~ label {
+    transform: translateY(-1.25rem) scale(0.85);
+    color: #3b82f6;
+}
+
+.form-floating-custom .form-control {
+    padding: 1.25rem 1.5rem 1.25rem 1.5rem;
+    height: auto;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: white;
+    font-size: 1rem;
+}
+
+.form-floating-custom .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    outline: 0;
+}
+
+.role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.role-option {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.role-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 20px;
+}
+
+.role-option:hover {
+    border-color: #3b82f6;
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+}
+
+.role-option.selected {
+    border-color: #3b82f6;
+    background: white;
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(59, 130, 246, 0.2);
+}
+
+.role-option.selected::before {
+    opacity: 0.05;
+}
+
+.role-option.selected .role-icon {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    color: white;
+    transform: scale(1.1);
+}
+
+.role-option.selected .role-title {
+    color: #3b82f6;
+}
+
+.role-icon {
+    width: 80px;
+    height: 80px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: #64748b;
+    font-size: 2rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.role-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-top: 1rem;
+    color: #1e293b;
+    transition: color 0.4s ease;
+}
+
+.role-description {
+    font-size: 0.95rem;
+    opacity: 0.7;
+    line-height: 1.5;
+    margin-top: 0.5rem;
+    color: #64748b;
+}
+
+.btn-register {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2.5rem;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.btn-register::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-register:hover::before {
+    left: 100%;
+}
+
+.btn-register:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 2rem;
+    color: #64748b;
+}
+
+.login-link a {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+    color: #8b5cf6;
+    text-decoration: underline;
+}
+
+.hidden-field {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .register-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 2rem 1rem;
+    }
+    
+    .register-content {
+        max-width: 100%;
+        text-align: center;
+    }
+    
+    .register-content h1 {
+        font-size: 2.5rem;
+    }
+    
+    .role-selector {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .role-option {
+        padding: 2rem 1.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .register-container {
+        padding: 1rem;
+    }
+    
+    .role-selector {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .role-option {
+        padding: 1.5rem 1rem;
+    }
+    
+    .role-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .role-title {
+        font-size: 1.1rem;
+    }
+    
+    .role-description {
+        font-size: 0.85rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .register-title {
+        font-size: 1.5rem;
+    }
+    
+    .register-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-delay-1 {
+    animation-delay: 0.1s;
+}
+
+.animate-delay-2 {
+    animation-delay: 0.2s;
+}
+
+.animate-delay-3 {
+    animation-delay: 0.3s;
+}
+
+.animate-delay-4 {
+    animation-delay: 0.4s;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-page">
+    <div class="register-container">
+        <!-- Left Content Section -->
+        <div class="register-content animate-fade-in">
+            <h1>Join SharpDocs</h1>
+            <p class="subtitle">
+                Start your academic journey with thousands of premium study materials from top students worldwide.
+            </p>
+            
+            <!-- Stats -->
+            <div class="stats-grid animate-fade-in animate-delay-2">
+                <div class="stat-item">
+                    <div class="stat-number">10,000+</div>
+                    <div class="stat-label">Active Students</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5,000+</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Registration Form -->
+        <div class="register-card animate-fade-in animate-delay-1">
+            <!-- Header -->
+            <div class="register-header">
+                <div class="register-icon">
+                    <i class="bi bi-person-plus"></i>
+                </div>
+                <div class="register-title">Create Account</div>
+                <div class="register-subtitle">Join our academic community</div>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="register-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Account Type Selection -->
+                    <div class="role-selector">
+                        <div class="role-option" id="buyerOption">
+                            <div class="role-icon">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <div class="role-title">Buyer Account</div>
+                            <div class="role-description">Browse and purchase documents</div>
+                        </div>
+                        
+                        <div class="role-option" id="sellerOption">
+                            <div class="role-icon">
+                                <i class="bi bi-bag-check"></i>
+                            </div>
+                            <div class="role-title">Seller Account</div>
+                            <div class="role-description">Upload and sell documents</div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden is_seller field -->
+                    <div class="hidden-field">
+                        {{ form.is_seller|add_class:"form-check-input"|attr:"id:sellerSwitch"|attr:"style:display:none;" }}
+                        {% if form.is_seller.errors %}
+                            <div class="text-danger small mt-2">
+                                {% for error in form.is_seller.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Form Fields -->
+                    <div class="mb-4">
+                        <div class="form-floating-custom">
+                            {{ form.username|add_class:"form-control"|attr:"placeholder: "|attr:"autocomplete:username" }}
+                            <label for="{{ form.username.id_for_label }}">Username</label>
+                        </div>
+                        {% if form.username.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.username.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-floating-custom">
+                            {{ form.email|add_class:"form-control"|attr:"placeholder: "|attr:"autocomplete:email" }}
+                            <label for="{{ form.email.id_for_label }}">Email Address</label>
+                        </div>
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.email.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating-custom">
+                                {{ form.password1|add_class:"form-control"|attr:"placeholder: "|attr:"autocomplete:new-password" }}
+                                <label for="{{ form.password1.id_for_label }}">Password</label>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password1.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-floating-custom">
+                                {{ form.password2|add_class:"form-control"|attr:"placeholder: "|attr:"autocomplete:new-password" }}
+                                <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.password2.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center mb-4">
+                        <button type="submit" class="btn-register">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Login Link -->
+                <div class="login-link">
+                    <p>Already have an account? <a href="{% url 'login' %}">Sign in here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sellerSwitch = document.getElementById('sellerSwitch');
+    const buyerOption = document.getElementById('buyerOption');
+    const sellerOption = document.getElementById('sellerOption');
+
+    function updateRoleSelection() {
+        if (sellerSwitch && sellerSwitch.checked) {
+            buyerOption.classList.remove('selected');
+            sellerOption.classList.add('selected');
+        } else {
+            buyerOption.classList.add('selected');
+            sellerOption.classList.remove('selected');
+        }
+    }
+
+    // Initialize role selection
+    updateRoleSelection();
+
+    // Listen for changes
+    if (sellerSwitch) {
+        sellerSwitch.addEventListener('change', updateRoleSelection);
+    }
+
+    // Click handlers for role options
+    if (buyerOption) {
+        buyerOption.addEventListener('click', function() {
+            if (sellerSwitch) {
+                sellerSwitch.checked = false;
+            }
+            updateRoleSelection();
+        });
+    }
+
+    if (sellerOption) {
+        sellerOption.addEventListener('click', function() {
+            if (sellerSwitch) {
+                sellerSwitch.checked = true;
+            }
+            updateRoleSelection();
+        });
+    }
+
+    // Add floating label animation
+    document.querySelectorAll('.form-floating-custom input').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

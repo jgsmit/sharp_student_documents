@@ -1,0 +1,194 @@
+{% load static %}
+{% load withdrawals_tags %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">SharpDocs</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <!-- Left side: Enhanced Search form -->
+      <form method="get" action="{% url 'documents:document_list' %}" class="d-flex ms-auto me-3">
+        <div class="input-group">
+          <input
+            class="form-control form-control-sm"
+            type="search"
+            name="q"
+            placeholder="Search documents by title, author, ISBN..."
+            aria-label="Search documents"
+            value="{{ request.GET.q|default:'' }}"
+            style="width: 280px;"
+          >
+          <button class="btn btn-light btn-sm" type="submit" title="Search">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+
+      <!-- Right side: Nav links -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+            <i class="bi bi-house"></i> Home
+          </a>
+        </li>
+
+        <!-- Role-based Dashboard - Show only ONE appropriate dashboard -->
+        {% if user.is_authenticated %}
+          {% if user.is_superuser %}
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'documents:admin_dashboard' %}active{% endif %}" href="{% url 'documents:admin_dashboard' %}">
+                <i class="bi bi-shield-check"></i> Admin Dashboard
+              </a>
+            </li>
+          {% elif user.is_seller %}
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'documents:seller_dashboard' %}active{% endif %}" href="{% url 'documents:seller_dashboard' %}">
+                <i class="bi bi-shop"></i> Seller Dashboard
+              </a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link {% if request.resolver_match.url_name == 'documents:buyer_dashboard' %}active{% endif %}" href="{% url 'documents:buyer_dashboard' %}">
+                <i class="bi bi-bag"></i> Buyer Dashboard
+              </a>
+            </li>
+          {% endif %}
+
+          <!-- Student/Teacher/Seller Features -->
+          {% if user.is_student or user.is_teacher or user.is_seller %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-book"></i> Education
+              </a>
+              <ul class="dropdown-menu">
+                {% if user.is_student %}
+                  <li><a class="dropdown-item" href="{% url 'education:education_dashboard' %}">
+                    <i class="bi bi-grid"></i> Education Dashboard
+                  </a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="{% url 'education:study_planner' %}">
+                    <i class="bi bi-calendar3"></i> Study Planner
+                  </a></li>
+                {% endif %}
+                {% if user.is_teacher %}
+                  <li><a class="dropdown-item" href="{% url 'education:learning_analytics' %}">
+                    <i class="bi bi-graph-up"></i> Learning Analytics
+                  </a></li>
+                {% endif %}
+              </ul>
+            </li>
+          {% endif %}
+
+          <!-- Buyer Features -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'documents:my_purchases' %}">
+              <i class="bi bi-bag"></i> My Purchases
+            </a>
+          </li>
+
+          <!-- Admin/Moderator Features -->
+          {% if user.is_admin or user.is_moderator %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-gear"></i> Admin
+              </a>
+              <ul class="dropdown-menu">
+                {% if user.is_admin %}
+                  <li><a class="dropdown-item" href="/admin/">
+                    <i class="bi bi-shield-check"></i> Admin Panel
+                  </a></li>
+                {% endif %}
+                {% if user.is_superuser %}
+                  <li><a class="dropdown-item" href="{% url 'documents:admin_notifications' %}">
+                    <i class="bi bi-bell"></i> Admin Notifications
+                    {% unread_notification_count user as unread_count %}
+                    {% if unread_count > 0 %}
+                      <span class="badge bg-danger ms-2">{{ unread_count }}</span>
+                    {% endif %}
+                  </a></li>
+                {% endif %}
+                <li><a class="dropdown-item" href="{% url 'documents:admin_manage_withdrawals' %}">
+                  <i class="bi bi-bank"></i> Manage Withdrawals
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'documents:seller_analytics' %}">
+                  <i class="bi bi-graph-up"></i> Analytics
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'security:settings' %}">
+                  <i class="bi bi-shield"></i> Security
+                </a></li>
+                {% if user.is_moderator %}
+                  <li><a class="dropdown-item" href="{% url 'reviews:moderation' %}">
+                    <i class="bi bi-eye"></i> Review Moderation
+                  </a></li>
+                {% endif %}
+              </ul>
+            </li>
+          {% endif %}
+
+          <!-- User Profile -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> {{ user.username }}
+            </a>
+            <ul class="dropdown-menu">
+              <li><h6 class="dropdown-header">
+                <i class="bi bi-person-badge"></i> {{ user.get_full_name|default:user.username }}
+              </h6></li>
+              <li><hr class="dropdown-divider"></li>
+              
+              <!-- User Roles Display -->
+              <li><small class="dropdown-item text-muted">
+                <i class="bi bi-shield-check"></i> Roles: 
+                {% for role in user.get_all_roles %}
+                  <span class="badge bg-primary">{{ role }}</span>
+                {% endfor %}
+              </small></li>
+              <li><hr class="dropdown-divider"></li>
+              
+              <li><a class="dropdown-item" href="{% url 'profile' %}">
+                <i class="bi bi-person"></i> Profile
+              </a></li>
+              
+              {% if user.is_admin %}
+                <li><a class="dropdown-item" href="{% url 'withdrawals:dashboard' %}">
+                  <i class="bi bi-wallet2"></i> Platform Withdrawals
+                </a></li>
+              {% endif %}
+              
+              <li><a class="dropdown-item" href="{% url 'security:settings' %}">
+                <i class="bi bi-gear"></i> Settings
+              </a></li>
+              
+              <li><hr class="dropdown-divider"></li>
+              
+              <li>
+                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="dropdown-item" style="border:none; background:none; text-align:left; width:100%;">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </li>
+
+        {% else %}
+          <!-- Not logged in -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">
+              <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">
+              <i class="bi bi-person-plus"></i> Register
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>

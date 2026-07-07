@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Contact - SharpDocs{% endblock %}
+{% block meta_description %}Contact SharpDocs for support questions, account help, marketplace issues, or general feedback.{% endblock %}
+
+{% block content %}
+<section class="container py-5">
+    <h1 class="mb-4">Contact Us</h1>
+    <p>If you have any questions, suggestions, or concerns, feel free to reach out.</p>
+
+    <form method="post" action="#">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="name" class="form-label">Your Name</label>
+            <input type="text" class="form-control" id="name" name="name" placeholder="John Doe">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com">
+        </div>
+        <div class="mb-3">
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="message" name="message" rows="5" placeholder="Write your message here..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Send Message</button>
+    </form>
+</section>
+{% endblock %}

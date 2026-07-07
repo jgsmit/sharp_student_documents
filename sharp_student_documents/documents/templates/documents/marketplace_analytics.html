@@ -1,0 +1,720 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Marketplace Analytics - SharpDocs{% endblock %}
+{% block meta_description %}Admin dashboard for marketplace analytics, user behavior, and platform insights on SharpDocs.{% endblock %}
+
+{% block extra_css %}
+<style>
+.analytics-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card {
+  border: none;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.metric-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+}
+
+.metric-subtitle {
+  font-size: 0.8rem;
+  color: #adb5bd;
+}
+
+.chart-container {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.chart-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.data-table {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table thead th {
+  background: #f8f9fa;
+  border: none;
+  font-weight: 600;
+  color: #495057;
+  padding: 1rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.table tbody tr:hover {
+  background: #f8f9fa;
+  transition: background 0.2s ease;
+}
+
+.badge {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.subject-item {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid #667eea;
+  transition: all 0.2s ease;
+}
+
+.subject-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.subject-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+}
+
+.subject-stats {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.views-badge {
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.period-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.period-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #dee2e6;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.period-btn:hover {
+  background: #f8f9fa;
+  border-color: #667eea;
+}
+
+.period-btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Analytics Header -->
+  <div class="analytics-header text-white">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="mb-2 fw-bold">
+          <i class="bi bi-graph-up-arrow me-3"></i>Marketplace Analytics
+        </h1>
+        <p class="mb-0 opacity-75">Real-time insights into platform performance and user behavior</p>
+      </div>
+      <div class="col-md-4 text-md-end">
+        <div class="period-selector">
+          <button class="period-btn active">30 Days</button>
+          <button class="period-btn">7 Days</button>
+          <button class="period-btn">90 Days</button>
+          <button class="period-btn">1 Year</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="metric-card">
+        <div class="card-body p-4">
+          <div class="metric-icon bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-file-earmark-text"></i>
+          </div>
+          <div class="metric-value text-primary">{{ marketplace_stats.total_documents }}</div>
+          <div class="metric-label">Total Documents</div>
+          <div class="metric-subtitle">All time</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="metric-card">
+        <div class="card-body p-4">
+          <div class="metric-icon bg-success bg-opacity-10 text-success">
+            <i class="bi bi-people"></i>
+          </div>
+          <div class="metric-value text-success">{{ marketplace_stats.total_users }}</div>
+          <div class="metric-label">Total Users</div>
+          <div class="metric-subtitle">{{ marketplace_stats.new_users }} new in last {{ marketplace_stats.period_days }} days</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="metric-card">
+        <div class="card-body p-4">
+          <div class="metric-icon bg-info bg-opacity-10 text-info">
+            <i class="bi bi-shop"></i>
+          </div>
+          <div class="metric-value text-info">{{ marketplace_stats.active_sellers }}</div>
+          <div class="metric-label">Active Sellers</div>
+          <div class="metric-subtitle">{{ marketplace_stats.total_buyers }} buyers</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="metric-card">
+        <div class="card-body p-4">
+          <div class="metric-icon bg-warning bg-opacity-10 text-warning">
+            <i class="bi bi-currency-dollar"></i>
+          </div>
+          <div class="metric-value text-warning">${{ marketplace_stats.total_revenue|floatformat:0 }}</div>
+          <div class="metric-label">Total Revenue</div>
+          <div class="metric-subtitle">Last {{ marketplace_stats.period_days }} days</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row mb-4">
+    <div class="col-lg-6">
+      <div class="chart-container">
+        <div class="chart-header">
+          <h5 class="chart-title mb-0">
+            <i class="bi bi-graph-up me-2"></i>User Growth Trends
+          </h5>
+          <div class="period-selector">
+            <button class="period-btn active" onclick="updateGrowthChart('7d')">7D</button>
+            <button class="period-btn" onclick="updateGrowthChart('30d')">30D</button>
+            <button class="period-btn" onclick="updateGrowthChart('90d')">90D</button>
+          </div>
+        </div>
+        <div class="chart-wrapper" style="position: relative; height: 300px;">
+          <canvas id="growthChart"></canvas>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-6">
+      <div class="chart-container">
+        <div class="chart-header">
+          <h5 class="chart-title mb-0">
+            <i class="bi bi-pie-chart me-2"></i>Revenue Distribution
+          </h5>
+          <button class="btn btn-sm btn-outline-primary" onclick="refreshCategoryChart()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+        <div class="chart-wrapper" style="position: relative; height: 300px;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Analytics -->
+  <div class="row">
+    <div class="col-lg-6">
+      <!-- Popular Categories -->
+      <div class="data-table">
+        <div class="chart-header">
+          <h5 class="chart-title mb-0">
+            <i class="bi bi-trophy me-2"></i>Popular Categories
+          </h5>
+          <span class="badge bg-primary">{{ popular_categories|length }} categories</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Documents</th>
+                <th>Sales</th>
+                <th>Revenue</th>
+                <th>Conversion</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for category in popular_categories %}
+              <tr>
+                <td>
+                  <span class="badge bg-primary">{{ category.name }}</span>
+                </td>
+                <td><strong>{{ category.document_count }}</strong></td>
+                <td>{{ category.total_sales }}</td>
+                <td><strong>${{ category.total_revenue|floatformat:2 }}</strong></td>
+                <td>
+                  {% if category.document_count > 0 %}
+                    <span class="badge bg-success">{{ category.total_sales|default:0 }}/{{ category.document_count }}</span>
+                  {% else %}
+                    <span class="badge bg-secondary">0/0</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                  No categories available yet
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-lg-6">
+      <!-- Trending Subjects -->
+      <div class="data-table">
+        <div class="chart-header">
+          <h5 class="chart-title mb-0">
+            <i class="bi bi-fire me-2"></i>Trending Subjects
+          </h5>
+          <span class="badge bg-warning">{{ trending_subjects|length }} subjects</span>
+        </div>
+        <div class="subjects-list">
+          {% for subject in trending_subjects %}
+            <div class="subject-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="subject-name">{{ subject.subject|title|default:"Uncategorized" }}</div>
+                  <div class="subject-stats">
+                    <i class="bi bi-file-earmark me-1"></i>{{ subject.doc_count }} documents
+                    {% if subject.recent_sales > 0 %}
+                      <span class="ms-2"><i class="bi bi-bag-check me-1"></i>{{ subject.recent_sales }} sales</span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="views-badge">
+                    <i class="bi bi-eye me-1"></i>{{ subject.recent_views }} views
+                  </span>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center text-muted py-5">
+              <i class="bi bi-graph-down fs-1 d-block mb-2"></i>
+              No trending subjects available yet
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Growth Metrics Table -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="data-table">
+        <div class="chart-header">
+          <h5 class="chart-title mb-0">
+            <i class="bi bi-graph-up-arrow me-2"></i>Growth Metrics
+          </h5>
+          <div class="period-selector">
+            <button class="period-btn active" onclick="filterGrowthData('all')">All</button>
+            <button class="period-btn" onclick="filterGrowthData('recent')">Recent</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Period</th>
+                <th>New Users</th>
+                <th>Total Users</th>
+                <th>Active Sellers</th>
+                <th>Total Sales</th>
+                <th>Revenue</th>
+                <th>Growth Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for data in growth_data %}
+              <tr>
+                <td><strong>{{ data.period }}</strong></td>
+                <td>
+                  <span class="badge bg-success">{{ data.new_users }}</span>
+                </td>
+                <td>{{ data.total_users }}</td>
+                <td>
+                  <span class="badge bg-info">{{ data.active_sellers }}</span>
+                </td>
+                <td>{{ data.total_sales }}</td>
+                <td><strong>${{ data.total_revenue|floatformat:2 }}</strong></td>
+                <td>
+                  {% if forloop.counter0 > 0 %}
+                    {% with prev_data=growth_data|slice:":forloop.counter0"|last %}
+                      {% if prev_data.total_users > 0 %}
+                        {% widthratio data.new_users prev_data.total_users 100 as growth_pct %}
+                        {% if growth_pct > 0 %}
+                          <span class="badge bg-success">+{{ growth_pct|floatformat:1 }}%</span>
+                        {% else %}
+                          <span class="badge bg-secondary">{{ growth_pct|floatformat:1 }}%</span>
+                        {% endif %}
+                      {% else %}
+                        <span class="badge bg-secondary">N/A</span>
+                      {% endif %}
+                    {% endwith %}
+                  {% else %}
+                    <span class="badge bg-primary">Baseline</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ growth_data|json_script:"growthData" }}
+{{ popular_categories|json_script:"categoryData" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Chart configurations
+Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+Chart.defaults.color = '#495057';
+
+// Growth Chart
+const growthCtx = document.getElementById('growthChart').getContext('2d');
+const growthData = JSON.parse(document.getElementById('growthData').textContent);
+
+const growthChart = new Chart(growthCtx, {
+    type: 'line',
+    data: {
+        labels: growthData.map(function(item) { return item.period; }),
+        datasets: [{
+            label: 'New Users',
+            data: growthData.map(function(item) { return item.new_users; }),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Total Users',
+            data: growthData.map(function(item) { return item.total_users; }),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Active Sellers',
+            data: growthData.map(function(item) { return item.active_sellers; }),
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    usePointStyle: true,
+                    padding: 20
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8,
+                titleFont: {
+                    size: 14,
+                    weight: '600'
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        }
+    }
+});
+
+// Category Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+const categoryData = JSON.parse(document.getElementById('categoryData').textContent);
+
+const categoryChart = new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: categoryData.map(function(item) { return item.name; }),
+        datasets: [{
+            data: categoryData.map(function(item) { return item.total_revenue || 0; }),
+            backgroundColor: [
+                '#3b82f6',
+                '#10b981', 
+                '#f59e0b',
+                '#ef4444',
+                '#8b5cf6',
+                '#ec4899',
+                '#14b8a6',
+                '#f97316',
+                '#6366f1'
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8,
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = '$' + context.parsed.toFixed(2);
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                        return label + ': ' + value + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Interactive functions
+function updateGrowthChart(period) {
+    // Update active button
+    document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Here you would typically make an AJAX call to get new data
+    console.log('Updating growth chart for period:', period);
+}
+
+function refreshCategoryChart() {
+    // Add loading state
+    const button = event.target;
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<i class="bi bi-arrow-clockwise bi-spin"></i> Loading...';
+    button.disabled = true;
+    
+    // Simulate refresh
+    setTimeout(() => {
+        button.innerHTML = originalContent;
+        button.disabled = false;
+        categoryChart.update();
+    }, 1000);
+}
+
+function filterGrowthData(filter) {
+    // Update active button
+    document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    console.log('Filtering growth data:', filter);
+}
+
+// Add animation on scroll
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Observe all metric cards and data tables
+document.querySelectorAll('.metric-card, .data-table').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+});
+
+// Auto-refresh functionality (optional)
+let autoRefreshInterval;
+function toggleAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+    } else {
+        autoRefreshInterval = setInterval(() => {
+            refreshCategoryChart();
+        }, 30000); // Refresh every 30 seconds
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+            case 'r':
+                e.preventDefault();
+                refreshCategoryChart();
+                break;
+            case '1':
+                e.preventDefault();
+                updateGrowthChart('7d');
+                break;
+            case '2':
+                e.preventDefault();
+                updateGrowthChart('30d');
+                break;
+        }
+    }
+});
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.progress {
+  background-color: #e9ecef;
+}
+</style>
+{% endblock %}

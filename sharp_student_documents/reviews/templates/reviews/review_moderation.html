@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Review Moderation - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="bi bi-shield-check"></i> Review Moderation
+        </h2>
+        <div class="btn-group" role="group">
+            <a href="?status=" class="btn {% if not status_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                All Reviews
+            </a>
+            <a href="?status=pending" class="btn {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Pending
+            </a>
+            <a href="?status=approved" class="btn {% if status_filter == 'approved' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Approved
+            </a>
+            <a href="?status=rejected" class="btn {% if status_filter == 'rejected' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                Rejected
+            </a>
+        </div>
+    </div>
+
+    {% if reviews %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Reviewer</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'documents:document_detail' review.document.slug %}">
+                                {{ review.document.title|truncatechars:50 }}
+                            </a>
+                        </td>
+                        <td>{{ review.reviewer.username }}</td>
+                        <td>
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="bi bi-star-fill text-warning"></i>
+                                {% else %}
+                                    <i class="bi bi-star text-warning"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ review.comment|truncatechars:100 }}</td>
+                        <td>
+                            <span class="badge bg-{{ review.status|default:'secondary' }}">
+                                {{ review.status|default:'pending'|title }}
+                            </span>
+                        </td>
+                        <td>{{ review.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-success" onclick="approveReview({{ review.id }})">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                                <button class="btn btn-danger" onclick="rejectReview({{ review.id }})">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-shield-check display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">No reviews found</h4>
+            <p class="text-muted">There are no reviews matching the current filter.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function approveReview(reviewId) {
+    // Implement approve functionality
+    console.log('Approve review:', reviewId);
+    // You would typically make an AJAX call here
+}
+
+function rejectReview(reviewId) {
+    // Implement reject functionality
+    console.log('Reject review:', reviewId);
+    // You would typically make an AJAX call here
+}
+</script>
+{% endblock %}

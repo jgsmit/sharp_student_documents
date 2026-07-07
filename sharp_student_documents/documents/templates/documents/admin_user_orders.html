@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ user.username }}'s Orders - SharpDocs Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">🛒 {{ user.username }}'s Orders</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:admin_view_user' user.id %}" class="btn btn-sm btn-secondary">← Back to User</a>
+                <a href="{% url 'documents:admin_manage_users' %}" class="btn btn-sm btn-info">All Users</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">📊 Order Statistics</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
+                    <div class="text-xs text-gray-500">Total Orders</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">💰 Total Spent</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_spent|floatformat:2 }}</div>
+                    <div class="text-xs text-gray-500">Completed Orders</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">⏳ Pending</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">{{ pending_orders }}</div>
+                    <div class="text-xs text-gray-500">Awaiting Payment</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">✅ Completed</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="h4 mb-0 font-weight-bold text-gray-800">{{ completed_orders }}</div>
+                    <div class="text-xs text-gray-500">Paid Orders</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card shadow">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">🛒 Order History ({{ total_orders }} total)</h6>
+        </div>
+        <div class="card-body">
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Document</th>
+                            <th>Seller</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Order Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>
+                                <a href="{{ order.document.get_absolute_url }}" target="_blank">{{ order.document.title }}</a>
+                                {% if order.document.tags %}
+                                <br><small class="text-muted">{{ order.document.tags|truncatewords:2 }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'documents:admin_view_user' order.document.seller.id %}">
+                                    {{ order.document.seller.username }}
+                                </a>
+                            </td>
+                            <td>${{ order.amount_paid|floatformat:2 }}</td>
+                            <td>
+                                {% if order.status == 'paid' %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% elif order.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ order.status|title }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ order.document.get_absolute_url }}" target="_blank" class="btn btn-outline-primary">View</a>
+                                    {% if order.status == 'paid' %}
+                                        <a href="{% url 'documents:download_document' order.id %}" class="btn btn-outline-success">Download</a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-shopping-cart fa-3x text-gray-300 mb-3"></i>
+                <p class="text-muted">{{ user.username }} hasn't placed any orders yet.</p>
+                <a href="{% url 'documents:admin_view_user' user.id %}" class="btn btn-primary">Back to User Profile</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

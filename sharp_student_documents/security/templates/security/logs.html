@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Security Logs - SharpDocs{% endblock %}
+{% block meta_description %}View your account security logs and activity history on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <!-- Logs Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-shield-check"></i> Security Activity Logs
+          </h4>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 rounded-4">
+        <div class="card-header">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-clock-history"></i> Recent Activity
+              </h5>
+            </div>
+            <div class="col-md-4 text-end">
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-light btn-sm active" data-severity="all">All</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-severity="high">High</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-severity="medium">Medium</button>
+                <button type="button" class="btn btn-outline-light btn-sm" data-severity="low">Low</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          {% if logs %}
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Event</th>
+                    <th>IP Address</th>
+                    <th>Severity</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for log in logs %}
+                  <tr class="{% if log.severity == 'high' %}table-danger{% elif log.severity == 'medium' %}table-warning{% elif log.severity == 'low' %}table-info{% endif %}">
+                    <td>{{ log.created_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                      <span class="badge bg-{{ log.event_type }} text-white">
+                        {% if log.event_type == 'login_success' %}
+                          <i class="bi bi-check-circle"></i> Login Success
+                        {% elif log.event_type == 'login_failed' %}
+                          <i class="bi bi-x-circle"></i> Login Failed
+                        {% elif log.event_type == '2fa_enabled' %}
+                          <i class="bi bi-shield-check"></i> 2FA Enabled
+                        {% elif log.event_type == '2fa_disabled' %}
+                          <i class="bi bi-shield-x"></i> 2FA Disabled
+                        {% elif log.event_type == 'verification_submitted' %}
+                          <i class="bi bi-file-earmark-check"></i> Verification Submitted
+                        {% elif log.event_type == 'suspicious_activity' %}
+                          <i class="bi bi-exclamation-triangle"></i> Suspicious Activity
+                        {% elif log.event_type == 'account_locked' %}
+                          <i class="bi bi-lock"></i> Account Locked
+                        {% else %}
+                          <i class="bi bi-info-circle"></i> {{ log.get_event_type_display }}
+                        {% endif %}
+                      </span>
+                    </td>
+                    <td>{{ log.ip_address }}</td>
+                    <td>
+                      <span class="badge bg-{{ log.severity }} text-white">
+                        {% if log.severity == 'high' %}
+                          <i class="bi bi-exclamation-triangle-fill"></i> High
+                        {% elif log.severity == 'medium' %}
+                          <i class="bi bi-exclamation-circle"></i> Medium
+                        {% else %}
+                          <i class="bi bi-info-circle"></i> Low
+                        {% endif %}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary" onclick="showDetails({{ log.id }})">
+                        <i class="bi bi-eye"></i> View
+                      </button>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-5">
+              <i class="bi bi-shield-check display-1 text-muted mb-3"></i>
+              <h5 class="text-muted">No security activity logged yet</h5>
+              <p class="text-muted">Your security events will appear here once you start using the platform.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Tips -->
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card border-0 bg-light">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-shield-check text-success"></i> Good Security Practices
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small">
+            <li><i class="bi bi-check-circle text-success"></i> Use strong, unique passwords</li>
+            <li><i class="bi bi-check-circle text-success"></i> Enable two-factor authentication</li>
+            <li><i class="bi bi-check-circle text-success"></i> Monitor your account activity</li>
+            <li><i class="bi bi-check-circle text-success"></i> Keep your software updated</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card border-0 bg-light">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-exclamation-triangle text-warning"></i> Warning Signs
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small">
+            <li><i class="bi bi-x-circle text-danger"></i> Multiple failed logins</li>
+            <li><i class="bi bi-x-circle text-danger"></i> Unusual login locations</li>
+            <li><i class="bi bi-x-circle text-danger"></i> Suspicious account activity</li>
+            <li><i class="bi bi-x-circle text-danger"></i> Unexpected password changes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card border-0 bg-light">
+        <div class="card-header">
+          <h6 class="mb-0">
+            <i class="bi bi-info-circle text-info"></i> What We Monitor
+          </h6>
+        </div>
+        <div class="card-body">
+          <ul class="list-unstyled small">
+            <li><i class="bi bi-check text-info"></i> Login attempts and locations</li>
+            <li><i class="bi bi-check text-info"></i> Security settings changes</li>
+            <li><i class="bi bi-check text-info"></i> Identity verification status</li>
+            <li><i class="bi bi-check text-info"></i> Suspicious activity patterns</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailsModalLabel">Security Event Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Details will be loaded here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Filter logs by severity
+document.querySelectorAll('[data-severity]').forEach(button => {
+    button.addEventListener('click', function() {
+        const severity = this.dataset.severity;
+        const rows = document.querySelectorAll('tbody tr');
+        
+        document.querySelectorAll('[data-severity]').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        this.classList.add('active');
+        
+        rows.forEach(row => {
+            if (severity === 'all') {
+                row.style.display = '';
+            } else {
+                const rowSeverity = row.querySelector('.badge').classList.contains('bg-high') ? 'high' : 
+                                   row.querySelector('.badge').classList.contains('bg-medium') ? 'medium' : 'low';
+                if (rowSeverity === severity) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    });
+});
+
+// Show details modal
+function showDetails(logId) {
+    // This would typically make an AJAX call to get full details
+    // For now, show a placeholder
+    document.getElementById('modalBody').innerHTML = `
+        <div class="alert alert-info">
+          <h6>Security Event Details</h6>
+          <p><strong>Log ID:</strong> ${logId}</p>
+          <p><strong>Full details would be loaded here via AJAX call</strong></p>
+        </div>
+    `;
+    
+    const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    modal.show();
+}
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.badge {
+  font-size: 0.8em;
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.table-danger td {
+  background-color: #f8d7da;
+}
+
+.table-warning td {
+  background-color: #fff3cd;
+}
+
+.table-info td {
+  background-color: #d1ecf1;
+}
+</style>
+{% endblock %}

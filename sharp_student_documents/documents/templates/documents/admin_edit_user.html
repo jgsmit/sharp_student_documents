@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit User - {{ user.username }} - SharpDocs Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 text-warning">
+            <i class="bi bi-pencil-square"></i> Edit User: {{ user.username }}
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:admin_view_user' user.id %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancel
+                </a>
+                <a href="{% url 'documents:admin_manage_users' %}" class="btn btn-info">
+                    <i class="bi bi-people"></i> Back to Users
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0 fw-bold">
+                        <i class="bi bi-pencil-square"></i> Edit User Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3 fw-bold">
+                                    <i class="bi bi-person"></i> Basic Information
+                                </h6>
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label fw-semibold">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           value="{{ user.username }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label fw-semibold">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="{{ user.email }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="first_name" class="form-label fw-semibold">First Name</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ user.first_name }}">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label fw-semibold">Last Name</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ user.last_name }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <h6 class="text-warning mb-3 fw-bold">
+                                    <i class="bi bi-shield-check"></i> User Permissions
+                                </h6>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                               {% if user.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            <i class="bi bi-toggle-on"></i> Active User
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">Inactive users cannot log in</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_seller" name="is_seller" 
+                                               {% if user.is_seller %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_seller">
+                                            Seller Account
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">Can upload and sell documents</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_staff" name="is_staff" 
+                                               {% if user.is_staff %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_staff">
+                                            Staff/Admin Access
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">Can access admin dashboard</small>
+                                </div>
+                                
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Warning:</strong> Changing user permissions will affect their access to the system.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Password Change -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3">🔑 Password Change</h6>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Leave password fields empty to keep the current password.
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="new_password" class="form-label">New Password</label>
+                                            <input type="password" class="form-control" id="new_password" name="new_password">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                                            <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- User Statistics (Read-only) -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary mb-3">📊 User Statistics</h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <div class="h5 mb-0">{{ user.date_joined|date:"M d, Y" }}</div>
+                                                <small class="text-muted">Date Joined</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <div class="h5 mb-0">{{ user.last_login|date:"M d, Y"|default:"Never" }}</div>
+                                                <small class="text-muted">Last Login</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <div class="h5 mb-0">{{ user.document_set.count }}</div>
+                                                <small class="text-muted">Documents</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card bg-light">
+                                            <div class="card-body text-center">
+                                                <div class="h5 mb-0">{{ user.orders_bought.count }}</div>
+                                                <small class="text-muted">Orders</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Buttons -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'documents:admin_view_user' user.id %}" class="btn btn-secondary">Cancel</a>
+                                    <div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save"></i> Save Changes
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password confirmation validation
+    const form = document.querySelector('form');
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    form.addEventListener('submit', function(e) {
+        if (newPassword.value && newPassword.value !== confirmPassword.value) {
+            e.preventDefault();
+            alert('New password and confirmation do not match.');
+            newPassword.focus();
+        }
+    });
+});
+</script>
+{% endblock %}

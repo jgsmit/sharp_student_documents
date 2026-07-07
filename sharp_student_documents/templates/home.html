@@ -1,0 +1,511 @@
+{% extends "base.html" %}
+{% load static %}
+{% load seo_tags %}
+
+{% block title %}SharpDocs | Student Documents, Study Guides, Notes & Past Papers{% endblock %}
+{% block meta_description %}SharpDocs is a marketplace for student documents, notes, study guides, and past papers.{% endblock %}
+{% block meta_keywords %}SharpDocs, student documents, study notes, academic resources, university guides, exam preparation, study guides, course notes, past papers{% endblock %}
+{% block og_title %}SharpDocs - Premium Student Documents & Study Guides{% endblock %}
+{% block og_description %}SharpDocs is a student marketplace for notes, study guides, and past papers.{% endblock %}
+{% block twitter_title %}SharpDocs - Student Document Marketplace{% endblock %}
+{% block twitter_description %}SharpDocs connects students to notes, study guides, and past papers with instant access and verified content.{% endblock %}
+{% block og_image %}{% absolute_static 'images/sharpdocs-og-image.jpg' %}{% endblock %}
+{% block twitter_image %}{% absolute_static 'images/sharpdocs-twitter-card.jpg' %}{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "{% canonical_url %}#organization",
+      "name": "SharpDocs",
+      "url": "{% canonical_url %}",
+      "logo": "{% absolute_static 'sharp.png' %}"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "{% canonical_url %}#website",
+      "url": "{% canonical_url %}",
+      "name": "SharpDocs",
+      "publisher": {
+        "@id": "{% canonical_url %}#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ request.scheme }}://{{ request.get_host }}{% url 'documents:document_list' %}?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section text-center text-light py-5 mb-5 position-relative">
+    <div class="container position-relative z-2">
+        <h1 class="fw-bold display-4 mb-3 animate__animated animate__fadeInDown">
+            <i class="bi bi-lightning-charge-fill text-warning"></i> SharpDocs
+        </h1>
+        <p class="lead mb-4 animate__animated animate__fadeInUp">
+            Premium Student Documents & Study Guides
+        </p>
+        <p class="mb-4 mx-auto" style="max-width: 760px;">
+            SharpDocs helps students find notes, past papers, study guides, and academic resources.
+        
+        </p>
+
+        {% if user.is_authenticated %}
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-4 animate__animated animate__fadeInUp">
+                <a href="{% url 'documents:document_list' %}" class="btn btn-light btn-lg shadow-sm px-4">
+                    <i class="bi bi-search"></i> Browse Documents
+                </a>
+                {% if user.is_seller %}
+                    <a href="{% url 'documents:seller_dashboard' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-graph-up"></i> Seller Dashboard
+                    </a>
+                {% elif not user.is_staff and not user.is_superuser %}
+                    <a href="{% url 'documents:upload_document' %}" class="btn btn-warning btn-lg px-4">
+                        <i class="bi bi-upload"></i> Start Earning
+                    </a>
+                {% endif %}
+            </div>
+            <p class="small animate__animated animate__fadeInUp">
+                <i class="bi bi-person-check"></i> Welcome back, {{ user.first_name|default:user.username }}!
+            </p>
+        {% else %}
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-4 animate__animated animate__fadeInUp">
+                <a href="{% url 'register' %}" class="btn btn-warning btn-lg px-4">
+                    <i class="bi bi-rocket-takeoff"></i> Get Started Free
+                </a>
+                <a href="{% url 'documents:document_list' %}" class="btn btn-light btn-lg shadow-sm px-4">
+                    <i class="bi bi-eye"></i> Browse First
+                </a>
+            </div>
+            <p class="small animate__animated animate__fadeInUp">
+                <i class="bi bi-lock"></i> No credit card required • Join in 30 seconds
+            </p>
+        {% endif %}
+    </div>
+    
+    <div class="hero-bg position-absolute top-0 start-0 w-100 h-100"></div>
+</section>
+
+
+
+<!-- Social Proof Section -->
+<section class="bg-white py-4 border-bottom">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 col-6 mb-2">
+                <div class="fw-bold h4 mb-0 text-primary">10,000+</div>
+                <div class="small text-muted">Active Students</div>
+            </div>
+            <div class="col-md-3 col-6 mb-2">
+                <div class="fw-bold h4 mb-0 text-success">5,000+</div>
+                <div class="small text-muted">Documents</div>
+            </div>
+            <div class="col-md-3 col-6 mb-2">
+                <div class="fw-bold h4 mb-0 text-warning">98%</div>
+                <div class="small text-muted">Success Rate</div>
+            </div>
+            <div class="col-md-3 col-6 mb-2">
+                <div class="fw-bold h4 mb-0 text-info">24/7</div>
+                <div class="small text-muted">Support</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-semibold mb-0">Browse By Category</h2>
+            <p class="text-muted mb-0">Explore indexable topic pages for the main document categories on SharpDocs.</p>
+        </div>
+        <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-grid"></i> All Documents
+        </a>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        {% for category in categories %}
+            <a href="{% url 'documents:category_detail' category.slug %}" class="btn btn-light border rounded-pill px-3">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Available Documents -->
+<section class="container mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-semibold mb-0">📄 Featured Documents</h2>
+            <p class="text-muted mb-0">Top-rated study materials from verified sellers</p>
+        </div>
+        <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-right"></i> View All Documents
+        </a>
+    </div>
+    <div class="row">
+        {% for doc in documents %}
+        <article class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden card-hover">
+                <div class="card-body">
+                    <!-- Title and Price -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="card-title text-primary fw-semibold mb-0">{{ doc.title }}</h5>
+                        <strong class="text-success h5 mb-0">${{ doc.price }}</strong>
+                    </div>
+                    
+                    <!-- Meta Info -->
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% if doc.category %}
+                            <a href="{% url 'documents:category_detail' doc.category.slug %}" class="badge bg-light text-dark text-decoration-none">{{ doc.category.name }}</a>
+                        {% endif %}
+                        {% if doc.academic_level %}
+                            <span class="badge bg-info text-white">{{ doc.get_academic_level_display }}</span>
+                        {% endif %}
+                        {% if doc.page_count %}
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-file-earmark-text"></i> {{ doc.page_count }} pages
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Rating -->
+                    {% if doc.rating %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center">
+                            <span class="text-warning me-2">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= doc.rating %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% else %}
+                                        <i class="bi bi-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                            <small class="text-muted">({{ doc.reviews_count }} reviews)</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Preview -->
+                    <div class="card-preview mb-3">
+                        {% if doc.preview_text %}
+                            <div class="text-muted small p-3 bg-light rounded">
+                                <div class="preview-text">
+                                    {{ doc.preview_text|truncatewords:80|safe }}
+                                </div>
+                                
+                                {% if doc.preview_text|wordcount > 80 %}
+                                    <div class="mt-2 pt-2 border-top">
+                                        <small class="text-primary">
+                                            <i class="bi bi-book"></i> Extended preview available
+                                        </small>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if doc.description %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <strong>What you'll learn:</strong> {{ doc.description|truncatewords:20 }}
+                                        </small>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if doc.tags %}
+                                    <div class="mt-2">
+                                        {% for tag in doc.get_tag_list %}
+                                            <span class="badge bg-light text-dark me-1" style="font-size: 0.7rem;">{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="text-muted text-center p-3">
+                                <i class="bi bi-file-earmark-text display-4"></i>
+                                <p class="small mt-2">Premium content - Purchase to access</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'documents:document_detail' doc.slug %}" class="btn btn-primary">
+                            <i class="bi bi-eye"></i> View Details
+                        </a>
+                        {% if doc.can_access_full and doc.user_order %}
+                            <a href="{% url 'documents:download_document' doc.user_order.id %}" class="btn btn-success">
+                                <i class="bi bi-download"></i> Download Now
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <p class="text-center text-muted">No documents available right now. Check back later!</p>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-5">
+        <p class="fw-semibold mb-3">Have high-quality notes or guides?</p>
+        {% if user.is_authenticated %}
+            {% if user.is_seller %}
+                <a href="{% url 'documents:upload_document' %}" class="btn btn-warning btn-lg px-4">
+                    <i class="bi bi-upload"></i> Sell Your Documents
+                </a>
+            {% elif not user.is_staff and not user.is_superuser %}
+                <a href="{% url 'documents:upload_document' %}" class="btn btn-warning btn-lg px-4">
+                    <i class="bi bi-upload"></i> Start Selling
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-warning btn-lg px-4">
+                <i class="bi bi-upload"></i> Sell Your Documents
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="bg-light py-5 mb-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-3">Why Students Choose SharpDocs</h2>
+            <p class="text-muted">The most trusted platform for academic success</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <div class="feature-card p-4">
+                    <div class="feature-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-shield-check fs-2"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Verified Content</h4>
+                    <p class="text-muted">All documents reviewed by our team for accuracy and quality</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="feature-card p-4">
+                    <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-lightning fs-2"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Instant Access</h4>
+                    <p class="text-muted">Download immediately after purchase - no waiting required</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-center">
+                <div class="feature-card p-4">
+                    <div class="feature-icon bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-currency-dollar fs-2"></i>
+                    </div>
+                    <h4 class="fw-semibold mb-3">Earn Money</h4>
+                    <p class="text-muted">Sell your notes and earn 60% on every sale</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA Section -->
+        <div class="text-center mt-5">
+            <h3 class="fw-bold mb-3">Ready to Boost Your Grades?</h3>
+            <p class="text-muted mb-4">Join thousands of students already succeeding with SharpDocs</p>
+            
+            {% if user.is_authenticated %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'documents:document_list' %}" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-search"></i> Browse Documents
+                    </a>
+                    {% if not user.is_seller and not user.is_staff and not user.is_superuser %}
+                        <a href="{% url 'documents:upload_document' %}" class="btn btn-success btn-lg px-4">
+                            <i class="bi bi-upload"></i> Start Selling
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'register' %}" class="btn btn-warning btn-lg px-4">
+                        <i class="bi bi-rocket-takeoff"></i> Get Started Free
+                    </a>
+                    <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-eye"></i> Browse Documents
+                    </a>
+                </div>
+            {% endif %}
+            
+            <div class="mt-3">
+                <small class="text-muted">
+                    <i class="bi bi-check-circle text-success"></i> Free to join • 
+                    <i class="bi bi-check-circle text-success"></i> No hidden fees • 
+                    <i class="bi bi-check-circle text-success"></i> Cancel anytime
+                </small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Top Sellers -->
+<section class="container my-5">
+    <h2 class="mb-4">🏆 Top Sellers</h2>
+    <div class="list-group shadow-sm rounded-3">
+        {% for seller in top_sellers %}
+        <div class="list-group-item py-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary rounded-pill me-3">{{ forloop.counter }}</span>
+                    <div>
+                        <span class="fw-semibold">
+                            {{ seller.document__seller__first_name|default:seller.document__seller__username }}
+                        </span>
+                        <small class="d-block text-muted">@{{ seller.document__seller__username }}</small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success">{{ seller.sales_count }} sales</span>
+                </div>
+            </div>
+            <div class="progress mt-2" style="height: 8px;">
+                {% with max_sales=top_sellers.0.sales_count %}
+                {% if max_sales > 0 %}
+                    {% widthratio seller.sales_count max_sales 100 as progress_width %}
+                {% else %}
+                    {% widthratio 0 1 100 as progress_width %}
+                {% endif %}
+                <div class="progress-bar bg-primary" role="progressbar"
+                     style="width: {{ progress_width }}%;" 
+                     aria-valuenow="{{ seller.sales_count }}" aria-valuemin="0" aria-valuemax="{{ max_sales }}"></div>
+                {% endwith %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <p class="fw-semibold mb-2">Want to be featured here?</p>
+        {% if user.is_authenticated and user.is_seller %}
+            <a href="{% url 'documents:upload_document' %}" class="btn btn-outline-warning btn-lg">
+                Upload More Documents
+            </a>
+        {% elif not user.is_authenticated %}
+            <a href="{% url 'register' %}" class="btn btn-outline-primary btn-lg">
+                Become a Seller
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Custom Styling -->
+<style>
+.hero-section {
+    position: relative;
+    background: linear-gradient(120deg, #007bff 0%, #1cc88a 100%);
+    border-radius: 0 0 60px 60px;
+    overflow: hidden;
+}
+
+.hero-bg {
+    background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.2), transparent 70%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.15), transparent 70%);
+    z-index: 1;
+}
+
+.feature-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+}
+
+.card-hover {
+    transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.card-preview {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background-color: #fafafa;
+    padding: 8px;
+    height: 200px;
+    overflow-y: auto;
+}
+
+.card-preview pre {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.document-preview {
+    max-height: 250px;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.document-preview .preview-text {
+    color: #495057;
+}
+
+.document-preview .border-top {
+    border-color: #dee2e6 !important;
+}
+
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.preview-text {
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    color: #495057;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.btn-primary, .btn-warning, .btn-success {
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover, .btn-warning:hover, .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        padding-bottom: 150px !important;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+{% endblock %}

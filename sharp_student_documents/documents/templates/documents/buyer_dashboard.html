@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Buyer Dashboard - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">🛒 Buyer Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:document_list' %}" class="btn btn-sm btn-outline-primary">📚 Browse Documents</a>
+                <a href="{% url 'documents:my_purchases' %}" class="btn btn-sm btn-outline-success">📦 My Purchases</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Purchases</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_purchases }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Spent</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ total_spent|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Reviews Given</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ reviews_count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Study Time Today</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ study_time_today }}min</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Recent Purchases -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">📚 My Purchased Documents</h6>
+                    <a href="{% url 'documents:my_purchases' %}" class="btn btn-primary btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    {% for document in purchased_documents %}
+                    <div class="row mb-3 p-3 border rounded">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">{{ document.title }}</h6>
+                            <p class="text-muted small mb-1">{{ document.description|truncatewords:15 }}</p>
+                            <div class="text-warning">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= document.average_rating %}⭐{% else %}☆{% endif %}
+                                {% endfor %}
+                                <small class="text-muted">({{ document.reviews_count }} reviews)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <p class="mb-1"><strong>${{ document.price }}</strong></p>
+                            <a href="{% url 'documents:document_detail' document.slug %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">You haven't purchased any documents yet.</p>
+                        <a href="{% url 'documents:document_list' %}" class="btn btn-primary">Browse Documents</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">🚀 Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'documents:document_list' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-search me-2"></i> Browse Documents
+                        </a>
+                        <a href="{% url 'documents:my_purchases' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-bag me-2"></i> My Purchases
+                            {% if pending_orders > 0 %}
+                            <span class="badge bg-warning text-dark">{{ pending_orders }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'education:study_planner' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-alt me-2"></i> Study Planner
+                        </a>
+                        <a href="{% url 'security:dashboard' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shield-alt me-2"></i> Security Settings
+                            {% if unread_notifications > 0 %}
+                            <span class="badge bg-danger">{{ unread_notifications }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" disabled>
+                            <i class="fas fa-star me-2"></i> My Reviews (Coming Soon)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Content Row -->
+    <div class="row">
+        <!-- Recent Orders -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">📦 Recent Orders</h6>
+                </div>
+                <div class="card-body">
+                    {% for order in recent_orders %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                        <p class="mb-1"><strong>{{ order.document.title }}</strong></p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-{{ order.status|yesno:'success,warning' }}">{{ order.status }}</span>
+                            <span class="text-primary">${{ order.amount_paid }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No recent orders</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- My Reviews -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-warning">⭐ My Reviews</h6>
+                </div>
+                <div class="card-body">
+                    {% for review in given_reviews %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                        <p class="mb-1"><strong>{{ review.document.title }}</strong></p>
+                        <div class="text-warning mb-1">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}⭐{% else %}☆{% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="text-muted small">{{ review.comment|truncatewords:10 }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">You haven't reviewed any documents yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Sessions -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">📖 Recent Study Sessions</h6>
+                    <a href="{% url 'education:study_planner' %}" class="btn btn-success btn-sm">Study Planner</a>
+                </div>
+                <div class="card-body">
+                    {% for session in study_sessions %}
+                    <div class="row mb-2 p-2 border-bottom">
+                        <div class="col-md-6">
+                            <strong>{{ session.document.title }}</strong>
+                            <p class="text-muted small">{{ session.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span class="badge bg-info">{{ session.duration }} minutes</span>
+                            {% if session.notes %}
+                            <p class="text-muted small mt-1">{{ session.notes|truncatewords:8 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-book-open fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No study sessions yet. Start learning!</p>
+                        <a href="{% url 'education:study_planner' %}" class="btn btn-primary">Create Study Session</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

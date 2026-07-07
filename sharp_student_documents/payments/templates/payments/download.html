@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Downloading {{ document_title }} - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+
+  <div class="mb-4">
+    <span class="display-1 text-primary">⬇️</span>
+  </div>
+
+  <h2 class="fw-bold">Preparing your download…</h2>
+
+  {% if download_url %}
+  <p class="lead">
+    Your document <strong>{{ document_title }}</strong> is ready.
+    If your download doesn’t start automatically, click below.
+  </p>
+
+  <!-- Direct download button -->
+  <a id="download-button" href="{{ download_url }}" 
+     class="btn btn-success btn-lg mt-3"
+     download>
+     ⬇️ Download Now
+  </a>
+
+  <!-- Safe automatic redirect -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const url = "{{ download_url|escapejs }}";
+      setTimeout(() => {
+        // open in new tab (safer for browser download)
+        window.open(url, "_blank");
+      }, 1200);
+    });
+  </script>
+
+  {% else %}
+  <p class="text-danger lead">
+    Sorry, the download link could not be generated.  
+    Please try again from 
+    <a href="{% url 'documents:my_purchases' %}" class="fw-bold">My Purchases</a>.
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

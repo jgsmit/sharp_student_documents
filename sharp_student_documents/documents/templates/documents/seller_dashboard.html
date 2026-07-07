@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Seller Dashboard - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">💼 Seller Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'documents:upload_document' %}" class="btn btn-sm btn-primary">📤 Upload Document</a>
+                <a href="{% url 'documents:seller_documents' %}" class="btn btn-sm btn-secondary">📚 Your Documents</a>
+                <a href="{% url 'documents:seller_analytics' %}" class="btn btn-sm btn-info">📊 Analytics</a>
+                <a href="{% url 'withdrawals:dashboard' %}" class="btn btn-sm btn-success">💰 Withdrawal Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Documents</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_documents }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Unrequested Balance</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.unrequested_balance|default_if_none:0|floatformat:2 }}</div>
+                            <div class="text-xs text-gray-500">
+                                Withdrawable: ${{ wallet.balance|floatformat:2 }} ·
+                                Held: ${{ wallet.pending_balance|default_if_none:0|floatformat:2 }} ·
+                                Reserved: ${{ wallet.reserved_balance|default_if_none:0|floatformat:2 }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-wallet fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Earned</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.total_earned|floatformat:2 }}</div>
+                            <div class="text-xs text-gray-500">Lifetime (includes held + withdrawn)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Commission Paid</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.total_commission_paid|floatformat:2 }}</div>
+                            <div class="text-xs text-gray-500">40% platform commission</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Withdrawn</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.total_withdrawn|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Sales</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_sales }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Orders</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_orders }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Management & Upload -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">📄 Document Management</h6>
+                    <a href="{% url 'documents:upload_document' %}" class="btn btn-primary btn-sm">+ New Document</a>
+                </div>
+                <div class="card-body">
+                    <!-- Upload Form -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <form method="post" action="{% url 'documents:upload_document' %}" enctype="multipart/form-data" class="border p-3 rounded bg-light">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.title.id_for_label }}" class="form-label">Document Title</label>
+                                        {{ form.title }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                                        {{ form.category }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.price.id_for_label }}" class="form-label">Price ($)</label>
+                                        {{ form.price }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.file.id_for_label }}" class="form-label">Upload File</label>
+                                        {{ form.file }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                                        {{ form.description }}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">📤 Upload Document</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Recent Documents -->
+                    <h6 class="mb-3">📚 Your Documents</h6>
+                    {% for document in documents|slice:":5" %}
+                    <div class="row mb-3 p-3 border rounded">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">{{ document.title }}</h6>
+                            <p class="text-muted small mb-1">{{ document.description|truncatewords:15 }}</p>
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="text-warning me-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= document.average_rating %}⭐{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </div>
+                                <small class="text-muted">({{ document.reviews_count }} reviews)</small>
+                             </div>
+                             <div>
+                                 <span class="badge bg-secondary">{{ document.get_document_type_display }}</span>
+                                 <span class="badge bg-info ms-1">{{ document.sales_count }} sales</span>
+                                 <span class="badge bg-primary ms-1">Revenue ${{ document.total_revenue|default_if_none:0|floatformat:2 }}</span>
+                             </div>
+                         </div>
+                        <div class="col-md-4 text-end">
+                            <p class="mb-1"><strong>${{ document.price }}</strong></p>
+                            <div class="btn-group-vertical">
+                                <a href="{% url 'documents:document_detail' document.slug %}" class="btn btn-sm btn-outline-primary mb-1">View</a>
+                                <a href="{% url 'documents:edit_document' document.id %}" class="btn btn-sm btn-outline-secondary mb-1">Edit</a>
+                                <a href="{% url 'documents:download_owner_document' document.id %}" class="btn btn-sm btn-success">Download</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-file-upload fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">You haven't uploaded any documents yet.</p>
+                        <a href="{% url 'documents:upload_document' %}" class="btn btn-primary">Upload Your First Document</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Sidebar -->
+        <div class="col-lg-4">
+            <!-- Financial Overview -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">💰 Financial Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Total Sales (Gross)</span>
+                            <strong class="text-primary">${{ total_gross_sales|default_if_none:0|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Unrequested Balance</span>
+                            <strong class="text-success">${{ wallet.unrequested_balance|default_if_none:0|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Held Balance</span>
+                            <strong class="text-warning">${{ wallet.pending_balance|default_if_none:0|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Reserved Balance</span>
+                            <strong class="text-primary">${{ wallet.reserved_balance|default_if_none:0|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Withdrawable Now</span>
+                            <strong class="text-success">${{ wallet.balance|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Total Earned</span>
+                            <strong class="text-info">${{ wallet.total_earned|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Commission Paid</span>
+                            <strong class="text-warning">${{ wallet.total_commission_paid|floatformat:2 }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Total Withdrawn</span>
+                            <strong class="text-danger">${{ wallet.total_withdrawn|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'withdrawals:request' %}" class="btn btn-success btn-sm">Request Withdrawal</a>
+                        <a href="{% url 'withdrawals:dashboard' %}" class="btn btn-outline-success btn-sm">💰 Withdrawal Dashboard</a>
+                        <a href="{% url 'documents:seller_refunds' %}" class="btn btn-outline-danger btn-sm">🧾 Refund Requests</a>
+                    </div>
+                    {% if withdrawal_hold_notice %}
+                    <div class="alert alert-warning py-2 mt-3 mb-2 small">
+                        <i class="fas fa-clock"></i> {{ withdrawal_hold_notice }}
+                    </div>
+                    {% endif %}
+                    {% if pending_withdrawals %}
+                    <div class="mb-2">
+                        <small class="text-warning">You have {{ pending_withdrawals|length }} pending withdrawal(s)</small>
+                    </div>
+                    {% endif %}
+                    {% if failed_withdrawals %}
+                    <div class="mb-2">
+                        <small class="text-danger">
+                            You have {{ failed_withdrawals|length }} failed withdrawal(s) (funds returned). You can request again.
+                        </small>
+                    </div>
+                    {% endif %}
+                    <div class="text-xs text-muted">
+                        <i class="fas fa-info-circle"></i> 40% platform commission (seller earns 60%)
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2FA Status -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-danger">🔐 Security Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>2FA Authentication</span>
+                            <span class="badge bg-{{ two_fa_enabled|yesno:'success,danger' }}">
+                                {{ two_fa_enabled|yesno:'Enabled,Disabled' }}
+                            </span>
+                        </div>
+                        {% if two_fa_enabled %}
+                        <p class="text-xs text-success mb-2">
+                            <i class="fas fa-shield-alt"></i> Your withdrawals are protected with 2FA
+                        </p>
+                        {% else %}
+                        <p class="text-xs text-warning mb-2">
+                            <i class="fas fa-exclamation-triangle"></i> Enable 2FA for enhanced withdrawal security
+                        </p>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'security:settings' %}" class="btn btn-outline-danger btn-sm w-100">
+                        {% if two_fa_enabled %}Manage 2FA{% else %}Enable 2FA{% endif %}
+                    </a>
+                </div>
+            </div>
+
+            <!-- Recent Sales -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">📈 Recent Sales</h6>
+                </div>
+                <div class="card-body">
+                    {% for sale in recent_sales %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">{{ sale.created_at|date:"M d, Y" }}</small>
+                                <p class="mb-0 small"><strong>{{ sale.document.title|truncatechars:30 }}</strong></p>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-success">${{ sale.net_amount|floatformat:2 }}</small>
+                                <br>
+                                <small class="text-muted">-{{ sale.commission_amount|floatformat:2 }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center mb-0">No recent sales</p>
+                    {% endfor %}
+                </div>
+            </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-warning">⭐ Reviews</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Total Reviews</span>
+                            <strong>{{ total_reviews }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Average Rating</span>
+                            <strong class="text-warning">{{ average_rating|floatformat:1 }}/5</strong>
+                        </div>
+                    </div>
+                    <a href="{% url 'reviews:my_reviews' %}" class="btn btn-warning btn-sm w-100">Manage Reviews</a>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">📖 Study Tools</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Study Time Today</span>
+                            <strong class="text-info">{{ study_time_today }}min</strong>
+                        </div>
+                    </div>
+                    <a href="{% url 'education:study_planner' %}" class="btn btn-info btn-sm w-100">Study Planner</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performing Documents -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">🏆 Top Performing Documents</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for document in top_documents %}
+                        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body p-2">
+                                    <h6 class="mb-1 text-truncate">{{ document.title }}</h6>
+                                    <div class="text-warning mb-2">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= document.average_rating %}⭐{% else %}☆{% endif %}
+                                        {% endfor %}
+                                    </div>
+                                     <div class="d-flex justify-content-between align-items-center">
+                                         <span class="badge bg-success">{{ document.sales_count }} sales</span>
+                                         <span class="text-primary">${{ document.price }}</span>
+                                     </div>
+                                     <div class="small text-muted mt-1">Revenue: ${{ document.total_revenue|default_if_none:0|floatformat:2 }}</div>
+                                 </div>
+                             </div>
+                         </div>
+                        {% empty %}
+                        <div class="col-12 text-center">
+                            <p class="text-muted">No sales data available yet.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Pagination Controls for Top Documents -->
+                {% if top_docs_has_previous or top_docs_has_next %}
+                <nav aria-label="Top Documents pagination" class="mt-3">
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        <!-- Previous -->
+                        {% if top_docs_has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?top_docs_page={{ top_docs_previous_page_number }}" tabindex="-1">
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- Page Numbers -->
+                        {% for num in top_documents.paginator.page_range %}
+                            {% if num == top_docs_page_number %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?top_docs_page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Next -->
+                        {% if top_docs_has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?top_docs_page={{ top_docs_next_page_number }}">
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                <!-- Pagination Info -->
+                <div class="text-center text-muted small mt-2">
+                    Showing {{ top_documents.start_index }}-{{ top_documents.end_index }} 
+                    of {{ top_documents.paginator.count }} documents
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders & Reviews -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">📦 Recent Orders</h6>
+                </div>
+                <div class="card-body">
+                    {% for order in recent_orders %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <small class="text-muted">{{ order.created_at|date:"M d, Y" }}</small>
+                        <p class="mb-1"><strong>{{ order.buyer.username }}</strong> purchased {{ order.document.title }}</p>
+                         <div class="d-flex justify-content-between align-items-center">
+                            {% if order.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif order.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% elif order.status == 'refunded' %}
+                                <span class="badge bg-secondary">Refunded</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ order.status|title }}</span>
+                            {% endif %}
+                            <span class="text-primary">${{ order.amount_paid|floatformat:2 }}</span>
+                          </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No recent orders</p>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination Controls for Recent Orders -->
+                {% if orders_has_previous or orders_has_next %}
+                <nav aria-label="Recent Orders pagination" class="mt-3">
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        <!-- Previous -->
+                        {% if orders_has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?orders_page={{ orders_previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" tabindex="-1">
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- Page Numbers -->
+                        {% for num in recent_orders.paginator.page_range %}
+                            {% if num == orders_page_number %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?orders_page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Next -->
+                        {% if orders_has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?orders_page={{ orders_next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                <!-- Pagination Info -->
+                <div class="text-center text-muted small mt-2">
+                    Showing {{ recent_orders.start_index }}-{{ recent_orders.end_index }} 
+                    of {{ recent_orders.paginator.count }} orders
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-warning">⭐ Recent Reviews</h6>
+                </div>
+                <div class="card-body">
+                    {% for review in recent_reviews %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                        <p class="mb-1"><strong>{{ review.document.title }}</strong></p>
+                        <div class="text-warning mb-1">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}⭐{% else %}☆{% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="text-muted small">{{ review.comment|truncatewords:10 }}</p>
+                        <p class="mb-0"><small>by {{ review.reviewer.username }}</small></p>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No reviews yet</p>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination Controls for Recent Reviews -->
+                {% if reviews_has_previous or reviews_has_next %}
+                <nav aria-label="Recent Reviews pagination" class="mt-3">
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        <!-- Previous -->
+                        {% if reviews_has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?reviews_page={{ reviews_previous_page_number }}" tabindex="-1">
+                                    <i class="bi bi-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-left"></i> Previous</span>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- Page Numbers -->
+                        {% for num in recent_reviews.paginator.page_range %}
+                            {% if num == reviews_page_number %}
+                                <li class="page-item active" aria-current="page">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?reviews_page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Next -->
+                        {% if reviews_has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?reviews_page={{ reviews_next_page_number }}">
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                <!-- Pagination Info -->
+                <div class="text-center text-muted small mt-2">
+                    Showing {{ recent_reviews.start_index }}-{{ recent_reviews.end_index }} 
+                    of {{ recent_reviews.paginator.count }} reviews
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

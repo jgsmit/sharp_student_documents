@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}2FA Verification - SharpDocs{% endblock %}
+{% block meta_description %}Complete two-factor authentication for your withdrawal on SharpDocs.{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold">
+            <i class="bi bi-shield-check"></i> 2FA Verification
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <!-- Withdrawal Details -->
+          <div class="alert alert-info mb-4">
+            <h6 class="fw-semibold mb-2">Withdrawal Details</h6>
+            <div class="row">
+              <div class="col-6">
+                <small>Amount:</small><br>
+                <strong>${{ withdrawal_request.amount|floatformat:2 }}</strong>
+              </div>
+              <div class="col-6">
+                <small>Method:</small><br>
+                <strong>
+                  {% if withdrawal_request.withdrawal_method.method_type == 'stripe' %}
+                    Stripe Connect
+                  {% elif withdrawal_request.withdrawal_method.method_type == 'paypal' %}
+                    PayPal
+                  {% else %}
+                    Bank Transfer
+                  {% endif %}
+                </strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2FA Instructions -->
+          <div class="text-center mb-4">
+            <div class="mb-3">
+              <i class="bi bi-phone display-1 text-primary"></i>
+            </div>
+            <h5>Enter Authentication Code</h5>
+            <p class="text-muted">
+              Open your authenticator app and enter the 6-digit code to verify this withdrawal.
+            </p>
+          </div>
+
+          <!-- Verification Form -->
+          <form method="post" id="2faForm">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="2fa_token" class="form-label fw-semibold">
+                Authentication Code
+              </label>
+              <div class="input-group input-group-lg mb-3">
+                <input type="text" class="form-control text-center" 
+                       id="2fa_token" name="2fa_token" 
+                       placeholder="000000" maxlength="6" 
+                       pattern="[0-9]{6}" required
+                       autocomplete="off">
+              </div>
+              <div class="text-center">
+                <small class="text-muted">
+                  Enter the 6-digit code from your authenticator app
+                </small>
+              </div>
+            </div>
+
+            <!-- Backup Code Option -->
+            <div class="text-center mb-4">
+              <button type="button" class="btn btn-link text-muted" onclick="toggleBackupCode()">
+                <i class="bi bi-key"></i> Use backup code instead
+              </button>
+            </div>
+
+            <!-- Backup Code Input (Hidden by default) -->
+            <div id="backupCodeSection" class="mb-4" style="display: none;">
+              <label for="backup_code" class="form-label fw-semibold">
+                Backup Code
+              </label>
+              <input type="text" class="form-control form-control-lg text-center" 
+                     id="backup_code" name="backup_code" 
+                     placeholder="Enter backup code" 
+                     autocomplete="off">
+              <small class="form-text text-muted">
+                Enter one of your 10 backup codes if you can't access your authenticator app
+              </small>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-check-circle"></i> Verify & Process Withdrawal
+              </button>
+              <a href="{% url 'withdrawals:dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Cancel
+              </a>
+            </div>
+          </form>
+
+          <!-- Help Section -->
+          <div class="alert alert-light mt-4">
+            <h6 class="fw-semibold mb-2">
+              <i class="bi bi-question-circle"></i> Need Help?
+            </h6>
+            <ul class="mb-0 small">
+              <li>Make sure your device's time is correct</li>
+              <li>Try generating a new code in your authenticator app</li>
+              <li>Use a backup code if you can't access your app</li>
+              <li>Contact support if you continue having issues</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleBackupCode() {
+  const backupSection = document.getElementById('backupCodeSection');
+  const tokenInput = document.getElementById('2fa_token');
+  const backupInput = document.getElementById('backup_code');
+  
+  if (backupSection.style.display === 'none') {
+    backupSection.style.display = 'block';
+    tokenInput.disabled = true;
+    tokenInput.value = '';
+    backupInput.focus();
+  } else {
+    backupSection.style.display = 'none';
+    tokenInput.disabled = false;
+    backupInput.value = '';
+    tokenInput.focus();
+  }
+}
+
+// Auto-focus on token input
+document.addEventListener('DOMContentLoaded', function() {
+  const tokenInput = document.getElementById('2fa_token');
+  if (tokenInput) {
+    tokenInput.focus();
+  }
+});
+
+// Format verification code input
+document.addEventListener('DOMContentLoaded', function() {
+  const tokenInput = document.getElementById('2fa_token');
+  if (tokenInput) {
+    tokenInput.addEventListener('input', function(e) {
+      // Only allow numbers
+      this.value = this.value.replace(/[^0-9]/g, '');
+      
+      // Auto-submit when 6 digits entered
+      if (this.value.length === 6) {
+        document.getElementById('2faForm').submit();
+      }
+    });
+  }
+});
+
+// Handle backup code vs token submission
+document.getElementById('2faForm').addEventListener('submit', function(e) {
+  const backupSection = document.getElementById('backupCodeSection');
+  const tokenInput = document.getElementById('2fa_token');
+  const backupInput = document.getElementById('backup_code');
+  
+  if (backupSection.style.display !== 'none') {
+    // Using backup code
+    if (backupInput.value.trim() === '') {
+      e.preventDefault();
+      alert('Please enter a backup code');
+      return false;
+    }
+    
+    // Copy backup code to token field for backend processing
+    tokenInput.value = backupInput.value;
+    tokenInput.disabled = false;
+  } else {
+    // Using 2FA token
+    if (tokenInput.value.length !== 6) {
+      e.preventDefault();
+      alert('Please enter a complete 6-digit code');
+      return false;
+    }
+  }
+});
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.display-1 {
+  font-size: 4rem;
+}
+
+.card {
+  transition: transform 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.form-control-lg {
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.input-group-lg .form-control {
+  font-size: 1.5rem;
+  letter-spacing: 0.2em;
+}
+
+.btn-link {
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+</style>
+{% endblock %}

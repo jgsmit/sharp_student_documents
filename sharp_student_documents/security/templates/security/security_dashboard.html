@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Security Dashboard - SharpDocs v2.0{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">🔐 Security Dashboard</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+            <div class="btn-group me-2">
+                <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-secondary">← Back to Admin</a>
+                <a href="{% url 'security:trust_security' %}" class="btn btn-sm btn-primary">🔐 Trust & Security</a>
+                <a href="{% url 'security:settings' %}" class="btn btn-sm btn-primary">⚙️ Security Settings</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">2FA Adoption</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ two_fa_adoption_rate }}%</div>
+                            <div class="text-xs text-gray-500">{{ total_2fa_users }}/{{ total_users }} users</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Pending Verifications</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_verifications }}</div>
+                            <div class="text-xs text-gray-500">{{ total_verifications }} total</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Fraud Cases</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ fraud_cases }}</div>
+                            <div class="text-xs text-gray-500">{{ confirmed_fraud_cases }} confirmed</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Critical Events</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ critical_events }}</div>
+                            <div class="text-xs text-gray-500">{{ total_security_events }} total events</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-bell fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Management Sections -->
+    <div class="row">
+        <!-- Two-Factor Authentication -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">🔑 Two-Factor Authentication</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'security:manage_2fa' %}">📝 Manage 2FA</a></li>
+                            <li><a class="dropdown-item" href="{% url 'security:2fa_setup' %}">⚙️ Setup Guide</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ total_2fa_users }}</h4>
+                            <small class="text-muted">Enabled Users</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{ two_fa_adoption_rate }}%</h4>
+                            <small class="text-muted">Adoption Rate</small>
+                        </div>
+                    </div>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-primary" role="progressbar" data-width="{{ two_fa_adoption_rate }}" aria-valuenow="{{ two_fa_adoption_rate }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ two_fa_adoption_rate }}%
+                        </div>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const progressBar = document.querySelector('[data-width="{{ two_fa_adoption_rate }}"]');
+                            if (progressBar) {
+                                progressBar.style.width = '{{ two_fa_adoption_rate }}%';
+                            }
+                        });
+                    </script>
+                    <a href="{% url 'security:manage_2fa' %}" class="btn btn-primary btn-sm w-100">Manage 2FA Settings</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Identity Verification -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-success">🆔 Identity Verification</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'security:verification_review' %}">📝 Review Verifications</a></li>
+                            <li><a class="dropdown-item" href="{% url 'security:verification_status' %}">🔍 Verification Status</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-3">
+                            <h5 class="text-warning">{{ pending_verifications }}</h5>
+                            <small class="text-muted">Pending</small>
+                        </div>
+                        <div class="col-3">
+                            <h5 class="text-success">{{ approved_verifications }}</h5>
+                            <small class="text-muted">Approved</small>
+                        </div>
+                        <div class="col-3">
+                            <h5 class="text-danger">{{ rejected_verifications }}</h5>
+                            <small class="text-muted">Rejected</small>
+                        </div>
+                        <div class="col-3">
+                            <h5 class="text-secondary">{{ expired_verifications }}</h5>
+                            <small class="text-muted">Expired</small>
+                        </div>
+                    </div>
+                    {% if pending_verifications > 0 %}
+                    <div class="alert alert-warning py-2">
+                        <small><i class="fas fa-exclamation-triangle"></i> {{ pending_verifications }} pending reviews</small>
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'security:verification_review' %}" class="btn btn-success btn-sm w-100">Review Verifications</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fraud Detection -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-danger">🚨 Fraud Detection - UPDATED</h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'security:fraud_cases_review' %}">📝 Review Cases</a></li>
+                            <li><a class="dropdown-item" href="{% url 'security:verification_review' %}">📝 Review Verifications</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="alert('Fraud analytics coming soon')">📊 Analytics</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <h5 class="text-danger">{{ high_risk_cases }}</h5>
+                            <small class="text-muted">High Risk</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-warning">{{ medium_risk_cases }}</h5>
+                            <small class="text-muted">Medium Risk</small>
+                        </div>
+                        <div class="col-4">
+                            <h5 class="text-info">{{ low_risk_cases }}</h5>
+                            <small class="text-muted">Low Risk</small>
+                        </div>
+                    </div>
+                    {% if high_risk_cases > 0 %}
+                    <div class="alert alert-danger py-2">
+                        <small><i class="fas fa-exclamation-triangle"></i> {{ high_risk_cases }} high-risk cases</small>
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'security:fraud_cases_review' %}" class="btn btn-danger btn-sm w-100">Review Fraud Cases</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="row">
+        <!-- Recent Security Events -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-warning">📋 Recent Security Events</h6>
+                    <a href="{{ admin_logs_url }}" class="btn btn-sm btn-outline-warning">View All</a>
+                </div>
+                <div class="card-body">
+                    {% for event in security_events %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted">{{ event.created_at|date:"M d, Y H:i" }}</small>
+                                <p class="mb-1"><strong>{{ event.user.username }}</strong> - {{ event.get_event_type_display }}</p>
+                                <small class="text-muted">IP: {{ event.ip_address }}</small>
+                            </div>
+                            <span class="badge bg-{{ event.severity|yesno:'warning,danger' }}">{{ event.severity|upper }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No recent security events</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Verifications & Fraud Cases -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-info">🔍 Pending Reviews</h6>
+                    <span class="badge bg-info">{{ pending_verifications }} pending</span>
+                </div>
+                <div class="card-body">
+                    <!-- Pending Verifications -->
+                    <h6 class="text-warning mb-3">🆔 Identity Verifications</h6>
+                    {% for verification in recent_verifications %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted">{{ verification.created_at|date:"M d, Y H:i" }}</small>
+                                <p class="mb-1"><strong>{{ verification.user.username }}</strong> - {{ verification.get_verification_type_display }}</p>
+                            </div>
+                            <span class="badge bg-warning">{{ verification.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted mb-3">No pending verifications</p>
+                    {% endfor %}
+
+                    <!-- Fraud Cases -->
+                    <h6 class="text-danger mb-3 mt-4">🚨 Fraud Cases</h6>
+                    {% for case in recent_fraud_cases %}
+                    <div class="mb-2 p-2 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted">{{ case.created_at|date:"M d, Y H:i" }}</small>
+                                <p class="mb-1"><strong>{{ case.user.username }}</strong> - {{ case.get_pattern_type_display }}</p>
+                            </div>
+                            <span class="badge bg-danger">Risk: {{ case.risk_score }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No active fraud cases</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">⚡ Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ admin_2fa_url }}" class="btn btn-primary btn-block">
+                                <i class="fas fa-shield-alt me-2"></i> Manage 2FA
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ admin_verification_url }}" class="btn btn-success btn-block">
+                                <i class="fas fa-user-check me-2"></i> Review Verifications
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'security:fraud_cases_review' %}" class="btn btn-danger btn-block">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Fraud Cases
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ admin_logs_url }}" class="btn btn-warning btn-block">
+                                <i class="fas fa-list me-2"></i> Security Logs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

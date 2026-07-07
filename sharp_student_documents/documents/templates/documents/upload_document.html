@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Upload Document - SharpDocs{% endblock %}
+{% block meta_description %}Upload your academic documents to sell on SharpDocs marketplace. Support for notes, papers, guides, and more.{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-gradient text-white py-3">
+          <h2 class="mb-0 fw-bold text-center">
+            <i class="bi bi-cloud-upload"></i> Upload Document
+          </h2>
+        </div>
+        <div class="card-body p-4">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+          {% endif %}
+
+          <form method="post" enctype="multipart/form-data" id="documentUploadForm">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-type"></i> Document Title *
+                </label>
+                {{ form.title|add_class:"form-control form-control-lg"|attr:"placeholder:Enter a clear, descriptive title" }}
+                {% if form.title.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.title.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.price.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-currency-dollar"></i> Price ($) *
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  {{ form.price|add_class:"form-control form-control-lg"|attr:"placeholder:9.99"|attr:"step:0.01" }}
+                </div>
+                {% if form.price.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.price.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Categorization -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-folder"></i> Category
+                </label>
+                {{ form.category|add_class:"form-select" }}
+                {% if form.category.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.category.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.document_type.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-file-earmark"></i> Document Type
+                </label>
+                {{ form.document_type|add_class:"form-select" }}
+                {% if form.document_type.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.document_type.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="{{ form.academic_level.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-mortarboard"></i> Academic Level
+                </label>
+                {{ form.academic_level|add_class:"form-select" }}
+                {% if form.academic_level.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.academic_level.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.year.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-calendar"></i> Year
+                </label>
+                {{ form.year|add_class:"form-control"|attr:"placeholder:2024" }}
+                {% if form.year.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.year.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Academic Details -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="{{ form.subject.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-book"></i> Subject
+                </label>
+                {{ form.subject|add_class:"form-control"|attr:"placeholder:e.g., Mathematics, Biology, History" }}
+                <small class="form-text text-muted">e.g., Mathematics, Biology, Computer Science</small>
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.course_code.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-hash"></i> Course Code
+                </label>
+                {{ form.course_code|add_class:"form-control"|attr:"placeholder:e.g., MATH101, BIO202" }}
+                <small class="form-text text-muted">e.g., MATH101, BIO202, CS101</small>
+              </div>
+            </div>
+
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="{{ form.author.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-person"></i> Author/Professor
+                </label>
+                {{ form.author|add_class:"form-control"|attr:"placeholder:Professor Smith or Dr. Jane Doe" }}
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.university.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-building"></i> University/Institution
+                </label>
+                {{ form.university|add_class:"form-control"|attr:"placeholder:e.g., Harvard University" }}
+              </div>
+            </div>
+
+            <!-- Reference Information -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <label for="{{ form.isbn.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-upc-scan"></i> ISBN (optional)
+                </label>
+                {{ form.isbn|add_class:"form-control"|attr:"placeholder:978-0-123456-789" }}
+                <small class="form-text text-muted">For textbooks and reference materials</small>
+              </div>
+              <div class="col-md-6">
+                <label for="{{ form.tags.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-tags"></i> Tags
+                </label>
+                {{ form.tags|add_class:"form-control"|attr:"placeholder:math, calculus, exam, study guide" }}
+                <small class="form-text text-muted">Comma-separated for better searchability</small>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+              <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-text-paragraph"></i> Description *
+              </label>
+              {{ form.description|add_class:"form-control"|attr:"rows:4"|attr:"placeholder:Provide a detailed description of your document content, topics covered, and target audience..." }}
+              <small class="form-text text-muted">
+                Include topics covered, difficulty level, and what makes this document valuable to students.
+              </small>
+              {% if form.description.errors %}
+                <div class="text-danger small mt-1">
+                  {% for error in form.description.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Usage Rights / License -->
+            <div class="mb-4">
+              <label for="{{ form.license_type.id_for_label }}" class="form-label fw-semibold">
+                <i class="bi bi-shield-check"></i> Usage Rights (License)
+              </label>
+              {{ form.license_type|add_class:"form-select" }}
+              {% if form.license_type.errors %}
+                <div class="text-danger small mt-1">
+                  {% for error in form.license_type.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+              <div class="mt-2">
+                <label for="{{ form.license_note.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-card-text"></i> Additional Terms (Optional)
+                </label>
+                {{ form.license_note|add_class:"form-control"|attr:"rows:2"|attr:"placeholder:e.g., Personal use only. No sharing or resale." }}
+                {% if form.license_note.errors %}
+                  <div class="text-danger small mt-1">
+                    {% for error in form.license_note.errors %}{{ error }}{% endfor %}
+                  </div>
+                {% endif %}
+                <small class="form-text text-muted">
+                  This will be shown to buyers on the document page and near downloads.
+                </small>
+              </div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="mb-4">
+              <label for="{{ form.file.id_for_label }}" class="form-label fw-semibold">
+                  <i class="bi bi-cloud-upload"></i> Document File *
+              </label>
+              <div class="input-group">
+                {{ form.file|add_class:"form-control" }}
+                <button class="btn btn-outline-secondary" type="button" id="clearFileBtn">
+                  <i class="bi bi-x-circle"></i> Clear
+                </button>
+              </div>
+              <small class="form-text text-muted">
+                All file types are accepted. Large files are supported as long as the hosting server allows them.
+              </small>
+              {% if form.file.errors %}
+                <div class="text-danger small mt-1">
+                  {% for error in form.file.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="d-flex gap-2 mt-4">
+              <button type="submit" class="btn btn-primary btn-lg flex-fill">
+                <i class="bi bi-cloud-upload"></i> Upload Document
+              </button>
+              <a href="{% url 'documents:seller_dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips & Guidelines -->
+    <div class="col-lg-4">
+      <div class="card border-0 bg-light">
+        <div class="card-body">
+          <h5 class="card-title fw-semibold mb-3">
+            <i class="bi bi-lightbulb"></i> Upload Tips
+          </h5>
+          
+          <div class="mb-3">
+            <h6 class="fw-semibold">📝 Title Best Practices</h6>
+            <ul class="small">
+              <li>Be specific and descriptive</li>
+              <li>Include subject and course code</li>
+              <li>Use keywords students search for</li>
+            </ul>
+          </div>
+
+          <div class="mb-3">
+            <h6 class="fw-semibold">🏷️ Categorization</h6>
+            <ul class="small">
+              <li>Choose the most specific category</li>
+              <li>Select appropriate academic level</li>
+              <li>Add relevant tags for searchability</li>
+            </ul>
+          </div>
+
+          <div class="mb-3">
+            <h6 class="fw-semibold">💰 Pricing Strategy</h6>
+            <ul class="small">
+              <li>Research similar documents</li>
+              <li>Consider document quality and length</li>
+              <li>Competitive pricing sells faster</li>
+            </ul>
+          </div>
+
+          <div class="mb-3">
+            <h6 class="fw-semibold">📄 File Guidelines</h6>
+            <ul class="small">
+              <li>Ensure text is readable and clear</li>
+              <li>Remove personal information</li>
+              <li>Check for copyright compliance</li>
+              <li>Use PDF for best compatibility</li>
+            </ul>
+          </div>
+
+          <div class="alert alert-info mt-3">
+            <h6 class="alert-heading">💡 Pro Tip</h6>
+            <p class="mb-0">Documents with detailed descriptions and proper categorization sell <strong>3x faster</strong>!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('clearFileBtn').addEventListener('click', function() {
+  document.getElementById('{{ form.file.id_for_label }}').value = '';
+});
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.alert {
+  border: none;
+  border-radius: 8px;
+}
+
+.alert-info {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+</style>
+{% endblock %}

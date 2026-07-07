@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Secure Checkout - Buy {{ order.document.title }} | SharpDocs{% endblock %}
+{% block meta_description %}Securely purchase {{ order.document.title }} on SharpDocs. Multiple payment options including Stripe and PayPal.{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Security Notice -->
+      <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="bi bi-shield-check-fill me-2"></i>
+          <div>
+            <strong>Secure Checkout:</strong> Your payment information is encrypted and secure. We never store your card details.
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      
+      <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-gradient text-white py-3">
+          <div class="d-flex align-items-center justify-content-center">
+            <i class="bi bi-shield-lock-fill me-2"></i>
+            <h5 class="mb-0 fw-bold">Secure Checkout</h5>
+          </div>
+        </div>
+        <div class="card-body p-4">
+
+          <!-- Document Info -->
+          <div class="mb-4">
+            <h6 class="text-muted mb-3">You're purchasing:</h6>
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="flex-grow-1">
+                    <h5 class="fw-bold text-primary mb-2">{{ order.document.title }}</h5>
+                    <p class="text-muted mb-2">{{ order.document.description|truncatewords:20 }}</p>
+                    <div class="d-flex gap-3 small text-muted">
+                      {% if order.document.pages %}
+                        <span><i class="bi bi-file-earmark"></i> {{ order.document.pages }} pages</span>
+                      {% endif %}
+                      {% if order.document.category %}
+                        <span><i class="bi bi-tag"></i> {{ order.document.category.name }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="text-end">
+                    <div class="h3 text-success fw-bold mb-0">${{ order.document.price }}</div>
+                    <small class="text-muted">One-time payment</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <!-- Payment Options -->
+          <div class="mb-4">
+            <h6 class="fw-semibold mb-3">Choose your payment method:</h6>
+            
+            <!-- PayPal Info -->
+            <div class="alert alert-success mb-3" role="alert">
+              <i class="bi bi-info-circle me-2"></i>
+              <strong>PayPal accepts all cards:</strong> Visa, Mastercard, Amex, Discover, Apple Pay, Google Pay, and more. No PayPal account required!
+            </div>
+            
+            <div class="row g-3">
+              <div class="col-12">
+                <form action="{% url 'payments:paypal_checkout' order.id %}" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-paypal me-2"></i>
+                    <div class="text-start">
+                      <div class="fw-semibold">Pay with PayPal</div>
+                      <small class="opacity-75">All cards accepted • No account needed</small>
+                    </div>
+                  </button>
+                </form>
+              </div>
+              
+              <div class="col-12">
+                <div class="card border-2 border-dashed">
+                  <div class="card-body text-center py-4">
+                    <i class="bi bi-credit-card display-4 text-muted mb-3"></i>
+                    <h6 class="fw-semibold text-muted">Direct Card Payments</h6>
+                    <p class="text-muted small mb-0">Coming soon! We're adding direct card processing for even more payment options.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="{% url 'documents:document_detail' order.document.slug %}" class="btn btn-link text-muted">
+              <i class="bi bi-arrow-left"></i> Back to document
+            </a>
+            
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#helpSection">
+              <i class="bi bi-question-circle"></i> Need Help?
+            </button>
+          </div>
+
+          <!-- Help Section -->
+          <div class="collapse mt-3" id="helpSection">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold mb-3">Payment & Security</h6>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <div class="d-flex">
+                      <i class="bi bi-shield-check text-success me-2 mt-1"></i>
+                      <div>
+                        <strong>SSL Encryption</strong>
+                        <p class="small text-muted mb-0">All data is encrypted using industry-standard SSL.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <div class="d-flex">
+                      <i class="bi bi-credit-card text-primary me-2 mt-1"></i>
+                      <div>
+                        <strong>Secure Payment</strong>
+                        <p class="small text-muted mb-0">We never store your payment information.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="d-flex">
+                      <i class="bi bi-arrow-repeat text-info me-2 mt-1"></i>
+                      <div>
+                        <strong>Money-back Guarantee</strong>
+                        <p class="small text-muted mb-0">30-day refund policy for all purchases.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="d-flex">
+                      <i class="bi bi-headset text-warning me-2 mt-1"></i>
+                      <div>
+                        <strong>24/7 Support</strong>
+                        <p class="small text-muted mb-0">Get help whenever you need it.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card {
+  border: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

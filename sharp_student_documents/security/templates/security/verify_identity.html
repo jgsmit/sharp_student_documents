@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Identity Verification - SharpDocs{% endblock %}
+{% block meta_description %}Verify your identity to become a trusted seller on SharpDocs marketplace.{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-gradient text-white">
+          <h4 class="mb-0 fw-bold text-center">
+            <i class="bi bi-shield-check"></i> Identity Verification
+          </h4>
+        </div>
+        <div class="card-body p-4">
+          <div class="alert alert-info mb-4">
+            <h5 class="alert-heading">
+              <i class="bi bi-info-circle"></i> Why Verify Your Identity?
+            </h5>
+            <p class="mb-0">
+              Verified sellers earn <strong>3x more trust</strong> from buyers and receive a 
+              <span class="badge bg-success">Verified Seller</span> badge on their profile.
+              This increases your sales potential and marketplace credibility.
+            </p>
+          </div>
+
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Verification Type Selection -->
+            <div class="mb-4">
+              <label for="verification_type" class="form-label fw-semibold">
+                <i class="bi bi-card-text"></i> Verification Type
+              </label>
+              <select name="verification_type" id="verification_type" class="form-select form-select-lg" required>
+                <option value="">Select verification type...</option>
+                <option value="government_id">Government ID (Driver's License, Passport)</option>
+                <option value="student_id">Student ID Card</option>
+                <option value="university_email">University Email Address</option>
+                <option value="phone">Phone Number</option>
+                <option value="social">Social Media Profile</option>
+              </select>
+            </div>
+
+            <!-- Document Upload -->
+            <div class="mb-4">
+              <label for="documents" class="form-label fw-semibold">
+                <i class="bi bi-file-earmark"></i> Upload Documents
+              </label>
+              <div class="border rounded p-3 bg-light">
+                <input type="file" name="documents" id="documents" 
+                       class="form-control" multiple accept=".jpg,.jpeg,.png,.pdf">
+                <small class="form-text text-muted">
+                  Upload clear photos or scanned documents. 
+                  Accepted formats: JPG, PNG, PDF (Max 10MB total)
+                </small>
+              </div>
+            </div>
+
+            <!-- Requirements by Type -->
+            <div class="mb-4" id="requirements-section" style="display: none;">
+              <h6 class="fw-semibold mb-3">
+                <i class="bi bi-info-circle"></i> Requirements for <span id="selected-type"></span>:
+              </h6>
+              
+              <div id="government_id-requirements" class="requirements-content" style="display: none;">
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check-circle text-success"></i> Clear photo of government-issued ID</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Both front and back visible</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Name must match your profile</li>
+                  <li><i class="bi bi-check-circle text-success"></i> ID must be valid and not expired</li>
+                  <li><i class="bi bi-check-circle text-success"></i> No watermarks or obstructions</li>
+                </ul>
+              </div>
+              
+              <div id="student_id-requirements" class="requirements-content" style="display: none;">
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check-circle text-success"></i> Current student ID card</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Institution name clearly visible</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Student name and ID number visible</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Valid academic year shown</li>
+                </ul>
+              </div>
+              
+              <div id="university_email-requirements" class="requirements-content" style="display: none;">
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check-circle text-success"></i> Official university email address</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Email must end in .edu domain</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Screenshot of student portal access</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Current enrollment status</li>
+                </ul>
+              </div>
+              
+              <div id="phone-requirements" class="requirements-content" style="display: none;">
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check-circle text-success"></i> Clear photo of government-issued ID</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Phone number verification code</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Recent utility bill with address</li>
+                </ul>
+              </div>
+              
+              <div id="social-requirements" class="requirements-content" style="display: none;">
+                <ul class="list-unstyled">
+                  <li><i class="bi bi-check-circle text-success"></i> Screenshot of profile with visible username</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Profile should be public and verifiable</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Minimum 6 months old account</li>
+                  <li><i class="bi bi-check-circle text-success"></i> Connection to real identity</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Terms and Privacy -->
+            <div class="mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="terms" required>
+                <label class="form-check-label" for="terms">
+                  I agree to the <a href="#" class="text-decoration-none">Identity Verification Terms</a> 
+                  and understand that my documents will be securely stored and reviewed by SharpDocs staff.
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+              <button type="submit" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-shield-check"></i> Submit for Verification
+              </button>
+            </div>
+          </form>
+
+          <!-- Processing Information -->
+          <div class="alert alert-warning mt-4">
+            <h6 class="alert-heading">
+              <i class="bi bi-clock"></i> Processing Time
+            </h6>
+            <p class="mb-0">
+              Verification typically takes <strong>1-3 business days</strong>. 
+              You'll receive an email once your verification is reviewed.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('verification_type').addEventListener('change', function() {
+  const selectedType = this.value;
+  const requirementsSection = document.getElementById('requirements-section');
+  const selectedTypeSpan = document.getElementById('selected-type');
+  
+  // Hide all requirement sections
+  document.querySelectorAll('.requirements-content').forEach(el => {
+    el.style.display = 'none';
+  });
+  
+  if (selectedType) {
+    // Show requirements section
+    requirementsSection.style.display = 'block';
+    selectedTypeSpan.textContent = this.options[this.selectedIndex].text;
+    
+    // Show specific requirements
+    const specificRequirements = document.getElementById(selectedType + '-requirements');
+    if (specificRequirements) {
+      specificRequirements.style.display = 'block';
+    }
+  } else {
+    requirementsSection.style.display = 'none';
+  }
+});
+
+// File validation
+document.getElementById('documents').addEventListener('change', function(e) {
+  const files = Array.from(e.target.files);
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  
+  let totalSize = 0;
+  let invalidFiles = [];
+  
+  files.forEach(file => {
+    totalSize += file.size;
+    if (!allowedTypes.includes(file.type)) {
+      invalidFiles.push(file.name);
+    }
+  });
+  
+  if (totalSize > maxSize) {
+    alert('Total file size must be less than 10MB');
+    e.target.value = '';
+  }
+  
+  if (invalidFiles.length > 0) {
+    alert('Invalid file types: ' + invalidFiles.join(', ') + '. Only JPG, PNG, and PDF are allowed.');
+    e.target.value = '';
+  }
+});
+</script>
+
+<style>
+.bg-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.requirements-content {
+  background: #f8f9fa;
+  border-left: 4px solid #667eea;
+  padding: 15px;
+  border-radius: 0 8px 8px 0;
+}
+
+.form-control:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.list-unstyled li {
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.list-unstyled li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+</style>
+{% endblock %}

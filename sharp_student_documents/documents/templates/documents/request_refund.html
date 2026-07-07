@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Request Refund - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Request Refund / Complaint</h2>
+    <a href="{% url 'documents:my_purchases' %}" class="btn btn-outline-secondary btn-sm">Back to Purchases</a>
+  </div>
+
+  <div class="alert alert-warning">
+    <div class="d-flex justify-content-between flex-wrap">
+      <div class="me-3">
+        <strong>Refund window:</strong> within {{ refund_window_days }} days of purchase.
+      </div>
+      <div>
+        <strong>Download status:</strong> {{ downloaded|yesno:"Downloaded,Not downloaded" }}
+      </div>
+    </div>
+    <hr class="my-2">
+    <small class="text-muted">
+      Refunds are reviewed by support and processed manually via PayPal. If approved, an admin will refund your PayPal payment.
+    </small>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h5 class="mb-3">{{ order.document.title }}</h5>
+      <p class="text-muted mb-4">
+        Purchased on {{ order.created_at|date:"M d, Y H:i" }} · Amount paid: ${{ order.amount_paid }}
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Reason</label>
+          {{ form.reason }}
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Details</label>
+          {{ form.details }}
+        </div>
+
+        <button class="btn btn-danger">Submit Refund Request</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

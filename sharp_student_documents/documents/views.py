@@ -564,10 +564,19 @@ def document_detail(request, slug):
         can_download = user_orders.exists()
         user_order = user_orders.first() if can_download else None
 
-    # Generate download URL only if purchased (using local media)
+    # Generate download URL only if purchased (via Cloudinary)
     download_url = None
     if can_download and document.file:
-        download_url = document.file.url
+        try:
+            from cloudinary.utils import cloudinary_url
+            download_url, _ = cloudinary_url(
+                document.file.name,
+                resource_type="raw",
+                sign_url=True,
+                expires_at=int(time.time()) + 300,
+            )
+        except Exception:
+            download_url = None
 
     detail_labels = [
         document.subject,
@@ -2670,34 +2679,28 @@ def buyer_dashboard(request):
 @login_required
 def download_owner_document(request, document_id):
     """
-    Stream a document for the document owner.
+    Stream a document for the document owner via Cloudinary.
     """
+    from cloudinary.utils import cloudinary_url
     document = get_object_or_404(Document, id=document_id, seller=request.user)
 
     if not document.file:
         messages.error(request, "⚠️ No file is associated with this document.")
         return render(request, "documents/download_failed.html", {"document": document})
 
-    download_filename = os.path.basename(document.file.name or "") or f"{document.slug or document.id}"
-    content_type, _ = mimetypes.guess_type(download_filename)
+    public_id = document.file.name
 
     try:
-        file_handle = document.file.open("rb")
-    except FileNotFoundError:
-        logger.warning("Owner download: file missing on storage (document_id=%s, name=%s)", document.id, document.file.name)
-        messages.error(request, "⚠️ File not found on server. Please re-upload the document.")
-        return render(request, "documents/download_failed.html", {"document": document})
+        download_url, _ = cloudinary_url(
+            public_id,
+            resource_type="raw",
+            sign_url=True,
+            expires_at=int(time.time()) + 300,
+        )
     except Exception:
-        logger.exception("Owner download: failed to open file (document_id=%s)", document.id)
+        logger.exception("Owner download: failed to generate Cloudinary URL (document_id=%s)", document.id)
         messages.error(request, "⚠️ Download failed. Please try again later.")
         return render(request, "documents/download_failed.html", {"document": document})
-
-    response = FileResponse(
-        file_handle,
-        as_attachment=True,
-        filename=download_filename,
-        content_type=content_type or "application/octet-stream",
-    )
 
     DownloadLog.objects.create(
         user=request.user,
@@ -2705,13 +2708,14 @@ def download_owner_document(request, document_id):
         ip_address=request.META.get("REMOTE_ADDR"),
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
     )
-    return response
+    return redirect(download_url)
 
 @login_required
 def download_document(request, order_id):
     """
-    Stream a purchased document.
+    Redirect a purchased document download via Cloudinary.
     """
+    from cloudinary.utils import cloudinary_url
     order = get_object_or_404(Order, id=order_id, buyer=request.user)
     if order.status != "paid":
         messages.error(request, "⚠️ This order is not marked as paid yet. Please try again shortly.")
@@ -2722,31 +2726,19 @@ def download_document(request, order_id):
         messages.error(request, "⚠️ File not found for this document.")
         return render(request, "documents/download_failed.html", {"document": document})
 
-    download_filename = os.path.basename(document.file.name or "") or f"{document.slug or document.id}"
-    content_type, _ = mimetypes.guess_type(download_filename)
+    public_id = document.file.name
 
     try:
-        file_handle = document.file.open("rb")
-    except FileNotFoundError:
-        logger.warning(
-            "Buyer download: file missing on storage (order_id=%s, document_id=%s, name=%s)",
-            order.id,
-            document.id,
-            document.file.name,
+        download_url, _ = cloudinary_url(
+            public_id,
+            resource_type="raw",
+            sign_url=True,
+            expires_at=int(time.time()) + 300,
         )
-        messages.error(request, "⚠️ File not found on server. Please contact support or try again later.")
-        return render(request, "documents/download_failed.html", {"document": document})
     except Exception:
-        logger.exception("Buyer download: failed to open file (order_id=%s)", order.id)
+        logger.exception("Buyer download: failed to generate Cloudinary URL (order_id=%s, document_id=%s)", order.id, document.id)
         messages.error(request, "⚠️ Download failed. Please try again later.")
         return render(request, "documents/download_failed.html", {"document": document})
-
-    response = FileResponse(
-        file_handle,
-        as_attachment=True,
-        filename=download_filename,
-        content_type=content_type or "application/octet-stream",
-    )
 
     DownloadLog.objects.create(
         user=request.user,
@@ -2754,7 +2746,7 @@ def download_document(request, order_id):
         ip_address=request.META.get("REMOTE_ADDR"),
         user_agent=request.META.get("HTTP_USER_AGENT", ""),
     )
-    return response
+    return redirect(download_url)
 
 @login_required
 def my_purchases(request):

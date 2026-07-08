@@ -44,6 +44,10 @@ __pycache__/
 # render.yaml
 # requirements.txt
 
+# ---- Media (local) ----
+media/
+sharp_student_documents/media/
+
 # ---- Other ----
 *.bak
 *.tmp

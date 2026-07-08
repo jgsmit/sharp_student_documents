@@ -5,6 +5,7 @@ import dj_database_url
 import stripe
 import paypalrestsdk
 from decimal import Decimal
+import cloudinary as cloudinary_lib
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -164,18 +165,25 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # --- Media files (local storage) ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 # Keep Django's upload handlers happy with large numeric limits instead of None.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1 GB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1 GB
 
-# --- Cloudinary (backup for existing files) ---
+# --- Cloudinary (media file storage) ---
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME"),
     "API_KEY": os.getenv("CLOUDINARY_API_KEY"),
     "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
 }
-# DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"  # Commented out
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+# Configure cloudinary library globally
+cloudinary_lib.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True,
+)
 
 # --- Auth redirects ---
 LOGIN_REDIRECT_URL = "home"

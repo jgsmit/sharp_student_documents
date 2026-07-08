@@ -37,6 +37,7 @@ ALLOWED_HOSTS = [
     '.pythonanywhere.com',
     'sharpstudentdoc.com',
     'www.sharpstudentdoc.com',
+    '.vercel.app',
 ]
 # --- Marketplace commission ---
 # Seller gets (1 - PLATFORM_COMMISSION_RATE). Default: seller 60% / site 40%.
@@ -61,8 +62,9 @@ if not SECRET_KEY:
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "http://127.0.0.1:14560",  # Browser preview port
+    "http://127.0.0.1:14560",
     "https://*.pythonanywhere.com",
+    "https://*.vercel.app",
 ]
 
 # --- Applications ---

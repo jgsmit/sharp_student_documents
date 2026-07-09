@@ -141,115 +141,114 @@
 
 <!-- Available Documents -->
 <section class="container mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h2 class="fw-semibold mb-0">📄 Featured Documents</h2>
-            <p class="text-muted mb-0">Top-rated study materials from verified sellers</p>
+            <p class="text-muted mb-0 small">Top-rated study materials from verified sellers</p>
         </div>
-        <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary">
-            <i class="bi bi-arrow-right"></i> View All Documents
+        <a href="{% url 'documents:document_list' %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-arrow-right me-1"></i>View All
         </a>
     </div>
-    <div class="row">
+    <div class="row g-4">
         {% for doc in documents %}
-        <article class="col-md-4 mb-4">
-            <div class="card shadow-sm border-0 rounded-4 overflow-hidden card-hover">
-                <div class="card-body">
-                    <!-- Title and Price -->
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h5 class="card-title text-primary fw-semibold mb-0">{{ doc.title }}</h5>
-                        <strong class="text-success h5 mb-0">${{ doc.price }}</strong>
-                    </div>
-                    
-                    <!-- Meta Info -->
-                    <div class="d-flex flex-wrap gap-2 mb-3">
+        <article class="col-12 col-sm-6 col-lg-4">
+            <div class="doc-card card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+                <!-- Coloured top accent by category -->
+                <div class="doc-card-accent"></div>
+                <div class="card-body d-flex flex-column p-4">
+
+                    <!-- Category + Level badges -->
+                    <div class="d-flex flex-wrap gap-1 mb-2">
                         {% if doc.category %}
-                            <a href="{% url 'documents:category_detail' doc.category.slug %}" class="badge bg-light text-dark text-decoration-none">{{ doc.category.name }}</a>
-                        {% endif %}
-                        {% if doc.academic_level %}
-                            <span class="badge bg-info text-white">{{ doc.get_academic_level_display }}</span>
-                        {% endif %}
-                        {% if doc.pages %}
-                            <span class="badge bg-secondary">
-                                <i class="bi bi-file-earmark-text"></i> {{ doc.pages }} pages
-                            </span>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Rating -->
-                    {% if doc.rating %}
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center">
-                            <span class="text-warning me-2">
-                                {% for i in "12345" %}
-                                    {% if forloop.counter <= doc.rating %}
-                                        <i class="bi bi-star-fill"></i>
-                                    {% else %}
-                                        <i class="bi bi-star"></i>
-                                    {% endif %}
-                                {% endfor %}
-                            </span>
-                            <small class="text-muted">({{ doc.reviews_count }} reviews)</small>
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Preview -->
-                    <div class="card-preview mb-3">
-                        {% if doc.preview_text %}
-                            <div class="text-muted small p-3 bg-light rounded">
-                                <div class="preview-text">
-                                    {{ doc.preview_text|truncatewords:80|safe }}
-                                </div>
-                                
-                                {% if doc.preview_text|wordcount > 80 %}
-                                    <div class="mt-2 pt-2 border-top">
-                                        <small class="text-primary">
-                                            <i class="bi bi-book"></i> Extended preview available
-                                        </small>
-                                    </div>
-                                {% endif %}
-                                
-                                {% if doc.description %}
-                                    <div class="mt-2">
-                                        <small class="text-muted">
-                                            <strong>What you'll learn:</strong> {{ doc.description|truncatewords:20 }}
-                                        </small>
-                                    </div>
-                                {% endif %}
-                                
-                                {% if doc.tags %}
-                                    <div class="mt-2">
-                                        {% for tag in doc.get_tag_list %}
-                                            <span class="badge bg-light text-dark me-1" style="font-size: 0.7rem;">{{ tag }}</span>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% else %}
-                            <div class="text-muted text-center p-3">
-                                <i class="bi bi-file-earmark-text display-4"></i>
-                                <p class="small mt-2">Premium content - Purchase to access</p>
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Actions -->
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'documents:document_detail' doc.slug %}" class="btn btn-primary">
-                            <i class="bi bi-eye"></i> View Details
-                        </a>
-                        {% if doc.can_access_full and doc.user_order %}
-                            <a href="{% url 'documents:download_document' doc.user_order.id %}" class="btn btn-success">
-                                <i class="bi bi-download"></i> Download Now
+                            <a href="{% url 'documents:category_detail' doc.category.slug %}"
+                               class="badge bg-primary bg-opacity-10 text-primary text-decoration-none">
+                               {{ doc.category.name }}
                             </a>
                         {% endif %}
+                        {% if doc.academic_level and doc.academic_level != 'other' %}
+                            <span class="badge bg-info bg-opacity-15 text-info-emphasis">
+                                {{ doc.get_academic_level_display }}
+                            </span>
+                        {% endif %}
+                        {% if doc.document_type and doc.document_type != 'other' %}
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                {{ doc.get_document_type_display }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Title -->
+                    <h5 class="doc-title fw-semibold mb-1 lh-sm">{{ doc.title }}</h5>
+
+                    <!-- Seller + pages -->
+                    <p class="text-muted small mb-2">
+                        <i class="bi bi-person me-1"></i>{{ doc.seller.get_full_name|default:doc.seller.username }}
+                        {% if doc.pages %}
+                            <span class="ms-2"><i class="bi bi-file-earmark-text me-1"></i>{{ doc.pages }} pages</span>
+                        {% endif %}
+                    </p>
+
+                    <!-- Star rating -->
+                    {% if doc.average_rating %}
+                    <div class="d-flex align-items-center gap-1 mb-2">
+                        <div class="text-warning" aria-label="{{ doc.average_rating|floatformat:1 }} out of 5 stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= doc.average_rating %}
+                                    <i class="bi bi-star-fill" style="font-size:.85rem;"></i>
+                                {% else %}
+                                    <i class="bi bi-star" style="font-size:.85rem;"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">({{ doc.reviews_count }})</small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Preview snippet -->
+                    {% if doc.preview_text %}
+                    <p class="doc-preview text-muted small mb-3">
+                        {{ doc.preview_text|truncatewords:25 }}
+                    </p>
+                    {% elif doc.description %}
+                    <p class="doc-preview text-muted small mb-3">
+                        {{ doc.description|truncatewords:25 }}
+                    </p>
+                    {% endif %}
+
+                    <!-- Spacer -->
+                    <div class="mt-auto">
+                        <!-- Price + CTA -->
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="fw-bold text-success fs-5">${{ doc.price }}</span>
+                            {% if doc.can_access_full %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>Purchased
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'documents:document_detail' doc.slug %}"
+                               class="btn btn-primary rounded-3">
+                                <i class="bi bi-eye me-1"></i>View Details
+                            </a>
+                            {% if doc.can_access_full and doc.user_order %}
+                                <a href="{% url 'documents:download_document' doc.user_order.id %}"
+                                   class="btn btn-outline-success rounded-3">
+                                    <i class="bi bi-download me-1"></i>Download
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </article>
         {% empty %}
-        <p class="text-center text-muted">No documents available right now. Check back later!</p>
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-collection display-1 text-muted opacity-25 d-block mb-3"></i>
+            <p class="text-muted">No documents available right now. Check back soon!</p>
+            <a href="{% url 'register' %}" class="btn btn-primary">Be the first to upload</a>
+        </div>
         {% endfor %}
     </div>
 
@@ -400,118 +399,56 @@
     </div>
 </section>
 
-<!-- Custom Styling -->
+<!-- Page Styles -->
 <style>
+/* ── Hero ── */
 .hero-section {
     position: relative;
-    background: linear-gradient(120deg, #007bff 0%, #1cc88a 100%);
-    border-radius: 0 0 60px 60px;
+    background: linear-gradient(135deg, #0d47a1 0%, #1565c0 40%, #00897b 100%);
+    border-radius: 0 0 48px 48px;
     overflow: hidden;
 }
-
 .hero-bg {
-    background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.2), transparent 70%),
-                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.15), transparent 70%);
+    background: radial-gradient(circle at 15% 15%, rgba(255,255,255,0.18), transparent 60%),
+                radial-gradient(circle at 85% 85%, rgba(255,255,255,0.12), transparent 60%);
     z-index: 1;
 }
+@media (max-width: 767px) {
+    .hero-section { border-radius: 0 0 24px 24px; }
+}
 
+/* ── Document Cards ── */
+.doc-card { transition: transform 0.22s ease, box-shadow 0.22s ease; }
+.doc-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,0.13) !important; }
+.doc-card-accent { height: 4px; background: linear-gradient(90deg, #1565c0, #00897b); }
+.doc-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 1rem;
+    min-height: 2.5rem;
+}
+.doc-preview {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+    min-height: 4.5rem;
+}
+
+/* ── Feature Cards ── */
 .feature-card {
-    transition: all 0.3s ease;
-    border-radius: 12px;
-    background: white;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
 }
-
-.feature-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
-}
-
-.feature-icon {
-    width: 80px;
-    height: 80px;
-    font-size: 2rem;
-}
-
-.card-hover {
-    transition: all 0.3s ease;
-}
-
-.card-hover:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-}
-
-.card-preview {
-    border-radius: 8px;
-    border: 1px solid #dee2e6;
-    background-color: #fafafa;
-    padding: 8px;
-    max-height: 220px;
-    overflow-y: auto;
-}
-
-.card-preview pre {
-    font-size: 0.85rem;
-    line-height: 1.3;
-}
-
-.document-preview {
-    max-height: 250px;
-    overflow-y: auto;
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.document-preview .preview-text {
-    color: #495057;
-}
-
-.document-preview .border-top {
-    border-color: #dee2e6 !important;
-}
-
-.badge {
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.preview-text {
-    line-height: 1.4;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    color: #495057;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.btn-primary, .btn-warning, .btn-success {
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover, .btn-warning:hover, .btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .hero-section {
-        padding-top: 3rem !important;
-        padding-bottom: 3rem !important;
-        border-radius: 0 0 30px 30px;
-    }
-    
-    .feature-icon {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
-    }
-
-    .card-preview {
-        height: auto;
-        max-height: 160px;
-    }
+.feature-card:hover { transform: translateY(-6px); box-shadow: 0 14px 28px rgba(0,0,0,0.12); }
+.feature-icon { width: 72px; height: 72px; font-size: 1.75rem; }
+@media (max-width: 767px) {
+    .feature-icon { width: 56px; height: 56px; font-size: 1.4rem; }
 }
 </style>
 

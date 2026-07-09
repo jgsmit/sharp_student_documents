@@ -12,6 +12,7 @@
 {% block twitter_title %}Join SharpDocs{% endblock %}
 {% block twitter_description %}Create your free account and join the academic marketplace{% endblock %}
 
+{% block main_class %}p-0{% endblock %}
 {% block extra_css %}
 <style>
 /* Modern Registration Styles */
@@ -44,6 +45,14 @@
     gap: 3rem;
     align-items: center;
     min-height: 100vh;
+}
+
+/* Order classes for mobile-first form display */
+.order-1 { order: 1; }
+.order-2 { order: 2; }
+@media (min-width: 1025px) {
+    .order-lg-1 { order: 1; }
+    .order-lg-2 { order: 2; }
 }
 
 .register-content {
@@ -119,30 +128,37 @@
 
 .form-floating-custom {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .form-floating-custom label {
     position: absolute;
     top: 0;
     left: 0;
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.5rem;
     font-weight: 500;
     color: #64748b;
     transform-origin: 0 0;
     transition: all 0.2s ease;
     pointer-events: none;
     z-index: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .form-floating-custom input:focus ~ label,
 .form-floating-custom input:not(:placeholder-shown) ~ label {
-    transform: translateY(-1.25rem) scale(0.85);
+    transform: translateY(-0.85rem) scale(0.78);
     color: #3b82f6;
+    background: white;
+    padding: 0 0.25rem;
+    left: 1.25rem;
 }
 
 .form-floating-custom .form-control {
-    padding: 1.25rem 1.5rem 1.25rem 1.5rem;
+    padding: 1.5rem 1.5rem 0.75rem;
     height: auto;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
@@ -341,6 +357,7 @@
         grid-template-columns: 1fr;
         gap: 2rem;
         padding: 2rem 1rem;
+        min-height: auto;
     }
     
     .register-content {
@@ -353,7 +370,7 @@
     }
     
     .role-selector {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
         margin-bottom: 2rem;
     }
@@ -369,7 +386,7 @@
     }
     
     .role-selector {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 1rem;
         margin-bottom: 1.5rem;
     }
@@ -394,7 +411,7 @@
     }
     
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 1rem;
     }
     
@@ -404,6 +421,18 @@
     
     .register-body {
         padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .role-selector {
+        grid-template-columns: 1fr;
+    }
+    .register-content h1 {
+        font-size: 2rem;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
@@ -444,36 +473,8 @@
 {% block content %}
 <div class="register-page">
     <div class="register-container">
-        <!-- Left Content Section -->
-        <div class="register-content animate-fade-in">
-            <h1>Join SharpDocs</h1>
-            <p class="subtitle">
-                Start your academic journey with thousands of premium study materials from top students worldwide.
-            </p>
-            
-            <!-- Stats -->
-            <div class="stats-grid animate-fade-in animate-delay-2">
-                <div class="stat-item">
-                    <div class="stat-number">10,000+</div>
-                    <div class="stat-label">Active Students</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">5,000+</div>
-                    <div class="stat-label">Documents</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">98%</div>
-                    <div class="stat-label">Success Rate</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Support</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Registration Form -->
-        <div class="register-card animate-fade-in animate-delay-1">
+        <!-- Right Registration Form — shown FIRST on mobile via order -->
+        <div class="register-card animate-fade-in animate-delay-1 order-1 order-lg-2">
             <!-- Header -->
             <div class="register-header">
                 <div class="register-icon">
@@ -524,7 +525,7 @@
                             <label for="{{ form.username.id_for_label }}">Username</label>
                         </div>
                         {% if form.username.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="text-danger small mt-2 ps-1">
                                 {% for error in form.username.errors %}{{ error }}{% endfor %}
                             </div>
                         {% endif %}
@@ -536,32 +537,32 @@
                             <label for="{{ form.email.id_for_label }}">Email Address</label>
                         </div>
                         {% if form.email.errors %}
-                            <div class="text-danger small mt-1">
+                            <div class="text-danger small mt-2 ps-1">
                                 {% for error in form.email.errors %}{{ error }}{% endfor %}
                             </div>
                         {% endif %}
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-12 col-sm-6 mb-3 mb-sm-0">
                             <div class="form-floating-custom">
                                 {{ form.password1|add_class:"form-control"|attr:"placeholder: "|attr:"autocomplete:new-password" }}
                                 <label for="{{ form.password1.id_for_label }}">Password</label>
                             </div>
                             {% if form.password1.errors %}
-                                <div class="text-danger small mt-1">
+                                <div class="text-danger small mt-2 ps-1">
                                     {% for error in form.password1.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
                         </div>
                         
-                        <div class="col-md-6 mb-3">
+                        <div class="col-12 col-sm-6">
                             <div class="form-floating-custom">
                                 {{ form.password2|add_class:"form-control"|attr:"placeholder: "|attr:"autocomplete:new-password" }}
                                 <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
                             </div>
                             {% if form.password2.errors %}
-                                <div class="text-danger small mt-1">
+                                <div class="text-danger small mt-2 ps-1">
                                     {% for error in form.password2.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
@@ -581,9 +582,35 @@
                     <p>Already have an account? <a href="{% url 'login' %}">Sign in here</a></p>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
+        </div><!-- /.register-card -->
+
+        <!-- Left Content Section — shown BELOW form on mobile, beside it on desktop -->
+        <div class="register-content animate-fade-in order-2 order-lg-1">
+            <h1>Join SharpDocs</h1>
+            <p class="subtitle">
+                Start your academic journey with thousands of premium study materials from top students worldwide.
+            </p>
+            <div class="stats-grid animate-fade-in animate-delay-2">
+                <div class="stat-item">
+                    <div class="stat-number">10,000+</div>
+                    <div class="stat-label">Active Students</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5,000+</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
+            </div>
+        </div><!-- /.register-content -->
+    </div><!-- /.register-container -->
+</div><!-- /.register-page -->
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

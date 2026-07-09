@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}Edit User - {{ user.username }} - SharpDocs Admin{% endblock %}
@@ -115,7 +115,7 @@
                                 </div>
                                 
                                 <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <i class="bi bi-exclamation-triangle"></i>
                                     <strong>Warning:</strong> Changing user permissions will affect their access to the system.
                                 </div>
                             </div>
@@ -126,7 +126,7 @@
                             <div class="col-12">
                                 <h6 class="text-primary mb-3">🔑 Password Change</h6>
                                 <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i>
+                                    <i class="bi bi-info-circle"></i>
                                     Leave password fields empty to keep the current password.
                                 </div>
                                 
@@ -195,7 +195,7 @@
                                     <a href="{% url 'documents:admin_view_user' user.id %}" class="btn btn-secondary">Cancel</a>
                                     <div>
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-save"></i> Save Changes
+                                            <i class="bi bi-floppy"></i> Save Changes
                                         </button>
                                     </div>
                                 </div>
@@ -225,3 +225,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
+

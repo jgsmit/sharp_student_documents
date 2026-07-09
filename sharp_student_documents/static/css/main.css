@@ -1,3 +1,49 @@
+/* ===== Bootstrap 4 → 5 compatibility shims ===== */
+/* Stat card left borders (used in dashboards) */
+.border-left-primary  { border-left: 4px solid #0d6efd !important; }
+.border-left-success  { border-left: 4px solid #198754 !important; }
+.border-left-info     { border-left: 4px solid #0dcaf0 !important; }
+.border-left-warning  { border-left: 4px solid #ffc107 !important; }
+.border-left-danger   { border-left: 4px solid #dc3545 !important; }
+
+/* Small label text in stat cards */
+.text-xs { font-size: 0.72rem; letter-spacing: 0.05em; }
+
+/* Muted icon colors (BS4 gray scale) */
+.text-gray-300 { color: #dee2e6 !important; }
+.text-gray-500 { color: #6c757d !important; }
+.text-gray-600 { color: #6c757d !important; }
+.text-gray-800 { color: #343a40 !important; }
+
+/* Stat card icon sizing shim (fa-2x equivalent) */
+.icon-2x { font-size: 2rem; }
+
+/* Dashboard action toolbar — wraps on small screens */
+.dashboard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.dashboard-actions .btn { white-space: nowrap; }
+
+@media (max-width: 576px) {
+    .dashboard-actions { width: 100%; }
+    .dashboard-actions .btn { flex: 1 1 calc(50% - 0.5rem); text-align: center; font-size: 0.78rem; }
+}
+
+/* Navbar search — responsive width */
+@media (min-width: 992px) {
+  .navbar form[role="search"] {
+    max-width: 260px !important;
+    flex-shrink: 1;
+  }
+}
+@media (max-width: 991px) {
+  .navbar form[role="search"] {
+    max-width: 100% !important;
+  }
+}
+
 /* ===== Custom Overrides ===== */
 
 /* General body styling */
@@ -212,12 +258,11 @@ h2, h3, h4 {
   
   /* Navbar search fix */
   .navbar .input-group {
-    flex-direction: column;
+    max-width: 100%;
   }
   
   .navbar .form-control {
-    width: 100% !important;
-    margin-bottom: 0.5rem;
+    width: 100%;
   }
   
   /* Modal adjustments */
@@ -307,7 +352,7 @@ h2, h3, h4 {
   
   /* Navbar search */
   .navbar .form-control {
-    width: 200px !important;
+    width: 100%;
   }
   
   /* Modal adjustments */
@@ -318,11 +363,6 @@ h2, h3, h4 {
 
 /* Small Desktop (769px-992px) */
 @media (min-width: 769px) and (max-width: 992px) {
-  /* Navbar search */
-  .navbar .form-control {
-    width: 240px !important;
-  }
-  
   /* Cards */
   .card {
     margin-bottom: 1.25rem;
@@ -345,6 +385,19 @@ h2, h3, h4 {
   .card:hover {
     transform: translateY(-6px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+}
+
+/* Section headers with "View All" button on mobile */
+@media (max-width: 576px) {
+  .d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+  
+  .d-flex.justify-content-between.align-items-center.mb-4 .btn {
+    align-self: flex-start;
   }
 }
 

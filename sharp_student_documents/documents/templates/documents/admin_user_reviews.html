@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}{{ user.username }}'s Reviews - SharpDocs Admin{% endblock %}
@@ -21,17 +21,17 @@
         <div class="col-lg-4 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">📊 Review Statistics</h6>
+                    <h6 class="m-0 fw-bold text-primary">📊 Review Statistics</h6>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total</div>
-                            <div class="h4 mb-0 font-weight-bold text-gray-800">{{ total_reviews }}</div>
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Total</div>
+                            <div class="h4 mb-0 fw-bold ">{{ total_reviews }}</div>
                         </div>
                         <div class="col-6">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Avg Rating</div>
-                            <div class="h4 mb-0 font-weight-bold text-gray-800">{{ average_rating|floatformat:1 }}</div>
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Avg Rating</div>
+                            <div class="h4 mb-0 fw-bold ">{{ average_rating|floatformat:1 }}</div>
                         </div>
                     </div>
                 </div>
@@ -41,7 +41,7 @@
         <div class="col-lg-8 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">👤 User Information</h6>
+                    <h6 class="m-0 fw-bold text-info">👤 User Information</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -78,7 +78,7 @@
     <!-- Reviews List -->
     <div class="card shadow">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">⭐ Reviews ({{ total_reviews }} total)</h6>
+            <h6 class="m-0 fw-bold text-primary">⭐ Reviews ({{ total_reviews }} total)</h6>
         </div>
         <div class="card-body">
             {% if reviews %}
@@ -105,7 +105,7 @@
                                     <div class="mb-1">
                                         {% for i in "12345" %}
                                             {% if forloop.counter <= review.rating %}
-                                                <i class="fas fa-star text-warning"></i>
+                                                <i class="bi bi-star text-warning"></i>
                                             {% else %}
                                                 <i class="far fa-star text-warning"></i>
                                             {% endif %}
@@ -132,7 +132,7 @@
             </div>
             {% else %}
             <div class="text-center py-4">
-                <i class="fas fa-star fa-3x text-gray-300 mb-3"></i>
+                <i class="bi bi-star fs-1 text-muted mb-3"></i>
                 <p class="text-muted">{{ user.username }} hasn't written any reviews yet.</p>
                 <a href="{% url 'documents:admin_view_user' user.id %}" class="btn btn-primary">Back to User Profile</a>
             </div>
@@ -141,3 +141,4 @@
     </div>
 </div>
 {% endblock %}
+

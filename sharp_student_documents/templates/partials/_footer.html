@@ -3,7 +3,7 @@
     <div class="row">
 
       <!-- About / Logo -->
-      <div class="col-md-3 mb-4">
+      <div class="col-md-3 col-6 mb-4">
         <h5 class="fw-bold mb-3 text-uppercase">SharpDocs</h5>
         <p class="small">
           Access high-quality student notes, guides, and past papers. Learn smarter, not harder.
@@ -12,7 +12,7 @@
       </div>
 
       <!-- Quick Links -->
-      <div class="col-md-3 mb-4">
+      <div class="col-md-3 col-6 mb-4">
         <h6 class="fw-bold mb-3">Quick Links</h6>
         <ul class="list-unstyled">
           <li><a href="{% url 'home' %}" class="footer-link">Home</a></li>
@@ -29,7 +29,7 @@
       </div>
 
       <!-- Resources -->
-      <div class="col-md-3 mb-4">
+      <div class="col-md-3 col-6 mb-4">
         <h6 class="fw-bold mb-3">Resources</h6>
         <ul class="list-unstyled">
           <li><a href="{% url 'reviews:faq' %}" class="footer-link">FAQ</a></li>
@@ -40,11 +40,11 @@
       </div>
 
       <!-- Newsletter / Social -->
-      <div class="col-md-3 mb-4">
+      <div class="col-md-3 col-6 mb-4">
         <h6 class="fw-bold mb-3">Stay Updated</h6>
         <p class="small">Subscribe to our newsletter for the latest updates and offers.</p>
-        <form class="d-flex mb-3">
-          <input type="email" class="form-control form-control-sm me-2" placeholder="Your email">
+        <form class="d-flex flex-wrap gap-2 mb-3">
+          <input type="email" class="form-control form-control-sm flex-grow-1" placeholder="Your email" style="min-width: 0;">
           <button class="btn btn-success btn-sm">Subscribe</button>
         </form>
 
@@ -102,12 +102,15 @@
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .site-footer {
     text-align: center;
   }
-  .social-icon {
-    margin-right: 15px;
+  .site-footer .d-flex.mt-2 {
+    justify-content: center;
+  }
+  .site-footer .d-flex.flex-wrap.gap-2 {
+    justify-content: center;
   }
 }
 </style>

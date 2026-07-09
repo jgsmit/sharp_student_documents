@@ -447,7 +447,7 @@
     border: 1px solid #dee2e6;
     background-color: #fafafa;
     padding: 8px;
-    height: 200px;
+    max-height: 220px;
     overflow-y: auto;
 }
 
@@ -497,13 +497,20 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .hero-section {
-        padding-bottom: 150px !important;
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
+        border-radius: 0 0 30px 30px;
     }
     
     .feature-icon {
         width: 60px;
         height: 60px;
         font-size: 1.5rem;
+    }
+
+    .card-preview {
+        height: auto;
+        max-height: 160px;
     }
 }
 </style>

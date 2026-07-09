@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}Edit Document - {{ document.title }} - SharpDocs Admin{% endblock %}
@@ -21,7 +21,7 @@
         <div class="col-lg-8">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">📝 Edit Document</h6>
+                    <h6 class="m-0 fw-bold text-primary">📝 Edit Document</h6>
                 </div>
                 <div class="card-body">
                     {% if messages %}
@@ -148,7 +148,7 @@
                             <div class="d-flex justify-content-between">
                                 <a href="{{ back_url }}" class="btn btn-secondary">Cancel</a>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Update Document
+                                    <i class="bi bi-floppy"></i> Update Document
                                 </button>
                             </div>
                         </div>
@@ -161,7 +161,7 @@
             <!-- Current Document Info -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">📄 Current Document</h6>
+                    <h6 class="m-0 fw-bold text-info">📄 Current Document</h6>
                 </div>
                 <div class="card-body">
                     <p><strong>Title:</strong> {{ document.title }}</p>
@@ -178,7 +178,7 @@
             <!-- Seller Info -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">👤 Seller Information</h6>
+                    <h6 class="m-0 fw-bold text-success">👤 Seller Information</h6>
                 </div>
                 <div class="card-body">
                     <p><strong>Username:</strong> {{ document.seller.username }}</p>
@@ -193,19 +193,19 @@
             <!-- Admin Actions -->
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-warning">⚠️ Admin Actions</h6>
+                    <h6 class="m-0 fw-bold text-warning">⚠️ Admin Actions</h6>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="bi bi-exclamation-triangle"></i>
                         <strong>Admin Edit Mode:</strong> You are editing this document as an administrator.
                     </div>
                     <div class="d-grid gap-2">
                         <a href="{{ document.get_absolute_url }}" target="_blank" class="btn btn-outline-primary">
-                            <i class="fas fa-eye"></i> View Document
+                            <i class="bi bi-eye"></i> View Document
                         </a>
                         <a href="{% url 'documents:admin_delete_document' document.id %}" class="btn btn-outline-danger">
-                            <i class="fas fa-trash"></i> Delete Document
+                            <i class="bi bi-trash"></i> Delete Document
                         </a>
                     </div>
                 </div>
@@ -236,3 +236,4 @@
 }
 </style>
 {% endblock %}
+

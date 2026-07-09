@@ -1,19 +1,23 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from django.utils import timezone
 from .models import Document, Category
 from reviews.models import HelpArticle
 
+
 class StaticViewSitemap(Sitemap):
+    protocol = "https"
+
     def items(self):
         return [
-            {"route": "home", "priority": 1.0, "changefreq": "daily"},
+            {"route": "home",                    "priority": 1.0, "changefreq": "daily"},
             {"route": "documents:document_list", "priority": 0.9, "changefreq": "daily"},
-            {"route": "reviews:faq", "priority": 0.6, "changefreq": "weekly"},
-            {"route": "reviews:help_center", "priority": 0.7, "changefreq": "weekly"},
-            {"route": "reviews:contact", "priority": 0.5, "changefreq": "monthly"},
-            {"route": "reviews:resources", "priority": 0.6, "changefreq": "weekly"},
-            {"route": "reviews:terms", "priority": 0.4, "changefreq": "yearly"},
-            {"route": "reviews:privacy", "priority": 0.4, "changefreq": "yearly"},
+            {"route": "reviews:help_center",     "priority": 0.8, "changefreq": "weekly"},
+            {"route": "reviews:faq",             "priority": 0.7, "changefreq": "weekly"},
+            {"route": "reviews:resources",       "priority": 0.6, "changefreq": "weekly"},
+            {"route": "reviews:contact",         "priority": 0.5, "changefreq": "monthly"},
+            {"route": "reviews:terms",           "priority": 0.3, "changefreq": "yearly"},
+            {"route": "reviews:privacy",         "priority": 0.3, "changefreq": "yearly"},
         ]
 
     def location(self, item):
@@ -25,37 +29,62 @@ class StaticViewSitemap(Sitemap):
     def changefreq(self, item):
         return item["changefreq"]
 
+    def lastmod(self, item):
+        return timezone.now().date()
+
+
 class DocumentSitemap(Sitemap):
+    protocol = "https"
+    changefreq = "weekly"
+    limit = 50000  # Google sitemap limit
+
     def items(self):
-        return Document.objects.exclude(slug="").order_by('-created_at')
+        return (
+            Document.objects
+            .filter(is_approved=True)
+            .exclude(slug="")
+            .select_related("category", "seller")
+            .order_by("-created_at")
+        )
 
     def lastmod(self, obj):
-        return obj.created_at
-
-    def changefreq(self, obj):
-        return "daily"
+        return getattr(obj, "updated_at", None) or obj.created_at
 
     def priority(self, obj):
-        if getattr(obj, "created_at", None):
+        # Boost high-selling documents
+        sales = getattr(obj, "sales_count", 0) or 0
+        if sales >= 10:
             return 0.9
-        return 0.8
+        if sales >= 3:
+            return 0.8
+        return 0.7
 
     def location(self, obj):
-        return reverse('documents:document_detail', kwargs={'slug': obj.slug})
+        return reverse("documents:document_detail", kwargs={"slug": obj.slug})
 
 
 class CategorySitemap(Sitemap):
+    protocol = "https"
     changefreq = "weekly"
     priority = 0.8
 
     def items(self):
-        return Category.objects.filter(is_active=True).exclude(slug="").order_by("sort_order", "name")
+        return (
+            Category.objects
+            .filter(is_active=True)
+            .exclude(slug="")
+            .order_by("sort_order", "name")
+        )
+
+    def lastmod(self, obj):
+        return timezone.now().date()
 
     def location(self, obj):
         return reverse("documents:category_detail", kwargs={"slug": obj.slug})
 
 
 class HelpArticleSitemap(Sitemap):
+    protocol = "https"
     changefreq = "monthly"
     priority = 0.5
 

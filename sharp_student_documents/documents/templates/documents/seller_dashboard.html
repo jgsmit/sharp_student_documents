@@ -3,137 +3,152 @@
 
 {% block title %}Seller Dashboard - SharpDocs{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Dashboard stat card accents */
+.border-left-primary  { border-left: 4px solid #0d6efd !important; }
+.border-left-success  { border-left: 4px solid #198754 !important; }
+.border-left-info     { border-left: 4px solid #0dcaf0 !important; }
+.border-left-warning  { border-left: 4px solid #ffc107 !important; }
+.border-left-danger   { border-left: 4px solid #dc3545 !important; }
+
+/* Small utility text */
+.text-xs { font-size: 0.75rem; letter-spacing: 0.05em; }
+
+/* Muted icon color */
+.text-gray-300 { color: #dee2e6 !important; }
+.text-gray-800 { color: #343a40 !important; }
+.text-gray-500 { color: #6c757d !important; }
+
+/* Dashboard action buttons — wrap on small screens */
+.dashboard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.dashboard-actions .btn { white-space: nowrap; }
+
+@media (max-width: 576px) {
+    .dashboard-actions { width: 100%; }
+    .dashboard-actions .btn { flex: 1 1 calc(50% - 0.5rem); text-align: center; font-size: 0.78rem; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid px-3 px-md-4">
     <!-- Header -->
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">💼 Seller Dashboard</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group me-2">
-                <a href="{% url 'documents:upload_document' %}" class="btn btn-sm btn-primary">📤 Upload Document</a>
-                <a href="{% url 'documents:seller_documents' %}" class="btn btn-sm btn-secondary">📚 Your Documents</a>
-                <a href="{% url 'documents:seller_analytics' %}" class="btn btn-sm btn-info">📊 Analytics</a>
-                <a href="{% url 'withdrawals:dashboard' %}" class="btn btn-sm btn-success">💰 Withdrawal Dashboard</a>
-            </div>
+    <div class="d-flex justify-content-between flex-wrap align-items-center pt-3 pb-2 mb-3 border-bottom gap-2">
+        <h1 class="h2 mb-0">💼 Seller Dashboard</h1>
+        <div class="dashboard-actions">
+            <a href="{% url 'documents:upload_document' %}" class="btn btn-sm btn-primary"><i class="bi bi-upload"></i> Upload</a>
+            <a href="{% url 'documents:seller_documents' %}" class="btn btn-sm btn-secondary"><i class="bi bi-collection"></i> Documents</a>
+            <a href="{% url 'documents:seller_analytics' %}" class="btn btn-sm btn-info"><i class="bi bi-bar-chart"></i> Analytics</a>
+            <a href="{% url 'withdrawals:dashboard' %}" class="btn btn-sm btn-success"><i class="bi bi-wallet2"></i> Withdrawals</a>
         </div>
     </div>
 
     <!-- Quick Stats -->
     <div class="row mb-4">
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card border-left-primary shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Documents</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_documents }}</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Documents</div>
+                            <div class="h5 mb-0 fw-bold">{{ total_documents }}</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-file-earmark-text fs-2 text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
+            <div class="card border-left-success shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Unrequested Balance</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.unrequested_balance|default_if_none:0|floatformat:2 }}</div>
-                            <div class="text-xs text-gray-500">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Unrequested Balance</div>
+                            <div class="h5 mb-0 fw-bold">${{ wallet.unrequested_balance|default_if_none:0|floatformat:2 }}</div>
+                            <div class="text-xs text-muted">
                                 Withdrawable: ${{ wallet.balance|floatformat:2 }} ·
-                                Held: ${{ wallet.pending_balance|default_if_none:0|floatformat:2 }} ·
-                                Reserved: ${{ wallet.reserved_balance|default_if_none:0|floatformat:2 }}
+                                Held: ${{ wallet.pending_balance|default_if_none:0|floatformat:2 }}
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-wallet fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-wallet2 fs-2 text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card border-left-info shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Earned</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.total_earned|floatformat:2 }}</div>
-                            <div class="text-xs text-gray-500">Lifetime (includes held + withdrawn)</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Total Earned</div>
+                            <div class="h5 mb-0 fw-bold">${{ wallet.total_earned|floatformat:2 }}</div>
+                            <div class="text-xs text-muted">Lifetime earnings</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-graph-up-arrow fs-2 text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card border-left-warning shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Commission Paid</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.total_commission_paid|floatformat:2 }}</div>
-                            <div class="text-xs text-gray-500">40% platform commission</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Commission Paid</div>
+                            <div class="h5 mb-0 fw-bold">${{ wallet.total_commission_paid|floatformat:2 }}</div>
+                            <div class="text-xs text-muted">40% platform commission</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-percentage fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-percent fs-2 text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card border-left-danger shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Withdrawn</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ wallet.total_withdrawn|floatformat:2 }}</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-danger text-uppercase mb-1">Total Withdrawn</div>
+                            <div class="h5 mb-0 fw-bold">${{ wallet.total_withdrawn|floatformat:2 }}</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-cash-stack fs-2 text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card border-left-info shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Sales</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_sales }}</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Total Sales</div>
+                            <div class="h5 mb-0 fw-bold">{{ total_sales }}</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-cart-check fs-2 text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card border-left-warning shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending Orders</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_orders }}</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Pending Orders</div>
+                            <div class="h5 mb-0 fw-bold">{{ pending_orders }}</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-clock-history fs-2 text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -145,7 +160,7 @@
         <div class="col-lg-8">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">📄 Document Management</h6>
+                    <h6 class="m-0 fw-bold text-primary"><i class="bi bi-file-earmark-text me-1"></i> Document Management</h6>
                     <a href="{% url 'documents:upload_document' %}" class="btn btn-primary btn-sm">+ New Document</a>
                 </div>
                 <div class="card-body">
@@ -219,7 +234,7 @@
                     </div>
                     {% empty %}
                     <div class="text-center py-4">
-                        <i class="fas fa-file-upload fa-3x text-muted mb-3"></i>
+                        <i class="bi bi-file-earmark-arrow-up fs-1 text-muted mb-3 d-block"></i>
                         <p class="text-muted">You haven't uploaded any documents yet.</p>
                         <a href="{% url 'documents:upload_document' %}" class="btn btn-primary">Upload Your First Document</a>
                     </div>
@@ -233,7 +248,7 @@
             <!-- Financial Overview -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-success">💰 Financial Overview</h6>
+                    <h6 class="m-0 fw-bold text-success"><i class="bi bi-wallet2 me-1"></i> Financial Overview</h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -277,7 +292,7 @@
                     </div>
                     {% if withdrawal_hold_notice %}
                     <div class="alert alert-warning py-2 mt-3 mb-2 small">
-                        <i class="fas fa-clock"></i> {{ withdrawal_hold_notice }}
+                        <i class="bi bi-clock me-1"></i> {{ withdrawal_hold_notice }}
                     </div>
                     {% endif %}
                     {% if pending_withdrawals %}
@@ -293,7 +308,7 @@
                     </div>
                     {% endif %}
                     <div class="text-xs text-muted">
-                        <i class="fas fa-info-circle"></i> 40% platform commission (seller earns 60%)
+                        <i class="bi bi-info-circle me-1"></i> 40% platform commission (seller earns 60%)
                     </div>
                 </div>
             </div>
@@ -301,7 +316,7 @@
             <!-- 2FA Status -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-danger">🔐 Security Status</h6>
+                    <h6 class="m-0 fw-bold text-danger"><i class="bi bi-shield-lock me-1"></i> Security Status</h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -313,11 +328,11 @@
                         </div>
                         {% if two_fa_enabled %}
                         <p class="text-xs text-success mb-2">
-                            <i class="fas fa-shield-alt"></i> Your withdrawals are protected with 2FA
+                            <i class="bi bi-shield-fill-check me-1"></i> Your withdrawals are protected with 2FA
                         </p>
                         {% else %}
                         <p class="text-xs text-warning mb-2">
-                            <i class="fas fa-exclamation-triangle"></i> Enable 2FA for enhanced withdrawal security
+                            <i class="bi bi-exclamation-triangle me-1"></i> Enable 2FA for enhanced withdrawal security
                         </p>
                         {% endif %}
                     </div>
@@ -330,7 +345,7 @@
             <!-- Recent Sales -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-info">📈 Recent Sales</h6>
+                    <h6 class="m-0 fw-bold text-info"><i class="bi bi-graph-up me-1"></i> Recent Sales</h6>
                 </div>
                 <div class="card-body">
                     {% for sale in recent_sales %}
@@ -352,11 +367,11 @@
                     {% endfor %}
                 </div>
             </div>
-            </div>
 
+            <!-- Reviews -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-warning">⭐ Reviews</h6>
+                    <h6 class="m-0 fw-bold text-warning"><i class="bi bi-star me-1"></i> Reviews</h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -373,9 +388,10 @@
                 </div>
             </div>
 
+            <!-- Study Tools -->
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-info">📖 Study Tools</h6>
+                    <h6 class="m-0 fw-bold text-info"><i class="bi bi-book me-1"></i> Study Tools</h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
@@ -387,15 +403,15 @@
                     <a href="{% url 'education:study_planner' %}" class="btn btn-info btn-sm w-100">Study Planner</a>
                 </div>
             </div>
-        </div>
-    </div>
+        </div><!-- /.col-lg-4 sidebar -->
+    </div><!-- /.row Document Management -->
 
     <!-- Top Performing Documents -->
     <div class="row mb-4">
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-success">🏆 Top Performing Documents</h6>
+                    <h6 class="m-0 fw-bold text-success"><i class="bi bi-trophy me-1"></i> Top Performing Documents</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -485,7 +501,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-info">📦 Recent Orders</h6>
+                    <h6 class="m-0 fw-bold text-info"><i class="bi bi-box-seam me-1"></i> Recent Orders</h6>
                 </div>
                 <div class="card-body">
                     {% for order in recent_orders %}
@@ -567,7 +583,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-warning">⭐ Recent Reviews</h6>
+                    <h6 class="m-0 fw-bold text-warning"><i class="bi bi-star-half me-1"></i> Recent Reviews</h6>
                 </div>
                 <div class="card-body">
                     {% for review in recent_reviews %}

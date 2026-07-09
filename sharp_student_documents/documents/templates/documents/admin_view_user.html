@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}View User - {{ user.username }} - SharpDocs Admin{% endblock %}
@@ -21,7 +21,7 @@
         <div class="col-lg-8">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">📋 User Information</h6>
+                    <h6 class="m-0 fw-bold text-primary">📋 User Information</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -59,20 +59,20 @@
         <div class="col-lg-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">💰 Financial Summary</h6>
+                    <h6 class="m-0 fw-bold text-success">💰 Financial Summary</h6>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-3">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Spent</div>
-                        <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_spent|floatformat:2 }}</div>
+                        <div class="text-xs fw-bold text-success text-uppercase mb-1">Total Spent</div>
+                        <div class="h4 mb-0 fw-bold ">${{ total_spent|floatformat:2 }}</div>
                     </div>
                     <div class="text-center mb-3">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Earned</div>
-                        <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_earned|floatformat:2 }}</div>
+                        <div class="text-xs fw-bold text-primary text-uppercase mb-1">Total Earned</div>
+                        <div class="h4 mb-0 fw-bold ">${{ total_earned|floatformat:2 }}</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Net Balance</div>
-                        <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_earned|floatformat:2 }}</div>
+                        <div class="text-xs fw-bold text-info text-uppercase mb-1">Net Balance</div>
+                        <div class="h4 mb-0 fw-bold ">${{ total_earned|floatformat:2 }}</div>
                     </div>
                 </div>
             </div>
@@ -84,11 +84,11 @@
         <div class="col-lg-4 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">📄 Documents</h6>
+                    <h6 class="m-0 fw-bold text-info">📄 Documents</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_documents }}</div>
-                    <div class="text-xs text-gray-500">Documents uploaded</div>
+                    <div class="h3 mb-0 fw-bold ">{{ total_documents }}</div>
+                    <div class="text-xs text-muted">Documents uploaded</div>
                     <hr>
                     <a href="{% url 'documents:admin_user_documents' user.id %}" class="btn btn-sm btn-info">View Documents</a>
                 </div>
@@ -98,11 +98,11 @@
         <div class="col-lg-4 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">🛒 Orders</h6>
+                    <h6 class="m-0 fw-bold text-success">🛒 Orders</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
-                    <div class="text-xs text-gray-500">Orders placed</div>
+                    <div class="h3 mb-0 fw-bold ">{{ total_orders }}</div>
+                    <div class="text-xs text-muted">Orders placed</div>
                     <hr>
                     <a href="{% url 'documents:admin_user_orders' user.id %}" class="btn btn-sm btn-success">View Orders</a>
                 </div>
@@ -112,11 +112,11 @@
         <div class="col-lg-4 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-warning">⭐ Reviews</h6>
+                    <h6 class="m-0 fw-bold text-warning">⭐ Reviews</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="h3 mb-0 font-weight-bold text-gray-800">{{ total_reviews }}</div>
-                    <div class="text-xs text-gray-500">Reviews written</div>
+                    <div class="h3 mb-0 fw-bold ">{{ total_reviews }}</div>
+                    <div class="text-xs text-muted">Reviews written</div>
                     <hr>
                     <a href="{% url 'documents:admin_user_reviews' user.id %}" class="btn btn-sm btn-warning">View Reviews</a>
                 </div>
@@ -129,7 +129,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">📄 Recent Documents</h6>
+                    <h6 class="m-0 fw-bold text-primary">📄 Recent Documents</h6>
                 </div>
                 <div class="card-body">
                     {% if user_documents %}
@@ -154,7 +154,7 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">🛒 Recent Orders</h6>
+                    <h6 class="m-0 fw-bold text-success">🛒 Recent Orders</h6>
                 </div>
                 <div class="card-body">
                     {% if user_orders %}
@@ -178,3 +178,4 @@
     </div>
 </div>
 {% endblock %}
+

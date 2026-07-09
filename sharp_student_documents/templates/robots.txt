@@ -1,21 +1,18 @@
 User-agent: *
-
-# Public crawlable pages
 Allow: /
+Allow: /documents/
+Allow: /reviews/
+Allow: /education/
 
-# Sitemap
+# Sitemaps
 Sitemap: {{ site_url }}/sitemap.xml
 
-# Admin and internal management
+# Block admin and internal management
 Disallow: /admin/
 Disallow: /documents/admin/
 Disallow: /documents/admin-dashboard/
-Disallow: /documents/dashboard/
-Disallow: /documents/buyer-dashboard/
-Disallow: /documents/seller-dashboard/
-Disallow: /api/
 
-# Private account and transaction areas
+# Block private authenticated pages
 Disallow: /accounts/profile/
 Disallow: /accounts/password/
 Disallow: /accounts/password_change/
@@ -26,10 +23,31 @@ Disallow: /documents/seller-refunds/
 Disallow: /documents/download/
 Disallow: /documents/download-owner/
 Disallow: /documents/upload/
+Disallow: /documents/edit/
+Disallow: /documents/seller-dashboard/
+Disallow: /documents/buyer-dashboard/
 Disallow: /documents/analytics/
+Disallow: /documents/seller-analytics/
 Disallow: /payments/
 Disallow: /sales/
 Disallow: /security/
 Disallow: /withdrawals/
-Disallow: /notifications/test/
-Disallow: /notifications/send/
+Disallow: /notifications/
+Disallow: /api/
+
+# Block search/filter URLs with parameters that create duplicate content
+Disallow: /*?page=
+Disallow: /*?sort=
+Disallow: /*?filter=
+
+# Crawl delay for polite crawling
+Crawl-delay: 1
+
+# Googlebot specific — no delay needed
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /payments/
+Disallow: /security/
+Disallow: /withdrawals/
+Sitemap: {{ site_url }}/sitemap.xml

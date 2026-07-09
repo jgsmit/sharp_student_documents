@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}Security Settings - SharpDocs{% endblock %}
@@ -10,7 +10,7 @@
       <div class="card shadow-lg border-0 rounded-4">
         <div class="card-header bg-gradient text-white">
           <h4 class="mb-0 fw-bold">
-            <i class="fas fa-shield-alt"></i> Security Settings
+            <i class="bi bi-shield-check"></i> Security Settings
           </h4>
         </div>
         <div class="card-body p-4">
@@ -29,10 +29,10 @@
             <!-- Two-Factor Authentication -->
             <div class="mb-5">
               <h5 class="mb-3">
-                <i class="fas fa-mobile-alt"></i> Two-Factor Authentication
+                <i class="bi bi-phone"></i> Two-Factor Authentication
               </h5>
               <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> 
+                <i class="bi bi-info-circle"></i> 
                 Add an extra layer of security to your account with 2FA.
               </div>
               
@@ -47,14 +47,14 @@
                 </div>
                 <div class="col-md-6">
                   <span class="badge bg-warning">
-                    <i class="fas fa-exclamation-triangle"></i> 2FA Disabled
+                    <i class="bi bi-exclamation-triangle"></i> 2FA Disabled
                   </span>
                 </div>
               </div>
               
               <div class="mt-3">
                 <a href="{% url 'security:2fa_setup' %}" class="btn btn-primary">
-                  <i class="fas fa-plus-circle"></i> Enable 2FA
+                  <i class="bi bi-plus-circle"></i> Enable 2FA
                 </a>
               </div>
             </div>
@@ -62,10 +62,10 @@
             <!-- Document Watermarking -->
             <div class="mb-5">
               <h5 class="mb-3">
-                <i class="fas fa-image"></i> Document Watermarking
+                <i class="bi bi-image"></i> Document Watermarking
               </h5>
               <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i> 
+                <i class="bi bi-exclamation-triangle"></i> 
                 Automatically add watermarks to your document previews to prevent unauthorized sharing.
               </div>
               
@@ -83,11 +83,11 @@
                 <div class="col-md-6">
                   {% if watermark_settings.is_enabled %}
                     <span class="badge bg-info">
-                      <i class="fas fa-droplet"></i> Watermarking Active
+                      <i class="bi bi-droplet"></i> Watermarking Active
                     </span>
                   {% else %}
                     <span class="badge bg-secondary">
-                      <i class="fas fa-droplet"></i> Watermarking Inactive
+                      <i class="bi bi-droplet"></i> Watermarking Inactive
                     </span>
                   {% endif %}
                 </div>
@@ -192,7 +192,7 @@
                 </div>
                 <div class="col-md-6">
                   <div class="alert alert-info">
-                    <h6 class="mb-2"><i class="fas fa-info-circle"></i> Watermark Preview</h6>
+                    <h6 class="mb-2"><i class="bi bi-info-circle"></i> Watermark Preview</h6>
                     <p class="mb-2 small">Your watermark will appear as:</p>
                     <div class="border rounded p-2 bg-light text-center">
                       <small class="text-muted" style="opacity: 0.{{ watermark_settings.watermark_opacity|stringformat:"02d" }};">
@@ -213,10 +213,10 @@
             <!-- Password Management -->
             <div class="mb-5">
               <h5 class="mb-3">
-                <i class="fas fa-key"></i> Password Management
+                <i class="bi bi-key"></i> Password Management
               </h5>
               <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i> 
+                <i class="bi bi-exclamation-triangle"></i> 
                 Keep your account secure by regularly updating your password.
               </div>
               
@@ -225,7 +225,7 @@
                   <div class="d-flex align-items-center mb-3">
                     <span class="me-3">Current Password Status:</span>
                     <span class="badge bg-info">
-                      <i class="fas fa-check-circle"></i> Active
+                      <i class="bi bi-check-circle-fill"></i> Active
                     </span>
                   </div>
                   <div class="d-flex align-items-center">
@@ -236,10 +236,10 @@
                 <div class="col-md-6">
                   <div class="d-grid gap-2">
                     <a href="{% url 'password_change' %}" class="btn btn-outline-primary btn-sm">
-                      <i class="fas fa-key"></i> Change Password
+                      <i class="bi bi-key"></i> Change Password
                     </a>
                     <a href="{% url 'password_reset' %}" class="btn btn-outline-warning btn-sm">
-                      <i class="fas fa-undo"></i> Forgot Password
+                      <i class="bi bi-arrow-counterclockwise"></i> Forgot Password
                     </a>
                   </div>
                 </div>
@@ -249,7 +249,7 @@
             <!-- Identity Verification Status -->
             <div class="mb-5">
               <h5 class="mb-3">
-                <i class="fas fa-user-check"></i> Identity Verification
+                <i class="bi bi-person-check"></i> Identity Verification
               </h5>
               <div class="row">
                 <div class="col-md-8">
@@ -257,30 +257,30 @@
                     <span class="me-3">Verification Status:</span>
                     {% if is_verified %}
                       <span class="badge bg-success">
-                        <i class="fas fa-check-circle"></i> Verified Seller
+                        <i class="bi bi-check-circle-fill"></i> Verified Seller
                       </span>
                     {% else %}
                       <span class="badge bg-warning">
-                        <i class="fas fa-exclamation-triangle"></i> Not Verified
+                        <i class="bi bi-exclamation-triangle"></i> Not Verified
                       </span>
                     {% endif %}
                   </div>
                 </div>
                 <div class="col-md-4">
                   <a href="{% url 'security:verify_identity' %}" class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-plus-circle"></i> Verify Identity
+                    <i class="bi bi-plus-circle"></i> Verify Identity
                   </a>
                 </div>
               </div>
               
               {% if is_verified %}
                 <div class="alert alert-success mt-3">
-                  <i class="fas fa-check-circle"></i> 
+                  <i class="bi bi-check-circle-fill"></i> 
                   Your identity has been verified! You enjoy increased trust and visibility on the marketplace.
                 </div>
               {% else %}
                 <div class="alert alert-warning mt-3">
-                  <i class="fas fa-info-circle"></i> 
+                  <i class="bi bi-info-circle"></i> 
                   Verify your identity to earn buyer trust and increase your sales potential by up to 300%.
                 </div>
               {% endif %}
@@ -289,7 +289,7 @@
             <!-- Save Button -->
             <div class="text-center">
               <button type="submit" class="btn btn-primary btn-lg px-5">
-                <i class="fas fa-save"></i> Save Security Settings
+                <i class="bi bi-floppy"></i> Save Security Settings
               </button>
             </div>
           </form>
@@ -302,48 +302,48 @@
       <div class="card border-0 bg-light">
         <div class="card-header">
           <h6 class="mb-0">
-            <i class="fas fa-lightbulb"></i> Security Tips
+            <i class="bi bi-lightbulb"></i> Security Tips
           </h6>
         </div>
         <div class="card-body">
           <div class="mb-3">
             <h6 class="fw-semibold">
-              <i class="fas fa-key text-warning"></i> Strong Password
+              <i class="bi bi-key text-warning"></i> Strong Password
             </h6>
             <p class="small">Use unique passwords with letters, numbers, and symbols.</p>
           </div>
           
           <div class="mb-3">
             <h6 class="fw-semibold">
-              <i class="fas fa-sync text-info"></i> Update Regularly
+              <i class="bi bi-arrow-repeat text-info"></i> Update Regularly
             </h6>
             <p class="small">Change your password every 3-6 months for security.</p>
           </div>
           
           <div class="mb-3">
             <h6 class="fw-semibold">
-              <i class="fas fa-mobile-alt text-info"></i> Enable 2FA
+              <i class="bi bi-phone text-info"></i> Enable 2FA
             </h6>
             <p class="small">Add an extra layer of security with authenticator apps.</p>
           </div>
           
           <div class="mb-3">
             <h6 class="fw-semibold">
-              <i class="fas fa-image text-warning"></i> Watermark Documents
+              <i class="bi bi-image text-warning"></i> Watermark Documents
             </h6>
             <p class="small">Protect your content from unauthorized sharing.</p>
           </div>
           
           <div class="mb-3">
             <h6 class="fw-semibold">
-              <i class="fas fa-user-check text-primary"></i> Verify Identity
+              <i class="bi bi-person-check text-primary"></i> Verify Identity
             </h6>
             <p class="small">Build trust with buyers through identity verification.</p>
           </div>
           
           <div class="mb-3">
             <h6 class="fw-semibold">
-              <i class="fas fa-eye text-danger"></i> Monitor Activity
+              <i class="bi bi-eye text-danger"></i> Monitor Activity
             </h6>
             <p class="small">Regularly check your security logs and account activity.</p>
           </div>
@@ -458,3 +458,4 @@ document.getElementById('watermark_color_text').addEventListener('input', functi
 }
 </style>
 {% endblock %}
+

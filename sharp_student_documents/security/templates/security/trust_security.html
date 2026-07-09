@@ -1,84 +1,74 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}Trust & Security - SharpDocs{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">🔐 Trust & Security</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <div class="btn-group me-2">
-                <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-secondary">← Back to Admin</a>
-            </div>
-        </div>
+<div class="container-fluid px-3 px-md-4 py-4">
+    <div class="d-flex justify-content-between flex-wrap align-items-center pt-3 pb-2 mb-3 border-bottom gap-2">
+        <h1 class="h2 mb-0"><i class="bi bi-shield-lock me-2"></i>Trust &amp; Security</h1>
+        <a href="{% url 'admin:index' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Admin
+        </a>
     </div>
 
     <!-- Security Overview -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card border-left-primary shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">2FA Enabled</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ users_with_2fa }}</div>
-                            <div class="text-xs text-gray-500">{{ twofa_percentage }}% of users</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">2FA Enabled</div>
+                            <div class="h5 mb-0 fw-bold">{{ users_with_2fa }}</div>
+                            <div class="text-xs text-muted">{{ twofa_percentage }}% of users</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-shield-alt fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-shield-check icon-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
+            <div class="card border-left-success shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Verified Sellers</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ verified_sellers }}</div>
-                            <div class="text-xs text-gray-500">{{ verified_percentage }}% of sellers</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">Verified Sellers</div>
+                            <div class="h5 mb-0 fw-bold">{{ verified_sellers }}</div>
+                            <div class="text-xs text-muted">{{ verified_percentage }}% of sellers</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-person-check icon-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card border-left-warning shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Fraud Cases</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_fraud_cases }}</div>
-                            <div class="text-xs text-gray-500">{{ high_risk_cases }} high risk</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">Fraud Cases</div>
+                            <div class="h5 mb-0 fw-bold">{{ active_fraud_cases }}</div>
+                            <div class="text-xs text-muted">{{ high_risk_cases }} high risk</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-exclamation-triangle icon-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
+            <div class="card border-left-info shadow-sm h-100 py-2">
                 <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Watermarks</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ watermarks_enabled }}</div>
-                            <div class="text-xs text-gray-500">{{ watermark_percentage }}% active</div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">Watermarks</div>
+                            <div class="h5 mb-0 fw-bold">{{ watermarks_enabled }}</div>
+                            <div class="text-xs text-muted">{{ watermark_percentage }}% active</div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-image fa-2x text-gray-300"></i>
-                        </div>
+                        <i class="bi bi-image icon-2x text-gray-300"></i>
                     </div>
                 </div>
             </div>
@@ -91,14 +81,14 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-shield-alt"></i> Two-Factor Authentication
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="bi bi-shield-check me-1"></i> Two-Factor Authentication
                     </h6>
                     <a href="{% url 'security:manage_2fa' %}" class="btn btn-sm btn-primary">Manage 2FA</a>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> 
+                        <i class="bi bi-info-circle"></i> 
                         <strong>Enhanced Account Security</strong> - Users can enable 2FA using authenticator apps for additional protection.
                     </div>
                     
@@ -125,13 +115,13 @@
 
                     <div class="d-flex justify-content-between">
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> TOTP Support
+                            <i class="bi bi-check-circle-fill text-success"></i> TOTP Support
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Backup Codes
+                            <i class="bi bi-check-circle-fill text-success"></i> Backup Codes
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> QR Code Setup
+                            <i class="bi bi-check-circle-fill text-success"></i> QR Code Setup
                         </small>
                     </div>
                 </div>
@@ -142,14 +132,14 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-user-check"></i> Identity Verification
+                    <h6 class="m-0 fw-bold text-success">
+                        <i class="bi bi-person-check"></i> Identity Verification
                     </h6>
                     <a href="{% url 'security:verification_review' %}" class="btn btn-sm btn-success">Review Verifications</a>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i> 
+                        <i class="bi bi-check-circle-fill"></i> 
                         <strong>Verified Seller Badges</strong> - Trusted sellers with verified identities get special badges and increased visibility.
                     </div>
                     
@@ -176,13 +166,13 @@
 
                     <div class="d-flex justify-content-between">
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Government ID
+                            <i class="bi bi-check-circle-fill text-success"></i> Government ID
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Student ID
+                            <i class="bi bi-check-circle-fill text-success"></i> Student ID
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> University Email
+                            <i class="bi bi-check-circle-fill text-success"></i> University Email
                         </small>
                     </div>
                 </div>
@@ -195,14 +185,14 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-warning">
-                        <i class="fas fa-exclamation-triangle"></i> Fraud Detection
+                    <h6 class="m-0 fw-bold text-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Fraud Detection
                     </h6>
                     <a href="{% url 'security:fraud_cases_review' %}" class="btn btn-sm btn-warning">Review Cases</a>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-warning">
-                        <i class="fas fa-brain"></i> 
+                        <i class="bi bi-cpu"></i> 
                         <strong>AI-Powered Monitoring</strong> - Automatic detection of suspicious activities and patterns with real-time alerts.
                     </div>
                     
@@ -224,24 +214,24 @@
                     <div class="mb-3">
                         {% if active_fraud_cases > 0 %}
                         <div class="alert alert-danger py-2">
-                            <small><i class="fas fa-exclamation-triangle"></i> {{ active_fraud_cases }} active cases require attention</small>
+                            <small><i class="bi bi-exclamation-triangle"></i> {{ active_fraud_cases }} active cases require attention</small>
                         </div>
                         {% else %}
                         <div class="alert alert-success py-2">
-                            <small><i class="fas fa-check-circle"></i> No active fraud cases</small>
+                            <small><i class="bi bi-check-circle-fill"></i> No active fraud cases</small>
                         </div>
                         {% endif %}
                     </div>
 
                     <div class="d-flex justify-content-between">
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Pattern Analysis
+                            <i class="bi bi-check-circle-fill text-success"></i> Pattern Analysis
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Risk Scoring
+                            <i class="bi bi-check-circle-fill text-success"></i> Risk Scoring
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Auto Actions
+                            <i class="bi bi-check-circle-fill text-success"></i> Auto Actions
                         </small>
                     </div>
                 </div>
@@ -252,14 +242,14 @@
         <div class="col-lg-6 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-image"></i> Secure Watermarking
+                    <h6 class="m-0 fw-bold text-info">
+                        <i class="bi bi-image"></i> Secure Watermarking
                     </h6>
                     <a href="{% url 'security:settings' %}?from_trust_security=true" class="btn btn-sm btn-info">Settings</a>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <i class="fas fa-lock"></i> 
+                        <i class="bi bi-lock"></i> 
                         <strong>Document Protection</strong> - Automatic watermarking of preview images to prevent unauthorized sharing and theft.
                     </div>
                     
@@ -286,13 +276,13 @@
 
                     <div class="d-flex justify-content-between">
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Custom Text
+                            <i class="bi bi-check-circle-fill text-success"></i> Custom Text
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> User Info
+                            <i class="bi bi-check-circle-fill text-success"></i> User Info
                         </small>
                         <small class="text-muted">
-                            <i class="fas fa-check-circle text-success"></i> Timestamps
+                            <i class="bi bi-check-circle-fill text-success"></i> Timestamps
                         </small>
                     </div>
                 </div>
@@ -305,28 +295,28 @@
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">⚡ Quick Security Actions</h6>
+                    <h6 class="m-0 fw-bold text-primary">⚡ Quick Security Actions</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-2">
                             <a href="{% url 'security:manage_2fa' %}" class="btn btn-primary btn-block">
-                                <i class="fas fa-shield-alt me-2"></i> Manage 2FA
+                                <i class="bi bi-shield-check me-2"></i> Manage 2FA
                             </a>
                         </div>
                         <div class="col-md-3 mb-2">
                             <a href="{% url 'security:verification_review' %}" class="btn btn-success btn-block">
-                                <i class="fas fa-user-check me-2"></i> Review Verifications
+                                <i class="bi bi-person-check me-2"></i> Review Verifications
                             </a>
                         </div>
                         <div class="col-md-3 mb-2">
                             <a href="{% url 'security:fraud_cases_review' %}" class="btn btn-warning btn-block">
-                                <i class="fas fa-exclamation-triangle me-2"></i> Fraud Cases
+                                <i class="bi bi-exclamation-triangle me-2"></i> Fraud Cases
                             </a>
                         </div>
                         <div class="col-md-3 mb-2">
                             <a href="{% url 'security:settings' %}?from_trust_security=true" class="btn btn-info btn-block">
-                                <i class="fas fa-cog me-2"></i> Security Settings
+                                <i class="bi bi-gear me-2"></i> Security Settings
                             </a>
                         </div>
                     </div>
@@ -343,3 +333,5 @@
 .border-left-info { border-left: 0.25rem solid #36b9cc !important; }
 </style>
 {% endblock %}
+
+

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 
 {% block title %}{{ user.username }}'s Orders - SharpDocs Admin{% endblock %}
@@ -21,11 +21,11 @@
         <div class="col-lg-3 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">📊 Order Statistics</h6>
+                    <h6 class="m-0 fw-bold text-primary">📊 Order Statistics</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="h4 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
-                    <div class="text-xs text-gray-500">Total Orders</div>
+                    <div class="h4 mb-0 fw-bold ">{{ total_orders }}</div>
+                    <div class="text-xs text-muted">Total Orders</div>
                 </div>
             </div>
         </div>
@@ -33,11 +33,11 @@
         <div class="col-lg-3 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">💰 Total Spent</h6>
+                    <h6 class="m-0 fw-bold text-success">💰 Total Spent</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="h4 mb-0 font-weight-bold text-gray-800">${{ total_spent|floatformat:2 }}</div>
-                    <div class="text-xs text-gray-500">Completed Orders</div>
+                    <div class="h4 mb-0 fw-bold ">${{ total_spent|floatformat:2 }}</div>
+                    <div class="text-xs text-muted">Completed Orders</div>
                 </div>
             </div>
         </div>
@@ -45,11 +45,11 @@
         <div class="col-lg-3 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-warning">⏳ Pending</h6>
+                    <h6 class="m-0 fw-bold text-warning">⏳ Pending</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="h4 mb-0 font-weight-bold text-gray-800">{{ pending_orders }}</div>
-                    <div class="text-xs text-gray-500">Awaiting Payment</div>
+                    <div class="h4 mb-0 fw-bold ">{{ pending_orders }}</div>
+                    <div class="text-xs text-muted">Awaiting Payment</div>
                 </div>
             </div>
         </div>
@@ -57,11 +57,11 @@
         <div class="col-lg-3 mb-4">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">✅ Completed</h6>
+                    <h6 class="m-0 fw-bold text-info">✅ Completed</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="h4 mb-0 font-weight-bold text-gray-800">{{ completed_orders }}</div>
-                    <div class="text-xs text-gray-500">Paid Orders</div>
+                    <div class="h4 mb-0 fw-bold ">{{ completed_orders }}</div>
+                    <div class="text-xs text-muted">Paid Orders</div>
                 </div>
             </div>
         </div>
@@ -70,7 +70,7 @@
     <!-- Orders Table -->
     <div class="card shadow">
         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">🛒 Order History ({{ total_orders }} total)</h6>
+            <h6 class="m-0 fw-bold text-primary">🛒 Order History ({{ total_orders }} total)</h6>
         </div>
         <div class="card-body">
             {% if orders %}
@@ -128,7 +128,7 @@
             </div>
             {% else %}
             <div class="text-center py-4">
-                <i class="fas fa-shopping-cart fa-3x text-gray-300 mb-3"></i>
+                <i class="bi bi-cart fs-1 text-muted mb-3"></i>
                 <p class="text-muted">{{ user.username }} hasn't placed any orders yet.</p>
                 <a href="{% url 'documents:admin_view_user' user.id %}" class="btn btn-primary">Back to User Profile</a>
             </div>
@@ -137,3 +137,4 @@
     </div>
 </div>
 {% endblock %}
+

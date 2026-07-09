@@ -5,38 +5,48 @@
 {% block meta_robots %}noindex, nofollow{% endblock %}
 
 {% block content %}
-<div class="container py-5" style="max-width: 700px;">
-  <div class="card shadow-sm p-4">
-    <h2 class="mb-4 text-center">👤 Your Profile</h2>
-
-    <!-- Show non-field errors if any -->
-    {% if form.non_field_errors %}
-      <div class="alert alert-danger">
-        {{ form.non_field_errors }}
-      </div>
-    {% endif %}
-
-    <form method="post">
-      {% csrf_token %}
-
-      {% for field in form %}
-        <div class="mb-3">
-          <label class="form-label">{{ field.label }}</label>
-          {{ field|add_class:"form-control" }}
-          {% if field.help_text %}
-            <div class="form-text">{{ field.help_text }}</div>
-          {% endif %}
-          {% for error in field.errors %}
-            <div class="text-danger small">{{ error }}</div>
-          {% endfor %}
+<div class="row justify-content-center">
+  <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <i class="bi bi-person-circle display-5 text-primary"></i>
+          <h2 class="fw-bold mt-2 mb-0">Your Profile</h2>
+          <p class="text-muted small">Update your account information</p>
         </div>
-      {% endfor %}
 
-      <button class="btn btn-success w-100" type="submit">💾 Save Changes</button>
-    </form>
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger rounded-3">{{ form.non_field_errors }}</div>
+        {% endif %}
 
-    <div class="mt-4 text-center">
-      <a href="{% url 'home' %}" class="btn btn-outline-secondary">⬅ Back to Home</a>
+        <form method="post">
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold">{{ field.label }}</label>
+              {{ field|add_class:"form-control" }}
+              {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+              {% endif %}
+              {% for error in field.errors %}
+                <div class="text-danger small mt-1">{{ error }}</div>
+              {% endfor %}
+            </div>
+          {% endfor %}
+
+          <div class="d-grid mt-4">
+            <button class="btn btn-success btn-lg fw-semibold" type="submit">
+              <i class="bi bi-floppy me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back to Home
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </div>

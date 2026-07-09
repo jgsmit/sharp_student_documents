@@ -2,233 +2,519 @@
 {% load withdrawals_tags %}
 
 <style>
-/* ── Navbar ── */
-.navbar { background: linear-gradient(135deg, #1a365d 0%, #1e4d8c 100%) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.18) !important; }
-.navbar .navbar-brand { font-size: 1.3rem; letter-spacing: -0.3px; }
-.navbar .navbar-brand .brand-icon { color: #ffc107; }
-.navbar .nav-link { padding: 0.45rem 0.65rem; border-radius: 6px; transition: background 0.18s; }
-.navbar .nav-link:hover, .navbar .nav-link.active { background: rgba(255,255,255,0.13) !important; }
-.navbar .nav-link.active { font-weight: 600; }
-.navbar-search .form-control { border: none; background: rgba(255,255,255,0.15); color: #fff; border-radius: 8px 0 0 8px; }
-.navbar-search .form-control::placeholder { color: rgba(255,255,255,0.65); }
-.navbar-search .form-control:focus { background: rgba(255,255,255,0.22); box-shadow: none; color: #fff; }
-.navbar-search .btn { background: rgba(255,255,255,0.18); border: none; color: #fff; border-radius: 0 8px 8px 0; }
-.navbar-search .btn:hover { background: rgba(255,255,255,0.28); }
-.nav-pill-btn { background: #ffc107 !important; color: #1a365d !important; border-radius: 20px !important; padding: 0.35rem 1rem !important; font-weight: 600 !important; font-size: 0.85rem !important; }
-.nav-pill-btn:hover { background: #ffca2c !important; transform: translateY(-1px); }
-.nav-pill-outline { border: 1.5px solid rgba(255,255,255,0.5) !important; color: #fff !important; border-radius: 20px !important; padding: 0.35rem 1rem !important; font-size: 0.85rem !important; }
-.nav-pill-outline:hover { background: rgba(255,255,255,0.15) !important; }
-/* Mobile collapsed menu */
+/* ═══════════════════════════════
+   NAVBAR — Modern & Responsive
+   ═══════════════════════════════ */
+
+/* Base */
+.sd-nav {
+  background: linear-gradient(135deg, #0f2044 0%, #1a3a6e 100%);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.25);
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+.sd-nav .container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  flex-wrap: nowrap;
+}
+
+/* Brand */
+.sd-brand {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff !important;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sd-brand .sd-bolt { color: #fbbf24; font-size: 1.1rem; }
+
+/* ── SEARCH — always visible, white background ── */
+.sd-search {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 380px;
+}
+.sd-search .input-group { border-radius: 10px; overflow: hidden; }
+.sd-search input {
+  background: #ffffff;
+  border: none;
+  border-radius: 10px 0 0 10px !important;
+  font-size: 0.88rem;
+  color: #1e293b;
+  padding: 0.5rem 0.85rem;
+  min-width: 0;
+}
+.sd-search input::placeholder { color: #94a3b8; }
+.sd-search input:focus {
+  background: #ffffff;
+  box-shadow: none;
+  border: none;
+  outline: none;
+  color: #1e293b;
+}
+.sd-search .sd-search-btn {
+  background: #fbbf24;
+  border: none;
+  color: #0f2044;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+  border-radius: 0 10px 10px 0 !important;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sd-search .sd-search-btn:hover { background: #f59e0b; }
+
+/* ── HAMBURGER ── */
+.sd-toggler {
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 38px;
+  transition: background 0.2s;
+}
+.sd-toggler:hover { background: rgba(255,255,255,0.18); }
+.sd-toggler .bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+}
+/* animated hamburger → X */
+.sd-toggler.open .bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.sd-toggler.open .bar:nth-child(2) { opacity: 0; }
+.sd-toggler.open .bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ── NAV MENU ── */
+.sd-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+.sd-menu .sd-link {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.88);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s;
+}
+.sd-menu .sd-link:hover,
+.sd-menu .sd-link.active { background: rgba(255,255,255,0.14); color: #fff; }
+.sd-menu .sd-link i { font-size: 1rem; flex-shrink: 0; }
+
+/* Dropdown */
+.sd-menu .dropdown-toggle::after { margin-left: 0.3rem; }
+.sd-menu .dropdown-menu {
+  background: #fff;
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+  padding: 0.5rem;
+  min-width: 200px;
+  margin-top: 0.35rem !important;
+}
+.sd-menu .dropdown-item {
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sd-menu .dropdown-item:hover { background: #f1f5f9; color: #0f2044; }
+.sd-menu .dropdown-divider { margin: 0.35rem 0.5rem; border-color: #e2e8f0; }
+.sd-user-header { padding: 0.6rem 0.9rem 0.5rem; border-bottom: 1px solid #f1f5f9; margin-bottom: 0.25rem; }
+.sd-user-header .name { font-weight: 700; font-size: 0.875rem; color: #0f172a; }
+.sd-user-header .handle { font-size: 0.75rem; color: #94a3b8; }
+
+/* Avatar */
+.sd-avatar {
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  color: #1a3a6e;
+  flex-shrink: 0;
+}
+
+/* Pills for guest */
+.sd-pill-outline {
+  border: 1.5px solid rgba(255,255,255,0.45);
+  border-radius: 20px;
+  padding: 0.38rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.18s;
+}
+.sd-pill-outline:hover { background: rgba(255,255,255,0.14); color: #fff; }
+.sd-pill-solid {
+  background: #fbbf24;
+  border-radius: 20px;
+  padding: 0.38rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f2044;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.18s, transform 0.15s;
+}
+.sd-pill-solid:hover { background: #f59e0b; transform: translateY(-1px); }
+
+/* ═══════════════════════════════
+   MOBILE (≤ 991px)
+   ═══════════════════════════════ */
 @media (max-width: 991px) {
-  .navbar-search { max-width: 100% !important; width: 100%; }
-  .navbar-search .form-control { background: rgba(255,255,255,0.12); }
-  .navbar-nav .nav-link { padding: 0.6rem 0.5rem; }
-  .nav-pill-btn, .nav-pill-outline { display: inline-block; margin: 0.25rem 0; }
+  .sd-toggler { display: flex; }
+  .sd-menu {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    background: #0f2044;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 0.5rem 0 0.75rem;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1029;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .sd-menu.open { display: flex; }
+  .sd-menu .sd-link {
+    padding: 0.7rem 1.25rem;
+    border-radius: 0;
+    font-size: 0.95rem;
+    border-left: 3px solid transparent;
+  }
+  .sd-menu .sd-link:hover,
+  .sd-menu .sd-link.active { background: rgba(255,255,255,0.08); border-left-color: #fbbf24; }
+  .sd-menu .dropdown-menu {
+    position: static !important;
+    transform: none !important;
+    box-shadow: none;
+    border-radius: 0;
+    background: rgba(255,255,255,0.04);
+    border: none;
+    padding: 0;
+    margin: 0 !important;
+    min-width: unset;
+  }
+  .sd-menu .dropdown-item {
+    color: rgba(255,255,255,0.78);
+    padding: 0.6rem 1.25rem 0.6rem 2.5rem;
+    border-radius: 0;
+    font-size: 0.875rem;
+  }
+  .sd-menu .dropdown-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .sd-menu .dropdown-divider { border-color: rgba(255,255,255,0.1); }
+  .sd-menu .sd-mobile-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.08);
+    margin: 0.35rem 1rem;
+  }
+  .sd-menu .sd-pills-row {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem 0.25rem;
+  }
+  .sd-pill-solid, .sd-pill-outline {
+    flex: 1;
+    text-align: center;
+  }
+  .sd-user-header { border-color: rgba(255,255,255,0.1); }
+  .sd-user-header .name { color: #fff; }
+  .sd-user-header .handle { color: rgba(255,255,255,0.5); }
+  /* Hide dropdown arrow on mobile — items shown inline */
+  .sd-menu .dropdown-toggle::after { display: none; }
+  /* Search full width on mobile */
+  .sd-search { max-width: 100%; flex: 1 1 auto; }
+  .sd-nav .container { gap: 0.5rem; flex-wrap: wrap; }
+  /* brand + search + toggler row */
+  .sd-nav .container > .sd-brand  { order: 1; }
+  .sd-nav .container > .sd-search { order: 2; flex: 1 1 0; }
+  .sd-nav .container > .sd-toggler{ order: 3; }
+  .sd-nav .container > .sd-menu   { order: 4; flex-basis: 100%; }
 }
 </style>
 
-<nav class="navbar navbar-expand-lg navbar-dark" aria-label="Main navigation">
+<nav class="sd-nav" aria-label="Main navigation">
   <div class="container">
 
     <!-- Brand -->
-    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="{% url 'home' %}">
-      <i class="bi bi-lightning-charge-fill brand-icon"></i>
+    <a class="sd-brand" href="{% url 'home' %}">
+      <i class="bi bi-journal-bookmark-fill sd-bolt"></i>
       SharpDocs
     </a>
 
-    <!-- Mobile toggler -->
-    <button class="navbar-toggler border-0 p-1" type="button"
-            data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
+    <!-- Search — always visible -->
+    <form class="sd-search" method="get" action="{% url 'documents:document_list' %}" role="search">
+      <div class="input-group">
+        <input type="search" name="q" class="form-control"
+               placeholder="Search documents..."
+               aria-label="Search documents"
+               value="{{ request.GET.q|default:'' }}">
+        <button type="submit" class="sd-search-btn" aria-label="Search">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+    </form>
+
+    <!-- Hamburger -->
+    <button class="sd-toggler" id="sdToggler" aria-label="Toggle menu" aria-expanded="false">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
     </button>
 
-    <div class="collapse navbar-collapse" id="navbarNav">
+    <!-- Nav menu -->
+    <ul class="sd-menu list-unstyled mb-0" id="sdMenu">
 
-      <!-- Search -->
-      <form method="get" action="{% url 'documents:document_list' %}"
-            class="navbar-search d-flex ms-lg-3 me-lg-auto my-2 my-lg-0"
-            style="max-width: 300px; width: 100%;"
-            role="search">
-        <div class="input-group">
-          <input class="form-control form-control-sm" type="search" name="q"
-                 placeholder="Search documents, subjects..."
-                 aria-label="Search" value="{{ request.GET.q|default:'' }}">
-          <button class="btn btn-sm" type="submit" title="Search">
-            <i class="bi bi-search"></i>
-          </button>
-        </div>
-      </form>
+      {% if user.is_authenticated %}
 
-      <!-- Nav links -->
-      <ul class="navbar-nav align-items-lg-center ms-lg-2 gap-lg-1">
+        <!-- Dashboard -->
+        <li>
+          {% if user.is_superuser %}
+            <a class="sd-link" href="{% url 'documents:admin_dashboard' %}">
+              <i class="bi bi-shield-check"></i> Dashboard
+            </a>
+          {% elif user.is_seller %}
+            <a class="sd-link" href="{% url 'documents:seller_dashboard' %}">
+              <i class="bi bi-shop"></i> Dashboard
+            </a>
+          {% else %}
+            <a class="sd-link" href="{% url 'documents:buyer_dashboard' %}">
+              <i class="bi bi-grid"></i> Dashboard
+            </a>
+          {% endif %}
+        </li>
 
-        <!-- Browse — always visible -->
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'documents:document_list' %}">
-            <i class="bi bi-collection me-1"></i>Browse
+        <!-- Purchases -->
+        <li>
+          <a class="sd-link" href="{% url 'documents:my_purchases' %}">
+            <i class="bi bi-bag-check"></i> Purchases
           </a>
         </li>
 
-        {% if user.is_authenticated %}
-
-          <!-- Dashboard -->
-          <li class="nav-item">
-            {% if user.is_superuser %}
-              <a class="nav-link" href="{% url 'documents:admin_dashboard' %}">
-                <i class="bi bi-shield-check me-1"></i>Dashboard
-              </a>
-            {% elif user.is_seller %}
-              <a class="nav-link" href="{% url 'documents:seller_dashboard' %}">
-                <i class="bi bi-shop me-1"></i>Dashboard
-              </a>
-            {% else %}
-              <a class="nav-link" href="{% url 'documents:buyer_dashboard' %}">
-                <i class="bi bi-columns-gap me-1"></i>Dashboard
-              </a>
+        <!-- Education (conditional) -->
+        {% if user.is_student or user.is_teacher or user.is_seller %}
+        <li class="d-none d-lg-block dropdown">
+          <a class="sd-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-book"></i> Learn
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            {% if user.is_student %}
+              <li><a class="dropdown-item" href="{% url 'education:education_dashboard' %}">
+                <i class="bi bi-grid text-primary"></i> Education Dashboard
+              </a></li>
+              <li><a class="dropdown-item" href="{% url 'education:study_planner' %}">
+                <i class="bi bi-calendar3 text-success"></i> Study Planner
+              </a></li>
             {% endif %}
-          </li>
-
-          <!-- My Purchases -->
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'documents:my_purchases' %}">
-              <i class="bi bi-bag-check me-1"></i>
-              <span>Purchases</span>
-            </a>
-          </li>
-
-          <!-- Divider on mobile -->
-          <li class="d-lg-none"><hr class="border-white opacity-25 my-1"></li>
-
-          <!-- Education dropdown -->
-          {% if user.is_student or user.is_teacher or user.is_seller %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button"
-               data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-book me-1"></i>Education
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-              {% if user.is_student %}
-                <li><a class="dropdown-item rounded-2" href="{% url 'education:education_dashboard' %}">
-                  <i class="bi bi-grid me-2 text-primary"></i>Education Dashboard
-                </a></li>
-                <li><a class="dropdown-item rounded-2" href="{% url 'education:study_planner' %}">
-                  <i class="bi bi-calendar3 me-2 text-success"></i>Study Planner
-                </a></li>
-              {% endif %}
-              {% if user.is_teacher %}
-                <li><a class="dropdown-item rounded-2" href="{% url 'education:learning_analytics' %}">
-                  <i class="bi bi-graph-up me-2 text-info"></i>Learning Analytics
-                </a></li>
-              {% endif %}
-            </ul>
-          </li>
-          {% endif %}
-
-          <!-- Admin dropdown -->
-          {% if user.is_admin or user.is_moderator %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button"
-               data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-gear me-1"></i>Admin
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
-              {% if user.is_admin %}
-                <li><a class="dropdown-item rounded-2" href="/admin/">
-                  <i class="bi bi-shield-check me-2 text-primary"></i>Admin Panel
-                </a></li>
-              {% endif %}
-              {% if user.is_superuser %}
-                <li><a class="dropdown-item rounded-2" href="{% url 'documents:admin_notifications' %}">
-                  <i class="bi bi-bell me-2 text-warning"></i>Notifications
-                  {% unread_notification_count user as unread_count %}
-                  {% if unread_count > 0 %}<span class="badge bg-danger ms-1">{{ unread_count }}</span>{% endif %}
-                </a></li>
-              {% endif %}
-              <li><a class="dropdown-item rounded-2" href="{% url 'documents:admin_manage_withdrawals' %}">
-                <i class="bi bi-bank me-2 text-success"></i>Withdrawals
+            {% if user.is_teacher %}
+              <li><a class="dropdown-item" href="{% url 'education:learning_analytics' %}">
+                <i class="bi bi-graph-up text-info"></i> Analytics
               </a></li>
-              <li><a class="dropdown-item rounded-2" href="{% url 'documents:seller_analytics' %}">
-                <i class="bi bi-bar-chart me-2 text-info"></i>Analytics
-              </a></li>
-              <li><a class="dropdown-item rounded-2" href="{% url 'security:settings' %}">
-                <i class="bi bi-shield me-2 text-danger"></i>Security
-              </a></li>
-              {% if user.is_moderator %}
-                <li><a class="dropdown-item rounded-2" href="{% url 'reviews:moderation' %}">
-                  <i class="bi bi-eye me-2 text-secondary"></i>Review Moderation
-                </a></li>
-              {% endif %}
-            </ul>
-          </li>
-          {% endif %}
-
-          <!-- User dropdown -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#"
-               role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <span class="d-inline-flex align-items-center justify-content-center bg-white rounded-circle"
-                    style="width:28px;height:28px;overflow:hidden;flex-shrink:0;">
-                <i class="bi bi-person-fill text-primary" style="font-size:1rem;"></i>
-              </span>
-              <span class="d-none d-lg-inline text-truncate ms-1" style="max-width:80px;">{{ user.username }}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" style="min-width:200px;">
-              <li class="px-3 py-2 border-bottom">
-                <div class="fw-semibold text-dark small">{{ user.get_full_name|default:user.username }}</div>
-                <div class="text-muted" style="font-size:0.75rem;">@{{ user.username }}</div>
-              </li>
-              <li><a class="dropdown-item rounded-2 mt-1" href="{% url 'profile' %}">
-                <i class="bi bi-person me-2 text-primary"></i>Profile
-              </a></li>
-              {% if user.is_admin %}
-                <li><a class="dropdown-item rounded-2" href="{% url 'withdrawals:dashboard' %}">
-                  <i class="bi bi-wallet2 me-2 text-success"></i>Platform Withdrawals
-                </a></li>
-              {% endif %}
-              <li><a class="dropdown-item rounded-2" href="{% url 'security:settings' %}">
-                <i class="bi bi-gear me-2 text-secondary"></i>Settings
-              </a></li>
-              <li><hr class="dropdown-divider my-1"></li>
-              <li>
-                <form method="post" action="{% url 'logout' %}">
-                  {% csrf_token %}
-                  <button type="submit" class="dropdown-item rounded-2 text-danger">
-                    <i class="bi bi-box-arrow-right me-2"></i>Logout
-                  </button>
-                </form>
-              </li>
-            </ul>
-          </li>
-
-        {% else %}
-          <!-- Guest: Login + Register as pills -->
-          <li class="nav-item">
-            <a class="nav-link nav-pill-outline" href="{% url 'login' %}">
-              <i class="bi bi-box-arrow-in-right me-1"></i>Login
-            </a>
-          </li>
-          <li class="nav-item ms-lg-1">
-            <a class="nav-link nav-pill-btn" href="{% url 'register' %}">
-              <i class="bi bi-person-plus me-1"></i>Sign Up Free
-            </a>
-          </li>
+            {% endif %}
+          </ul>
+        </li>
+        <!-- Education mobile: flat links -->
+        {% if user.is_student %}
+        <li class="d-lg-none">
+          <a class="sd-link" href="{% url 'education:study_planner' %}">
+            <i class="bi bi-calendar3"></i> Study Planner
+          </a>
+        </li>
+        {% endif %}
         {% endif %}
 
-      </ul>
-    </div>
+        <!-- Admin (conditional) -->
+        {% if user.is_admin or user.is_moderator %}
+        <li class="d-none d-lg-block dropdown">
+          <a class="sd-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-gear"></i> Admin
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            {% if user.is_admin %}
+              <li><a class="dropdown-item" href="/admin/">
+                <i class="bi bi-shield-check text-primary"></i> Admin Panel
+              </a></li>
+            {% endif %}
+            {% if user.is_superuser %}
+              <li>
+                <a class="dropdown-item" href="{% url 'documents:admin_notifications' %}">
+                  <i class="bi bi-bell text-warning"></i> Notifications
+                  {% unread_notification_count user as unread_count %}
+                  {% if unread_count > 0 %}<span class="badge bg-danger ms-auto">{{ unread_count }}</span>{% endif %}
+                </a>
+              </li>
+            {% endif %}
+            <li><a class="dropdown-item" href="{% url 'documents:admin_manage_withdrawals' %}">
+              <i class="bi bi-bank text-success"></i> Withdrawals
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'documents:seller_analytics' %}">
+              <i class="bi bi-bar-chart text-info"></i> Analytics
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'security:settings' %}">
+              <i class="bi bi-shield text-danger"></i> Security
+            </a></li>
+          </ul>
+        </li>
+        <!-- Admin mobile: flat -->
+        <li class="d-lg-none"><a class="sd-link" href="/admin/">
+          <i class="bi bi-shield-check"></i> Admin Panel
+        </a></li>
+        {% endif %}
+
+        <!-- Divider before user profile -->
+        <li class="sd-mobile-divider d-lg-none"></li>
+
+        <!-- User dropdown (desktop) -->
+        <li class="d-none d-lg-block dropdown">
+          <a class="sd-link dropdown-toggle" href="#" role="button"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="sd-avatar"><i class="bi bi-person-fill"></i></span>
+            <span class="text-truncate" style="max-width:80px;">{{ user.username }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" style="min-width:210px;">
+            <li>
+              <div class="sd-user-header">
+                <div class="name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="handle">@{{ user.username }}</div>
+              </div>
+            </li>
+            <li><a class="dropdown-item" href="{% url 'profile' %}">
+              <i class="bi bi-person text-primary"></i> Profile
+            </a></li>
+            <li><a class="dropdown-item" href="{% url 'security:settings' %}">
+              <i class="bi bi-gear text-secondary"></i> Settings
+            </a></li>
+            {% if user.is_admin %}
+            <li><a class="dropdown-item" href="{% url 'withdrawals:dashboard' %}">
+              <i class="bi bi-wallet2 text-success"></i> Withdrawals
+            </a></li>
+            {% endif %}
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item text-danger">
+                  <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+              </form>
+            </li>
+          </ul>
+        </li>
+
+        <!-- User mobile: flat links -->
+        <li class="d-lg-none">
+          <a class="sd-link" href="{% url 'profile' %}">
+            <i class="bi bi-person"></i> Profile
+          </a>
+        </li>
+        <li class="d-lg-none">
+          <a class="sd-link" href="{% url 'security:settings' %}">
+            <i class="bi bi-gear"></i> Settings
+          </a>
+        </li>
+        <li class="d-lg-none">
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="sd-link w-100 text-start bg-transparent border-0"
+                    style="color:rgba(255,180,180,0.9);">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </button>
+          </form>
+        </li>
+
+      {% else %}
+        <!-- Guest -->
+        <li class="d-none d-lg-flex align-items-center gap-2 ms-1">
+          <a class="sd-pill-outline" href="{% url 'login' %}">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+          </a>
+          <a class="sd-pill-solid" href="{% url 'register' %}">
+            <i class="bi bi-person-plus me-1"></i>Sign Up Free
+          </a>
+        </li>
+        <!-- Guest mobile -->
+        <li class="d-lg-none sd-pills-row">
+          <a class="sd-pill-outline" href="{% url 'login' %}">Login</a>
+          <a class="sd-pill-solid" href="{% url 'register' %}">Sign Up Free</a>
+        </li>
+      {% endif %}
+
+    </ul>
   </div>
 </nav>
 
 <script>
 (function () {
+  var tog  = document.getElementById('sdToggler');
+  var menu = document.getElementById('sdMenu');
+  if (!tog || !menu) return;
+
+  // Toggle menu open/close
+  tog.addEventListener('click', function () {
+    var open = menu.classList.toggle('open');
+    tog.classList.toggle('open', open);
+    tog.setAttribute('aria-expanded', String(open));
+  });
+
+  // Close on outside click
   document.addEventListener('click', function (e) {
-    var nb = document.getElementById('navbarNav');
-    var tog = document.querySelector('.navbar-toggler');
-    if (nb && tog && nb.classList.contains('show') &&
-        !nb.contains(e.target) && !tog.contains(e.target)) {
-      tog.click();
+    if (menu.classList.contains('open') &&
+        !menu.contains(e.target) && !tog.contains(e.target)) {
+      menu.classList.remove('open');
+      tog.classList.remove('open');
+      tog.setAttribute('aria-expanded', 'false');
     }
+  });
+
+  // Close when a link inside is clicked (on mobile)
+  menu.querySelectorAll('a, button[type="submit"]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      if (window.innerWidth < 992) {
+        menu.classList.remove('open');
+        tog.classList.remove('open');
+        tog.setAttribute('aria-expanded', 'false');
+      }
+    });
   });
 })();
 </script>

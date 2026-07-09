@@ -106,7 +106,7 @@
                             </td>
                             <td>{{ doc.category.name|default:"No Category" }}</td>
                             <td>${{ doc.price|floatformat:2 }}</td>
-                            <td>{{ doc.page_count|default:"N/A" }}</td>
+                            <td>{{ doc.pages|default:"N/A" }}</td>
                             <td>{{ doc.get_academic_level_display|default:"N/A" }}</td>
                             <td>{{ doc.created_at|date:"M d, Y" }}</td>
                             <td>
@@ -133,4 +133,5 @@
     </div>
 </div>
 {% endblock %}
+
 

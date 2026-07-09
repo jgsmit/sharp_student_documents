@@ -1,10 +1,14 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 from . import views_analytics
 
 app_name = 'documents'
 
 urlpatterns = [
+    # Redirect bare /documents/ to /documents/all/ (prevents 404 from crawled links)
+    path("", RedirectView.as_view(url="/documents/all/", permanent=True)),
+
     # Document Management
     path("all/", views.document_list, name="document_list"),
     path("category/<slug:slug>/", views.category_detail, name="category_detail"),

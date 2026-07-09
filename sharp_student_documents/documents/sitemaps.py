@@ -39,25 +39,20 @@ class DocumentSitemap(Sitemap):
     limit = 50000  # Google sitemap limit
 
     def items(self):
+        # No is_approved field — all documents with a slug are public
         return (
             Document.objects
-            .filter(is_approved=True)
             .exclude(slug="")
             .select_related("category", "seller")
             .order_by("-created_at")
         )
 
     def lastmod(self, obj):
-        return getattr(obj, "updated_at", None) or obj.created_at
+        # Document model only has created_at
+        return obj.created_at
 
     def priority(self, obj):
-        # Boost high-selling documents
-        sales = getattr(obj, "sales_count", 0) or 0
-        if sales >= 10:
-            return 0.9
-        if sales >= 3:
-            return 0.8
-        return 0.7
+        return 0.8
 
     def location(self, obj):
         return reverse("documents:document_detail", kwargs={"slug": obj.slug})

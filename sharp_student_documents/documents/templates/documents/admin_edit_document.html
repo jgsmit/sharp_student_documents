@@ -169,9 +169,9 @@
                     <p><strong>Category:</strong> {{ document.category.name|default:"No Category" }}</p>
                     <p><strong>Type:</strong> {{ document.get_document_type_display|default:"N/A" }}</p>
                     <p><strong>Level:</strong> {{ document.get_academic_level_display|default:"N/A" }}</p>
-                    <p><strong>Pages:</strong> {{ document.page_count|default:"N/A" }}</p>
+                    <p><strong>Pages:</strong> {{ document.pages|default:"N/A" }}</p>
                     <p><strong>Created:</strong> {{ document.created_at|date:"M d, Y H:i" }}</p>
-                    <p><strong>Updated:</strong> {{ document.updated_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Updated:</strong> {{ document.created_at|date:"M d, Y H:i" }}</p>
                 </div>
             </div>
 
@@ -236,4 +236,5 @@
 }
 </style>
 {% endblock %}
+
 

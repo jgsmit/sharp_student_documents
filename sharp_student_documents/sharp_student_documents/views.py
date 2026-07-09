@@ -51,12 +51,17 @@ def robots_txt(request):
 
 
 def sitemap_xml(request, sitemaps):
+    from django.core.exceptions import FieldError
     site = RequestSite(request)
     sitemap_data = []
 
     for sitemap_obj in sitemaps.values():
-        sitemap_instance = sitemap_obj() if isinstance(sitemap_obj, type) else sitemap_obj
-        sitemap_data.extend(sitemap_instance.get_urls(site=site, protocol=request.scheme))
+        try:
+            sitemap_instance = sitemap_obj() if isinstance(sitemap_obj, type) else sitemap_obj
+            sitemap_data.extend(sitemap_instance.get_urls(site=site, protocol=request.scheme))
+        except (FieldError, Exception):
+            # Skip broken sitemaps rather than returning an empty/broken XML
+            continue
 
     return render(request, "sitemap.xml", {"sitemap_data": sitemap_data}, content_type="application/xml")
 

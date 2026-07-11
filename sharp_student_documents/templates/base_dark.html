@@ -500,10 +500,8 @@ function installPWA() {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the A2HS prompt');
                 localStorage.setItem('pwaInstalled', 'true');
             } else {
-                console.log('User dismissed the A2HS prompt');
             }
             deferredPrompt = null;
             
@@ -532,7 +530,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check if running as PWA
     if (window.matchMedia('(display-mode: standalone)').matches) {
-        console.log('Running as PWA');
         document.body.classList.add('pwa-mode');
     }
     
@@ -541,22 +538,17 @@ document.addEventListener('DOMContentLoaded', function() {
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('/serviceworker.js')
                 .then(function(registration) {
-                    console.log('ServiceWorker registration successful');
-                    
                     // Check for updates
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // Show update notification
                                 showUpdateNotification();
                             }
                         });
                     });
                 })
-                .catch(function(error) {
-                    console.log('ServiceWorker registration failed');
-                });
+                .catch(function(error) {});
         });
     }
 });
@@ -574,7 +566,6 @@ function showUpdateNotification() {
     `;
     document.body.appendChild(notification);
     
-    // Auto-remove after 10 seconds
     setTimeout(() => {
         if (notification.parentNode) {
             notification.remove();
@@ -588,12 +579,10 @@ function refreshApp() {
 
 // Handle online/offline status
 window.addEventListener('online', () => {
-    console.log('App is online');
     document.body.classList.remove('offline-mode');
 });
 
 window.addEventListener('offline', () => {
-    console.log('App is offline');
     document.body.classList.add('offline-mode');
 });
 

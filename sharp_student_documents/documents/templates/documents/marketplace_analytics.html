@@ -471,7 +471,7 @@
 {{ growth_data|json_script:"growthData" }}
 {{ popular_categories|json_script:"categoryData" }}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'vendor/chart.js/chart.umd.min.js' %}"></script>
 <script>
 // Chart configurations
 Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
@@ -611,7 +611,6 @@ function updateGrowthChart(period) {
     event.target.classList.add('active');
     
     // Here you would typically make an AJAX call to get new data
-    console.log('Updating growth chart for period:', period);
 }
 
 function refreshCategoryChart() {
@@ -634,7 +633,7 @@ function filterGrowthData(filter) {
     document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
     
-    console.log('Filtering growth data:', filter);
+    // filter growth chart (implementation pending)
 }
 
 // Add animation on scroll

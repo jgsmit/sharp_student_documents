@@ -9,7 +9,7 @@
 {% progressive_web_app_meta %}
 <style>
     body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0f2044 0%, #1a3a6e 100%);
         min-height: 100vh;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
@@ -34,7 +34,7 @@
     
     .offline-icon {
         font-size: 80px;
-        color: #667eea;
+        color: #0f2044;
         margin-bottom: 20px;
     }
     
@@ -98,14 +98,14 @@
     }
     
     .btn-primary {
-        background: #667eea;
+        background: #0f2044;
         color: white;
     }
     
     .btn-primary:hover {
-        background: #5a6fd8;
+        background: #1a3a6e;
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 20px rgba(15, 32, 68, 0.3);
     }
     
     .btn-secondary {
@@ -170,7 +170,7 @@
     }
     
     .document-title {
-        color: #667eea;
+        color: #0f2044;
         font-weight: 500;
         flex: 1;
         white-space: nowrap;
@@ -268,85 +268,48 @@
 // Check connection status
 function updateConnectionStatus() {
     const statusElement = document.getElementById('connectionStatus');
-    const isOnline = navigator.onLine;
-    
-    if (isOnline) {
+    if (navigator.onLine) {
         statusElement.className = 'connection-status status-online';
-        statusElement.innerHTML = '<i class="bi bi-wifi"></i> Connection restored';
+        statusElement.innerHTML = '<i class="bi bi-wifi"></i> Connection restored — <a href="/" class="text-success fw-bold">Reload app</a>';
     } else {
         statusElement.className = 'connection-status status-offline';
         statusElement.innerHTML = '<i class="bi bi-wifi-off"></i> You\'re currently offline';
     }
 }
 
-// Load cached documents
+// Load cached documents from localStorage
 function loadCachedDocuments() {
-    const cachedDocs = localStorage.getItem('cachedDocuments');
     const documentsList = document.getElementById('cachedDocumentsList');
-    
-    if (cachedDocs) {
-        try {
-            const documents = JSON.parse(cachedDocs);
-            if (documents.length > 0) {
-                documentsList.innerHTML = documents.map(doc => `
-                    <div class="document-item">
-                        <span class="document-title">${doc.title}</span>
-                        <span class="document-status">Cached</span>
-                    </div>
-                `).join('');
-            } else {
-                documentsList.innerHTML = `
-                    <div class="document-item">
-                        <span class="document-title">No cached documents yet</span>
-                        <span class="document-status">Empty</span>
-                    </div>
-                `;
-            }
-        } catch (e) {
-            documentsList.innerHTML = `
+    const cachedDocs = localStorage.getItem('cachedDocuments');
+
+    if (!cachedDocs) {
+        documentsList.innerHTML = '<div class="document-item"><span class="document-title">No cached documents yet</span><span class="document-status">Empty</span></div>';
+        return;
+    }
+
+    try {
+        const documents = JSON.parse(cachedDocs);
+        if (documents.length > 0) {
+            documentsList.innerHTML = documents.map(doc => `
                 <div class="document-item">
-                    <span class="document-title">Error loading cached documents</span>
-                    <span class="document-status">Error</span>
+                    <span class="document-title">${doc.title}</span>
+                    <span class="document-status">Cached</span>
                 </div>
-            `;
+            `).join('');
+        } else {
+            documentsList.innerHTML = '<div class="document-item"><span class="document-title">No cached documents yet</span><span class="document-status">Empty</span></div>';
         }
-    } else {
-        documentsList.innerHTML = `
-            <div class="document-item">
-                <span class="document-title">No cached documents yet</span>
-                <span class="document-status">Empty</span>
-            </div>
-        `;
+    } catch (e) {
+        documentsList.innerHTML = '<div class="document-item"><span class="document-title">Unable to load cached documents</span><span class="document-status">Error</span></div>';
     }
 }
 
-// Listen for connection changes
-window.addEventListener('online', updateConnectionStatus);
+window.addEventListener('online',  updateConnectionStatus);
 window.addEventListener('offline', updateConnectionStatus);
 
-// Initialize
 document.addEventListener('DOMContentLoaded', function() {
     updateConnectionStatus();
     loadCachedDocuments();
-    
-    // Simulate caching documents when online
-    if (navigator.onLine && 'serviceWorker' in navigator) {
-        // This would typically be handled by your service worker
-        console.log('PWA is ready for offline access');
-    }
 });
-
-// Service Worker registration for PWA
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/serviceworker.js')
-            .then(function(registration) {
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            })
-            .catch(function(error) {
-                console.log('ServiceWorker registration failed: ', error);
-            });
-    });
-}
 </script>
 {% endblock %}

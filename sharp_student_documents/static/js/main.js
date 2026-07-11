@@ -2,61 +2,40 @@
 
 // Wait for DOM to be loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('SharpDocs main.js loaded');
-    
+
     // Initialize tooltips
-    const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
-    
+    const tooltipTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+
     // Initialize popovers
-    const popoverTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="popover"]'))
-    const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl)
-    });
-    
+    const popoverTriggerList = Array.from(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.map(function (el) { return new bootstrap.Popover(el); });
+
     // Auto-hide alerts after 5 seconds
     setTimeout(function() {
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
+        document.querySelectorAll('.alert').forEach(function(alert) {
+            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+            if (bsAlert) bsAlert.close();
         });
     }, 5000);
-    
+
     // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
             const targetId = this.getAttribute('href');
-            console.log('DEBUG: Anchor href:', targetId);
-            if (targetId && targetId.startsWith('#')) {
+            if (targetId && targetId.length > 1) {
                 const target = document.querySelector(targetId);
                 if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
         });
     });
-            if (targetId && targetId !== '#') {
-                const target = document.querySelector(targetId);
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            }
-        });
-    });
-    
-    // Form validation
-    Array.prototype.slice.call(forms).forEach(function (form) {
-        form.addEventListener('submit', function (event) {
+
+    // Form validation (Bootstrap native)
+    document.querySelectorAll('form.needs-validation').forEach(function(form) {
+        form.addEventListener('submit', function(event) {
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -64,15 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
             form.classList.add('was-validated');
         }, false);
     });
-    
+
     // Loading states for buttons
     document.querySelectorAll('.btn-loading').forEach(function(button) {
         button.addEventListener('click', function() {
             const originalText = this.innerHTML;
             this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span> Loading...';
             this.disabled = true;
-            
-            // Reset after 3 seconds (for demo purposes)
             setTimeout(function() {
                 button.innerHTML = originalText;
                 button.disabled = false;
@@ -258,8 +235,6 @@ window.rejectWithdrawal = function(withdrawalId) {
 };
 
 window.viewWithdrawalDetails = function(withdrawalId) {
-    console.log('DEBUG: viewWithdrawalDetails called with ID:', withdrawalId);
-    // Show loading message
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.innerHTML = `
@@ -275,42 +250,22 @@ window.viewWithdrawalDetails = function(withdrawalId) {
             </div>
         </div>
     `;
-    
+
     document.body.appendChild(modal);
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
-    
-    // Fetch withdrawal details
-    console.log('DEBUG: Fetching from URL:', `/withdrawals/admin/details/${withdrawalId}/`);
-    console.log('DEBUG: withdrawalId type:', typeof withdrawalId, withdrawalId);
-    
+
     fetch(`/withdrawals/admin/details/${withdrawalId}/`)
         .then(response => {
-            console.log('DEBUG: Response status:', response.status);
-            console.log('DEBUG: Response headers:', response.headers);
-            
             if (!response.ok) {
-                console.log('DEBUG: Response not OK:', response.status, response.statusText);
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            
             return response.json();
         })
         .then(data => {
-            console.log('DEBUG: Received data:', data);
-            console.log('DEBUG: Data type:', typeof data);
-            console.log('DEBUG: Data keys:', Object.keys(data));
-            
-            if (data.success) {
-                console.log('DEBUG: Entering success block');
-                const modalBody = modal.querySelector('.modal-body');
-                console.log('DEBUG: modalBody found:', modalBody);
-                console.log('DEBUG: data.user object:', data.user);
-                console.log('DEBUG: data.user.username:', data.user.username);
-                
-                if (data.user && data.user.username) {
-                    console.log('DEBUG: Username exists and is:', data.user.username);
-                    modalBody.innerHTML = `
+            const modalBody = modal.querySelector('.modal-body');
+            if (data.success && data.user && data.user.username) {
+                modalBody.innerHTML = `
                     <div class="row">
                         <div class="col-md-6">
                             <h6>User Information</h6>
@@ -330,7 +285,6 @@ window.viewWithdrawalDetails = function(withdrawalId) {
                     ${data.failure_reason ? `<div class="alert alert-danger"><strong>Failure Reason:</strong> ${data.failure_reason}</div>` : ''}
                 `;
             } else {
-                const modalBody = modal.querySelector('.modal-body');
                 modalBody.innerHTML = `
                     <div class="alert alert-danger">
                         <strong>Error:</strong> ${data.error || 'Failed to load withdrawal details'}
@@ -339,7 +293,6 @@ window.viewWithdrawalDetails = function(withdrawalId) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             const modalBody = modal.querySelector('.modal-body');
             modalBody.innerHTML = `
                 <div class="alert alert-danger">
@@ -347,8 +300,7 @@ window.viewWithdrawalDetails = function(withdrawalId) {
                 </div>
             `;
         });
-    
-    // Clean up modal when hidden
+
     modal.addEventListener('hidden.bs.modal', function () {
         document.body.removeChild(modal);
     });

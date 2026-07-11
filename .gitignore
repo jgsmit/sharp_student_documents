@@ -48,6 +48,16 @@ __pycache__/
 media/
 sharp_student_documents/media/
 
+# ---- Playwright ----
+.playwright-mcp/
+playwright-report/
+test-results/
+playwright/.auth/
+
+# ---- Generated Static Files (collectstatic output) ----
+staticfiles/
+
 # ---- Other ----
 *.bak
 *.tmp
+Thumbs.db

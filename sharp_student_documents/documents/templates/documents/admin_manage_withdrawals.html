@@ -1005,35 +1005,24 @@ function viewWithdrawalDetails(withdrawalId) {
 // Handle URL fragment navigation to highlight specific withdrawal
 document.addEventListener('DOMContentLoaded', function() {
     let withdrawalId = null;
-    
-    // First check if we have a specific withdrawal ID from the context
+
     var specificWithdrawalId = "{{ specific_withdrawal_id|default:'' }}";
-    console.log('Specific withdrawal ID from context:', specificWithdrawalId);
     if (specificWithdrawalId) {
         withdrawalId = specificWithdrawalId;
     }
-    
-    // If not from context, check URL parameter
+
     if (!withdrawalId) {
         const urlParams = new URLSearchParams(window.location.search);
         withdrawalId = urlParams.get('withdrawal_id');
-        console.log('Withdrawal ID from URL parameter:', withdrawalId);
     }
-    
-    // If still not found, check hash fragment
+
     if (!withdrawalId && window.location.hash) {
         withdrawalId = window.location.hash.replace('#withdrawal-', '');
-        console.log('Withdrawal ID from hash fragment:', withdrawalId);
     }
-    
-    console.log('Final withdrawal ID to highlight:', withdrawalId);
-    
+
     if (withdrawalId) {
-        // Find the withdrawal row
         const withdrawalRow = document.querySelector(`[data-withdrawal-id="${withdrawalId}"]`);
-        console.log('Found withdrawal row:', withdrawalRow);
         if (withdrawalRow) {
-            console.log('Scrolling to and highlighting withdrawal row');
             // Scroll to the row
             withdrawalRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
@@ -1048,13 +1037,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 withdrawalRow.style.border = '';
             }, 3000);
         } else {
-            console.log('Withdrawal row not found for ID:', withdrawalId);
-            // Log all available withdrawal IDs for debugging
-            const allRows = document.querySelectorAll('[data-withdrawal-id]');
-            console.log('Available withdrawal IDs:');
-            allRows.forEach(row => {
-                console.log('  ', row.getAttribute('data-withdrawal-id'));
-            });
+            // withdrawal row not found — nothing to highlight
         }
     }
 });

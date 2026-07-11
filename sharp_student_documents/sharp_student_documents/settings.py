@@ -162,7 +162,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # --- Media files (local storage) ---
 MEDIA_URL = '/media/'
@@ -257,39 +257,43 @@ JAZZMIN_SETTINGS = {
 # --- PWA Settings (django-pwa reads flat PWA_APP_* settings) ---
 PWA_APP_NAME = "SharpDocs"
 PWA_APP_DESCRIPTION = "Professional document marketplace with educational tools"
-PWA_APP_THEME_COLOR = "#667eea"
+PWA_APP_THEME_COLOR = "#0f2044"
 PWA_APP_BACKGROUND_COLOR = "#ffffff"
 PWA_APP_DISPLAY = "standalone"
 PWA_APP_SCOPE = "/"
 PWA_APP_ORIENTATION = "portrait-primary"
 PWA_APP_START_URL = "/"
-PWA_APP_STATUS_BAR_COLOR = "#667eea"
+PWA_APP_STATUS_BAR_COLOR = "#0f2044"
 PWA_APP_DEBUG_MODE = DEBUG
 PWA_APP_ICONS = [
-    {"src": "/static/sharp.png", "sizes": "72x72", "type": "image/png"},
-    {"src": "/static/sharp.png", "sizes": "96x96", "type": "image/png"},
-    {"src": "/static/sharp.png", "sizes": "128x128", "type": "image/png"},
-    {"src": "/static/sharp.png", "sizes": "144x144", "type": "image/png"},
-    {"src": "/static/sharp.png", "sizes": "152x152", "type": "image/png"},
-    {"src": "/static/sharp.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "/static/sharp.png", "sizes": "384x384", "type": "image/png"},
-    {"src": "/static/sharp.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/static/images/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png"},
+    {"src": "/static/images/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png"},
+    {"src": "/static/images/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png"},
+    {"src": "/static/images/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png"},
+    {"src": "/static/images/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png"},
+    {"src": "/static/images/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "/static/images/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png"},
+    {"src": "/static/images/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"},
 ]
-PWA_APP_ICONS_APPLE = PWA_APP_ICONS
+PWA_APP_ICONS_APPLE = [
+    {"src": "/static/images/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png"},
+    {"src": "/static/images/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/static/images/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png"},
+]
 PWA_APP_SHORTCUTS = [
-    {
-        "name": "Study Planner",
-        "short_name": "Planner",
-        "description": "Access your study planner",
-        "url": "/education/planner/",
-        "icons": [{"src": "/static/images/icons/planner-96x96.png", "sizes": "96x96"}],
-    },
     {
         "name": "My Documents",
         "short_name": "Docs",
         "description": "View your purchased documents",
         "url": "/documents/my-purchases/",
-        "icons": [{"src": "/static/images/icons/docs-96x96.png", "sizes": "96x96"}],
+        "icons": [{"src": "/static/images/icons/icon-96x96.png", "sizes": "96x96"}],
+    },
+    {
+        "name": "Browse Marketplace",
+        "short_name": "Browse",
+        "description": "Browse the document marketplace",
+        "url": "/documents/",
+        "icons": [{"src": "/static/images/icons/icon-96x96.png", "sizes": "96x96"}],
     },
 ]
 PWA_APP_SPLASH_SCREEN = [

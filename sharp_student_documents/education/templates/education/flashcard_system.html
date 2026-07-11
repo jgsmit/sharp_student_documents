@@ -573,34 +573,21 @@ function showNotificationWithDashboard(message, type) {
 
 // Action button functions
 function reviewSingleCard(cardId) {
-  console.log('reviewSingleCard called with cardId:', cardId);
   showNotification(`Starting review for card ${cardId}`, 'info');
-  // In a real app, this would start a review session for a specific card
 }
 
 function editCard(cardId) {
-  console.log('editCard called with cardId:', cardId);
   showNotification(`Edit functionality for card ${cardId} coming soon!`, 'info');
-  // In a real app, this would open an edit modal
 }
 
 function deleteCard(cardId) {
-  console.log('deleteCard called with cardId:', cardId);
   if (confirm('Are you sure you want to delete this flashcard?')) {
     showNotification(`Flashcard ${cardId} deleted successfully!`, 'success');
-    // In a real app, this would send a delete request to the server
-    setTimeout(() => {
-      location.reload();
-    }, 1000);
+    setTimeout(() => { location.reload(); }, 1000);
   }
 }
 
-// Test function to verify JavaScript is working
 window.testFlashcardFunctions = function() {
-  console.log('Testing flashcard functions...');
-  console.log('reviewSingleCard function exists:', typeof reviewSingleCard);
-  console.log('editCard function exists:', typeof editCard);
-  console.log('deleteCard function exists:', typeof deleteCard);
   showNotification('Flashcard functions are loaded!', 'success');
 };
 

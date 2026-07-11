@@ -12,11 +12,14 @@ Disallow: /admin/
 Disallow: /documents/admin/
 Disallow: /documents/admin-dashboard/
 
-# Block private authenticated pages
+# Allow public auth pages, block private account pages
+Allow: /accounts/register/
+Allow: /accounts/login/
+Allow: /accounts/password_reset/
 Disallow: /accounts/profile/
 Disallow: /accounts/password/
 Disallow: /accounts/password_change/
-Disallow: /accounts/password_reset/
+Disallow: /accounts/password_reset/confirm/
 Disallow: /documents/my-purchases/
 Disallow: /documents/seller-documents/
 Disallow: /documents/seller-refunds/
@@ -30,10 +33,14 @@ Disallow: /documents/analytics/
 Disallow: /documents/seller-analytics/
 Disallow: /payments/
 Disallow: /sales/
-Disallow: /security/
 Disallow: /withdrawals/
 Disallow: /notifications/
 Disallow: /api/
+
+# Allow specific public security pages, block the rest
+Allow: /security/trust-security/
+Allow: /security/settings/
+Disallow: /security/
 
 # Block search/filter URLs with parameters that create duplicate content
 Disallow: /*?page=
@@ -46,6 +53,10 @@ Crawl-delay: 1
 # Googlebot specific — no delay needed
 User-agent: Googlebot
 Allow: /
+Allow: /accounts/register/
+Allow: /accounts/login/
+Allow: /security/trust-security/
+Allow: /security/settings/
 Disallow: /admin/
 Disallow: /payments/
 Disallow: /security/

@@ -12,12 +12,16 @@ class StaticViewSitemap(Sitemap):
         return [
             {"route": "home",                    "priority": 1.0, "changefreq": "daily"},
             {"route": "documents:document_list", "priority": 0.9, "changefreq": "daily"},
+            {"route": "documents:advanced_search","priority": 0.6, "changefreq": "weekly"},
             {"route": "reviews:help_center",     "priority": 0.8, "changefreq": "weekly"},
             {"route": "reviews:faq",             "priority": 0.7, "changefreq": "weekly"},
             {"route": "reviews:resources",       "priority": 0.6, "changefreq": "weekly"},
             {"route": "reviews:contact",         "priority": 0.5, "changefreq": "monthly"},
             {"route": "reviews:terms",           "priority": 0.3, "changefreq": "yearly"},
             {"route": "reviews:privacy",         "priority": 0.3, "changefreq": "yearly"},
+            {"route": "accounts:register",       "priority": 0.5, "changefreq": "monthly"},
+            {"route": "accounts:login",          "priority": 0.4, "changefreq": "monthly"},
+            {"route": "security:trust_security", "priority": 0.5, "changefreq": "monthly"},
         ]
 
     def location(self, item):

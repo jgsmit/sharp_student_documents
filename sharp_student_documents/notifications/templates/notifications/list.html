@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+{% load notifications_tags %}
+
+{% block title %}Notifications - SharpDocs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="bi bi-bell me-2"></i> Notifications</h2>
+    <div class="d-flex gap-2">
+      {% if unread_count > 0 %}
+      <form method="post" action="{% url 'notifications:mark_all_read' %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-check-all me-1"></i> Mark All Read
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card shadow-sm border-0 rounded-3 mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-2 align-items-end">
+        <div class="col-auto">
+          <select name="type" class="form-select form-select-sm">
+            <option value="">All Types</option>
+            {% for code, label in notification_types %}
+              <option value="{{ code }}" {% if request.GET.type == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <select name="status" class="form-select form-select-sm">
+            <option value="">All Status</option>
+            <option value="unread" {% if request.GET.status == 'unread' %}selected{% endif %}>Unread</option>
+            <option value="read" {% if request.GET.status == 'read' %}selected{% endif %}>Read</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+          <a href="{% url 'notifications:list' %}" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm border-0 rounded-3 text-center p-3">
+        <div class="fs-3 fw-bold text-primary">{{ total_count }}</div>
+        <div class="small text-muted">Total</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm border-0 rounded-3 text-center p-3">
+        <div class="fs-3 fw-bold text-danger">{{ unread_count }}</div>
+        <div class="small text-muted">Unread</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification List -->
+  {% if notifications %}
+    <div class="list-group shadow-sm rounded-3 overflow-hidden">
+      {% for n in notifications %}
+        <div class="list-group-item list-group-item-action {% if not n.is_read %}list-group-item-primary{% endif %}">
+          <div class="d-flex align-items-start gap-3">
+            <div class="mt-1">
+              {% if n.notification_type == 'purchase_confirmed' %}
+                <i class="bi bi-bag-check fs-4 text-success"></i>
+              {% elif n.notification_type == 'sale_made' %}
+                <i class="bi bi-cash-stack fs-4 text-success"></i>
+              {% elif n.notification_type == 'withdrawal_approved' %}
+                <i class="bi bi-check-circle fs-4 text-primary"></i>
+              {% elif n.notification_type == 'withdrawal_rejected' %}
+                <i class="bi bi-x-circle fs-4 text-danger"></i>
+              {% elif n.notification_type == 'withdrawal_completed' %}
+                <i class="bi bi-bank fs-4 text-success"></i>
+              {% elif n.notification_type == 'withdrawal_failed' %}
+                <i class="bi bi-exclamation-triangle fs-4 text-danger"></i>
+              {% elif n.notification_type == 'refund_requested' %}
+                <i class="bi bi-arrow-return-left fs-4 text-warning"></i>
+              {% elif n.notification_type == 'refund_processed' %}
+                <i class="bi bi-check2 fs-4 text-info"></i>
+              {% elif n.notification_type == 'review_received' %}
+                <i class="bi bi-star fs-4 text-warning"></i>
+              {% elif n.notification_type == 'identity_verified' %}
+                <i class="bi bi-shield-check fs-4 text-success"></i>
+              {% elif n.notification_type == 'identity_rejected' %}
+                <i class="bi bi-shield-exclamation fs-4 text-danger"></i>
+              {% elif n.notification_type == 'wallet_credited' %}
+                <i class="bi bi-plus-circle fs-4 text-success"></i>
+              {% elif n.notification_type == 'wallet_debited' %}
+                <i class="bi bi-dash-circle fs-4 text-warning"></i>
+              {% else %}
+                <i class="bi bi-bell fs-4 text-secondary"></i>
+              {% endif %}
+            </div>
+            <div class="flex-grow-1 min-w-0">
+              <div class="d-flex justify-content-between align-items-start">
+                <h6 class="mb-1 {% if not n.is_read %}fw-bold{% endif %}">{{ n.title }}</h6>
+                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                  {% if not n.is_read %}
+                    <span class="badge bg-primary rounded-pill" style="font-size:0.6rem;">NEW</span>
+                  {% endif %}
+                  <small class="text-muted text-nowrap">{{ n.created_at|timesince }} ago</small>
+                </div>
+              </div>
+              <p class="mb-1 small text-muted">{{ n.message }}</p>
+              <div class="d-flex gap-2 mt-1">
+                {% if n.link %}
+                  <a href="{{ n.link }}" class="btn btn-sm btn-outline-primary py-0">View Details</a>
+                {% endif %}
+                {% if not n.is_read %}
+                  <form method="post" action="{% url 'notifications:mark_read' n.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary py-0">Mark Read</button>
+                  </form>
+                {% endif %}
+                <form method="post" action="{% url 'notifications:delete' n.id %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-outline-danger py-0" onclick="return confirm('Delete this notification?')">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+      {% include "partials/_pagination.html" %}
+    {% endif %}
+  {% else %}
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-body text-center py-5">
+        <i class="bi bi-bell-slash display-1 text-muted mb-3"></i>
+        <h5 class="text-muted">No notifications yet</h5>
+        <p class="text-muted small">You're all caught up!</p>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -30,15 +30,24 @@ def approve_withdrawal(request, withdrawal_id):
 
         WithdrawalService._schedule_weekly_withdrawal(withdrawal)
         
-        # TODO: Add notification system when available
-        # For now, just log the action
         logger.info(
             "Admin %s approved withdrawal %s for user %s",
             request.user.username,
             withdrawal.id,
             withdrawal.user.username,
         )
-        
+        # Notify the seller
+        try:
+            from notifications.models import UserNotification
+            UserNotification.create_notification(
+                user=withdrawal.user, notification_type='withdrawal_approved',
+                title='Withdrawal Approved',
+                message=f'Your withdrawal request for ${withdrawal.amount} has been approved and scheduled for processing.',
+                link='/withdrawals/dashboard/'
+            )
+        except Exception:
+            logger.exception("Failed to create withdrawal approved notification")
+
         # Refresh the withdrawal object to get the latest status
         withdrawal.refresh_from_db()
         
@@ -94,14 +103,23 @@ def reject_withdrawal(request, withdrawal_id):
             except Exception:
                 logger.exception("Failed to release reserved funds for withdrawal %s", withdrawal.id)
         
-        # TODO: Add notification system when available
-        # For now, just log the action
         logger.info(
             "Admin %s rejected withdrawal %s for user %s",
             request.user.username,
             withdrawal.id,
             withdrawal.user.username,
         )
+        # Notify the seller
+        try:
+            from notifications.models import UserNotification
+            UserNotification.create_notification(
+                user=withdrawal.user, notification_type='withdrawal_rejected',
+                title='Withdrawal Rejected',
+                message=f'Your withdrawal request for ${withdrawal.amount} was rejected. Reason: {reason}',
+                link='/withdrawals/dashboard/'
+            )
+        except Exception:
+            logger.exception("Failed to create withdrawal rejected notification")
         
         return JsonResponse({
             'success': True,

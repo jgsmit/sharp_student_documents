@@ -288,6 +288,17 @@ class WithdrawalService:
                 if withdrawal_request.wallet_debited:
                     wallet = Wallet.objects.get(user=withdrawal_request.user)
                     wallet.finalize_reserved_withdrawal(withdrawal_request.amount)
+                # Notify seller
+                try:
+                    from notifications.models import UserNotification
+                    UserNotification.create_notification(
+                        user=withdrawal_request.user, notification_type='withdrawal_completed',
+                        title='Withdrawal Completed',
+                        message=f'Your withdrawal of ${withdrawal_request.amount} has been completed successfully.',
+                        link='/withdrawals/dashboard/'
+                    )
+                except Exception:
+                    logger.exception("Failed to create withdrawal completed notification")
             else:
                 withdrawal_request.status = 'failed'
                 withdrawal_request.failure_reason = "Payment processing failed"
@@ -299,7 +310,18 @@ class WithdrawalService:
                         reason=f"Withdrawal failed: {withdrawal_request.failure_reason}",
                     )
                     withdrawal_request.wallet_debited = False
-             
+                # Notify seller
+                try:
+                    from notifications.models import UserNotification
+                    UserNotification.create_notification(
+                        user=withdrawal_request.user, notification_type='withdrawal_failed',
+                        title='Withdrawal Failed',
+                        message=f'Your withdrawal of ${withdrawal_request.amount} failed. Funds have been returned to your wallet.',
+                        link='/withdrawals/dashboard/'
+                    )
+                except Exception:
+                    logger.exception("Failed to create withdrawal failed notification")
+
             withdrawal_request.save()
             return success
              
@@ -318,6 +340,17 @@ class WithdrawalService:
                 except Exception:
                     logger.exception("Failed to release reserved funds for withdrawal %s", withdrawal_request.id)
             withdrawal_request.save()
+            # Notify seller
+            try:
+                from notifications.models import UserNotification
+                UserNotification.create_notification(
+                    user=withdrawal_request.user, notification_type='withdrawal_failed',
+                    title='Withdrawal Failed',
+                    message=f'Your withdrawal of ${withdrawal_request.amount} failed due to an error. Funds have been returned to your wallet.',
+                    link='/withdrawals/dashboard/'
+                )
+            except Exception:
+                logger.exception("Failed to create withdrawal failed notification")
             return False
     
     @staticmethod

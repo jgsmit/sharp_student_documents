@@ -56,6 +56,17 @@ def add_review(request, document_id):
             review.document = document
             review.reviewer = request.user
             review.save()
+            # Notify seller about new review
+            try:
+                from notifications.models import UserNotification
+                UserNotification.create_notification(
+                    user=document.seller, notification_type='review_received',
+                    title=f'New Review: {document.title}',
+                    message=f'{request.user.username} left a {review.rating}-star review on your document "{document.title}".',
+                    link=document.get_absolute_url()
+                )
+            except Exception:
+                pass
             messages.success(request, "Review submitted successfully.")
             return redirect("documents:document_detail", slug=document.slug)
     else:

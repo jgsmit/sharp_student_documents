@@ -91,33 +91,38 @@
         {% endif %}
         {% endif %}
 
-        <!-- Notifications bell (superuser only) -->
-        {% if user.is_superuser %}
+        <!-- User notifications bell (all authenticated users) -->
+        {% if user.is_authenticated %}
         <li class="d-none d-lg-block dropdown" role="none">
           <a class="sd-link dropdown-toggle position-relative" href="#" role="menuitem"
              data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true"
              id="notificationBell" aria-label="Notifications">
             <i class="bi bi-bell fs-5" aria-hidden="true"></i>
-            {% unread_notification_count user as unread_count %}
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge{{ unread_count|yesno:', d-none' }}" id="notificationBadge" style="font-size:0.6rem;">{{ unread_count }}</span>
+            {% user_unread_count user as user_unread %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge{{ user_unread|yesno:', d-none' }}" id="notificationBadge" style="font-size:0.6rem;">{{ user_unread }}</span>
           </a>
           <div class="dropdown-menu dropdown-menu-end notification-dropdown shadow" id="notificationDropdown" style="min-width:320px;">
             <div class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2">
               <span class="fw-semibold"><i class="bi bi-bell me-1 text-warning"></i> Notifications</span>
-              <a href="{% url 'documents:admin_notifications' %}" class="small text-decoration-none">View All</a>
+              <a href="{% url 'notifications:list' %}" class="small text-decoration-none">View All</a>
             </div>
             <div class="notification-list" style="max-height:350px;overflow-y:auto;">
-              {% recent_notifications user limit=5 as recent %}
-              {% for n in recent %}
-                <a class="dropdown-item notification-item border-bottom py-2" href="{% url 'documents:admin_notifications' %}">
+              {% user_recent_notifications user limit=5 as recent_notifs %}
+              {% for n in recent_notifs %}
+                <a class="dropdown-item notification-item border-bottom py-2" href="{% url 'notifications:list' %}">
                   <div class="d-flex align-items-start gap-2">
                     <i class="bi
-                      {% if n.notification_type == 'withdrawal_request' %}bi-cash-coin text-success
-                      {% elif n.notification_type == 'withdrawal_completed' %}bi-check-circle text-primary
-                      {% elif n.notification_type == 'withdrawal_failed' or n.notification_type == 'failed_withdrawal' %}bi-x-circle text-danger
-                      {% elif n.notification_type == 'fraud_alert' %}bi-shield-exclamation text-danger
-                      {% elif n.notification_type == 'system_alert' %}bi-gear text-secondary
-                      {% elif n.notification_type == 'suspicious_activity' %}bi-exclamation-triangle text-warning
+                      {% if n.notification_type == 'purchase_confirmed' or n.notification_type == 'sale_made' %}bi-cart-check text-success
+                      {% elif n.notification_type == 'withdrawal_approved' %}bi-check-circle text-primary
+                      {% elif n.notification_type == 'withdrawal_rejected' %}bi-x-circle text-danger
+                      {% elif n.notification_type == 'withdrawal_completed' %}bi-bank text-success
+                      {% elif n.notification_type == 'withdrawal_failed' %}bi-exclamation-triangle text-danger
+                      {% elif n.notification_type == 'refund_requested' %}bi-arrow-return-left text-warning
+                      {% elif n.notification_type == 'refund_processed' %}bi-check2 text-info
+                      {% elif n.notification_type == 'review_received' %}bi-star text-warning
+                      {% elif n.notification_type == 'identity_verified' or n.notification_type == 'verification_submitted' %}bi-shield-check text-success
+                      {% elif n.notification_type == 'identity_rejected' %}bi-shield-exclamation text-danger
+                      {% elif n.notification_type == 'wallet_credited' %}bi-plus-circle text-success
                       {% else %}bi-bell text-warning
                       {% endif %} mt-1 flex-shrink-0"></i>
                     <div class="flex-grow-1 min-w-0">
@@ -132,7 +137,7 @@
               {% endfor %}
             </div>
             <div class="dropdown-footer text-center border-top py-1">
-              <a href="{% url 'documents:admin_notifications' %}" class="small text-decoration-none d-block py-1">
+              <a href="{% url 'notifications:list' %}" class="small text-decoration-none d-block py-1">
                 <i class="bi bi-list me-1"></i> Manage Notifications
               </a>
             </div>
@@ -235,6 +240,15 @@
         </li>
 
         <!-- User flat links (mobile) -->
+        <li class="d-lg-none" role="none">
+          <a class="sd-link" href="{% url 'notifications:list' %}" role="menuitem">
+            <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+            {% user_unread_count user as mobile_user_unread %}
+            {% if mobile_user_unread > 0 %}
+              <span class="badge bg-danger ms-1 rounded-pill">{{ mobile_user_unread }}</span>
+            {% endif %}
+          </a>
+        </li>
         <li class="d-lg-none" role="none">
           <a class="sd-link" href="{% url 'profile' %}" role="menuitem">
             <i class="bi bi-person" aria-hidden="true"></i> Profile

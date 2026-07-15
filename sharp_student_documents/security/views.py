@@ -271,6 +271,17 @@ def verify_identity(request):
                 'document_count': len(documents)
             }
         )
+        # Notify user about verification submission
+        try:
+            from notifications.models import UserNotification
+            UserNotification.create_notification(
+                user=request.user, notification_type='verification_submitted',
+                title='Identity Verification Submitted',
+                message=f'Your {verification_type} verification has been submitted for review. We will notify you once it is processed.',
+                link='/security/verification-status/'
+            )
+        except Exception:
+            pass
         
         messages.success(request, 'Identity verification submitted for review')
         # Notify admin about new verification request

@@ -156,6 +156,24 @@ def _finalize_paypal_order(order, paypal_order_id, *, request=None, verify_payme
     from sales.utils import create_sale_record
     create_sale_record(order)
 
+    # Send in-app notifications to buyer and seller
+    try:
+        from notifications.models import UserNotification
+        UserNotification.create_notification(
+            user=order.buyer, notification_type='purchase_confirmed',
+            title=f'Purchase Confirmed: {order.document.title}',
+            message=f'Your purchase of "{order.document.title}" was successful. You can now download it.',
+            link='/documents/my-purchases/'
+        )
+        UserNotification.create_notification(
+            user=order.document.seller, notification_type='sale_made',
+            title=f'Sale: {order.document.title}',
+            message=f'Your document "{order.document.title}" was purchased for ${order.amount_paid}.',
+            link='/documents/seller/dashboard/'
+        )
+    except Exception:
+        logger.exception("Failed to create user notifications")
+
     # ONLY SEND EMAILS AFTER ALL VERIFICATIONS PASSED
     logger.info(f"SENDING EMAILS: PayPal order {paypal_order_id} - payment verified, sending notifications")
     
@@ -279,6 +297,24 @@ def _handle_stripe_checkout(session):
             # Create sale record and update seller wallet
             from sales.utils import create_sale_record
             create_sale_record(order)
+
+            # Send in-app notifications to buyer and seller
+            try:
+                from notifications.models import UserNotification
+                UserNotification.create_notification(
+                    user=order.buyer, notification_type='purchase_confirmed',
+                    title=f'Purchase Confirmed: {order.document.title}',
+                    message=f'Your purchase of "{order.document.title}" was successful. You can now download it.',
+                    link='/documents/my-purchases/'
+                )
+                UserNotification.create_notification(
+                    user=order.document.seller, notification_type='sale_made',
+                    title=f'Sale: {order.document.title}',
+                    message=f'Your document "{order.document.title}" was purchased for ${order.amount_paid}.',
+                    link='/documents/seller/dashboard/'
+                )
+            except Exception:
+                logger.exception("Failed to create user notifications")
 
             # Send payment confirmation notification to admin
             try:

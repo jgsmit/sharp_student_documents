@@ -449,36 +449,30 @@
     </div>
   </div>
   
-  <!-- Admin Notification System -->
+  <!-- Notification Systems -->
   {% if user.is_superuser %}
   <div class="admin-notification-container" id="adminNotificationContainer"></div>
-  
+  {% endif %}
+
   <script>
-    // Admin Notification System
-    let notificationCheckInterval;
-    let lastNotificationCheck = Date.now();
+    // ──────────────────────────────────────────────
+    // User Notification System (all authenticated)
+    // ──────────────────────────────────────────────
+    let userNotifInterval;
     
-    // Check for new notifications
-    function checkAdminNotifications() {
-        fetch('/documents/admin/notifications/check-new/')
-            .then(response => response.json())
+    function checkUserNotifications() {
+        fetch('/notifications/check-new/')
+            .then(r => r.json())
             .then(data => {
-                if (data.has_new && data.notifications.length > 0) {
-                    showNotificationPopup(data.notifications);
-                }
                 if (data.total_unread !== undefined) {
-                    updateBadgeCount(data.total_unread);
+                    updateBadge('notificationBadge', data.total_unread);
                 }
-                lastNotificationCheck = Date.now();
             })
-            .catch(error => {
-                console.error('Error checking notifications:', error);
-            });
+            .catch(() => {});
     }
     
-    // Update notification badge count in navbar
-    function updateBadgeCount(count) {
-        const badge = document.getElementById('notificationBadge');
+    function updateBadge(badgeId, count) {
+        const badge = document.getElementById(badgeId);
         if (!badge) return;
         if (count > 0) {
             badge.textContent = count;
@@ -488,166 +482,132 @@
         }
     }
     
-    // Show notification popup
-    function showNotificationPopup(notifications) {
+    function getCookie(name) {
+        let v = null;
+        if (document.cookie && document.cookie !== '') {
+            document.cookie.split(';').some(c => {
+                c = c.trim();
+                if (c.substring(0, name.length + 1) === (name + '=')) {
+                    v = decodeURIComponent(c.substring(name.length + 1));
+                    return true;
+                }
+            });
+        }
+        return v;
+    }
+    
+    function startUserNotifPolling() {
+        checkUserNotifications();
+        userNotifInterval = setInterval(checkUserNotifications, 30000);
+    }
+    
+    function stopUserNotifPolling() {
+        if (userNotifInterval) clearInterval(userNotifInterval);
+    }
+    
+    // ──────────────────────────────────────────────
+    // Admin Notification System (superuser only)
+    // ──────────────────────────────────────────────
+    let adminNotifInterval;
+    
+    function checkAdminNotifications() {
+        fetch('/documents/admin/notifications/check-new/')
+            .then(r => r.json())
+            .then(data => {
+                if (data.has_new && data.notifications.length > 0) {
+                    showAdminNotifPopup(data.notifications);
+                }
+            })
+            .catch(() => {});
+    }
+    
+    function showAdminNotifPopup(notifications) {
         const container = document.getElementById('adminNotificationContainer');
+        if (!container) return;
         
-        notifications.forEach(notification => {
+        notifications.forEach(n => {
             const popup = document.createElement('div');
-            popup.className = `admin-notification-popup alert alert-${getAlertClass(notification.priority)} alert-dismissible fade show`;
+            popup.className = `admin-notification-popup alert alert-${adminAlertClass(n.priority)} alert-dismissible fade show`;
             popup.setAttribute('role', 'alert');
-            
-            const icon = getNotificationIcon(notification.notification_type);
-            const priorityBadge = getPriorityBadge(notification.priority);
-            
             popup.innerHTML = `
                 <div class="d-flex align-items-start">
-                    <div class="notification-icon me-3">
-                        <i class="bi ${icon} fs-4"></i>
-                    </div>
+                    <div class="notification-icon me-3"><i class="bi ${adminNotifIcon(n.notification_type)} fs-4"></i></div>
                     <div class="notification-content flex-grow-1">
                         <div class="d-flex justify-content-between align-items-start">
-                            <h6 class="mb-1">${notification.title}</h6>
-                            <div>
-                                ${priorityBadge}
-                                <button type="button" class="btn-close" onclick="dismissNotification(this, '${notification.id}')"></button>
-                            </div>
+                            <h6 class="mb-1">${n.title}</h6>
+                            <div>${priorityBadge(n.priority)}<button type="button" class="btn-close" onclick="dismissAdminNotif(this, '${n.id}')"></button></div>
                         </div>
-                        <p class="mb-2">${notification.message}</p>
+                        <p class="mb-2">${n.message}</p>
                         <div class="notification-meta">
-                            <small class="text-muted">
-                                <i class="bi bi-clock"></i> ${formatTime(notification.created_at)}
-                                ${notification.withdrawal_request ? `<a href="/documents/admin/manage-withdrawals/#withdrawal-${notification.withdrawal_request}" class="ms-2"><i class="bi bi-eye"></i> View Details</a>` : ''}
-                            </small>
+                            <small class="text-muted"><i class="bi bi-clock"></i> ${timeAgo(n.created_at)}</small>
                         </div>
                     </div>
-                </div>
-            `;
-            
+                </div>`;
             container.appendChild(popup);
-            
-            // Auto-dismiss after 10 seconds
-            setTimeout(() => {
-                dismissNotification(popup.querySelector('.btn-close'), notification.id);
-            }, 10000);
+            setTimeout(() => dismissAdminNotif(popup.querySelector('.btn-close'), n.id), 10000);
         });
     }
     
-    // Get alert class based on priority
-    function getAlertClass(priority) {
-        switch(priority) {
-            case 'urgent': return 'danger';
-            case 'high': return 'warning';
-            case 'medium': return 'info';
-            case 'low': return 'secondary';
-            default: return 'primary';
-        }
+    function adminAlertClass(p) {
+        return {urgent:'danger',high:'warning',medium:'info',low:'secondary'}[p]||'primary';
     }
     
-    // Get notification icon based on type
-    function getNotificationIcon(type) {
-        switch(type) {
-            case 'withdrawal_request': return 'bi-cash-coin';
-            case 'withdrawal_completed': return 'bi-check-circle';
-            case 'withdrawal_failed': return 'bi-x-circle';
-            case 'fraud_alert': return 'bi-shield-exclamation';
-            case 'system_alert': return 'bi-gear';
-            default: return 'bi-bell';
-        }
+    function adminNotifIcon(type) {
+        return {withdrawal_request:'bi-cash-coin',withdrawal_completed:'bi-check-circle',withdrawal_failed:'bi-x-circle',fraud_alert:'bi-shield-exclamation',system_alert:'bi-gear'}[type]||'bi-bell';
     }
     
-    // Get priority badge
-    function getPriorityBadge(priority) {
-        const colors = {
-            'urgent': 'danger',
-            'high': 'warning',
-            'medium': 'info',
-            'low': 'secondary'
-        };
-        return `<span class="badge bg-${colors[priority] || 'primary'}">${priority.toUpperCase()}</span>`;
+    function priorityBadge(p) {
+        const c = {urgent:'danger',high:'warning',medium:'info',low:'secondary'};
+        return `<span class="badge bg-${c[p]||'primary'}">${(p||'').toUpperCase()}</span>`;
     }
     
-    // Format time
-    function formatTime(timestamp) {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diff = now - date;
-        
+    function timeAgo(ts) {
+        const d = new Date(ts), n = new Date(), diff = n - d;
         if (diff < 60000) return 'Just now';
-        if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
-        if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
-        return date.toLocaleDateString();
+        if (diff < 3600000) return Math.floor(diff/60000)+'m ago';
+        if (diff < 86400000) return Math.floor(diff/3600000)+'h ago';
+        return d.toLocaleDateString();
     }
     
-    // Dismiss notification
-    function dismissNotification(button, notificationId) {
-        const popup = button.closest('.admin-notification-popup');
-        if (popup) {
-            popup.style.opacity = '0';
-            setTimeout(() => popup.remove(), 300);
-        }
-        
-        // Mark as read on server
-        fetch(`/documents/admin/notifications/${notificationId}/mark-read/`, {
+    function dismissAdminNotif(btn, id) {
+        const popup = btn.closest('.admin-notification-popup');
+        if (popup) { popup.style.opacity = '0'; setTimeout(() => popup.remove(), 300); }
+        fetch('/documents/admin/notifications/'+id+'/mark-read/', {
             method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        }).catch(error => console.error('Error marking notification as read:', error));
+            headers: {'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json'}
+        }).catch(() => {});
     }
     
-    // Get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    
-    // Start notification checking
-    function startNotificationChecking() {
-        // Check immediately
+    function startAdminNotifPolling() {
         checkAdminNotifications();
-        
-        // Then check every 30 seconds
-        notificationCheckInterval = setInterval(checkAdminNotifications, 30000);
+        adminNotifInterval = setInterval(checkAdminNotifications, 30000);
     }
     
-    // Stop notification checking
-    function stopNotificationChecking() {
-        if (notificationCheckInterval) {
-            clearInterval(notificationCheckInterval);
-        }
+    function stopAdminNotifPolling() {
+        if (adminNotifInterval) clearInterval(adminNotifInterval);
     }
     
-    // Initialize when page loads
+    // ──────────────────────────────────────────────
+    // Initialization
+    // ──────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function() {
-        if (document.getElementById('notificationBell')) {
-            startNotificationChecking();
-        }
+        if (document.getElementById('notificationBell')) startUserNotifPolling();
+        if (document.getElementById('adminNotificationContainer')) startAdminNotifPolling();
     });
     
-    // Handle page visibility changes
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            stopNotificationChecking();
-        } else if (document.getElementById('notificationBell')) {
-            startNotificationChecking();
+            stopUserNotifPolling();
+            stopAdminNotifPolling();
+        } else {
+            if (document.getElementById('notificationBell')) startUserNotifPolling();
+            if (document.getElementById('adminNotificationContainer')) startAdminNotifPolling();
         }
     });
   </script>
   
   <style>
-    /* Admin Notification Styles */
+    /* Admin Notification Toast Styles */
     .admin-notification-container {
         position: fixed;
         top: 20px;

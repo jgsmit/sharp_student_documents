@@ -2090,6 +2090,17 @@ def admin_manage_refunds(request):
                         net_amount=-Decimal(sale.net_amount),
                         sale=sale,
                     )
+                    # Notify seller about refund
+                    try:
+                        from notifications.models import UserNotification
+                        UserNotification.create_notification(
+                            user=order.document.seller, notification_type='refund_processed',
+                            title=f'Refund Processed: {order.document.title}',
+                            message=f'A refund for order #{order.id} ({order.document.title}) has been processed and your wallet has been adjusted.',
+                            link='/documents/seller/dashboard/'
+                        )
+                    except Exception:
+                        pass
 
         # Notify buyer about refund status change
         try:
@@ -2104,6 +2115,17 @@ def admin_manage_refunds(request):
                     recipient_list=[buyer_email],
                     fail_silently=True,
                 )
+        except Exception:
+            pass
+        # Also notify buyer in-app
+        try:
+            from notifications.models import UserNotification
+            UserNotification.create_notification(
+                user=rr.buyer, notification_type='refund_processed',
+                title=f'Refund Update: {rr.get_status_display()}',
+                message=f'Your refund request for "{rr.order.document.title}" has been updated to: {rr.get_status_display()}.',
+                link='/documents/my-purchases/'
+            )
         except Exception:
             pass
         messages.success(request, "Refund request updated.")
@@ -2850,6 +2872,17 @@ def request_refund(request, order_id):
             rr.buyer = request.user
             rr.status = "open"
             rr.save()
+            # Notify seller about refund request
+            try:
+                from notifications.models import UserNotification
+                UserNotification.create_notification(
+                    user=order.document.seller, notification_type='refund_requested',
+                    title=f'Refund Requested: {order.document.title}',
+                    message=f'A buyer requested a refund for "{order.document.title}". Reason: {rr.reason}',
+                    link='/documents/admin/manage-refunds/'
+                )
+            except Exception:
+                pass
             messages.success(request, "Refund request submitted. Support will review it shortly.")
             # Notify admin about new refund request
             try:

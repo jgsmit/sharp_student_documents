@@ -466,11 +466,26 @@
                 if (data.has_new && data.notifications.length > 0) {
                     showNotificationPopup(data.notifications);
                 }
+                if (data.total_unread !== undefined) {
+                    updateBadgeCount(data.total_unread);
+                }
                 lastNotificationCheck = Date.now();
             })
             .catch(error => {
                 console.error('Error checking notifications:', error);
             });
+    }
+    
+    // Update notification badge count in navbar
+    function updateBadgeCount(count) {
+        const badge = document.getElementById('notificationBadge');
+        if (!badge) return;
+        if (count > 0) {
+            badge.textContent = count;
+            badge.classList.remove('d-none');
+        } else {
+            badge.classList.add('d-none');
+        }
     }
     
     // Show notification popup
@@ -616,7 +631,7 @@
     
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        if (document.body.classList.contains('admin-page')) {
+        if (document.getElementById('notificationBell')) {
             startNotificationChecking();
         }
     });
@@ -625,7 +640,7 @@
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             stopNotificationChecking();
-        } else if (document.body.classList.contains('admin-page')) {
+        } else if (document.getElementById('notificationBell')) {
             startNotificationChecking();
         }
     });
@@ -698,6 +713,18 @@
             transform: translateX(0);
             opacity: 1;
         }
+    }
+    
+    /* Notification dropdown styles */
+    .notification-dropdown .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
+    .notification-badge {
+        font-size: 0.55rem !important;
+        padding: 0.2em 0.5em;
+    }
+    .notification-dropdown .notification-item:last-child {
+        border-bottom: none !important;
     }
     
     /* Mobile responsive */

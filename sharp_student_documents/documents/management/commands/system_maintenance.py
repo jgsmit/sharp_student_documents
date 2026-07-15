@@ -93,7 +93,7 @@ class Command(BaseCommand):
             
             sent_count = 0
             for notification in pending_notifications:
-                if hasattr(notification, 'requires_email') and notification.requires_email:
+                if notification.requires_email and not notification.email_sent:
                     try:
                         send_mail(
                             subject=f'SharpDocs: {notification.title}',
@@ -102,9 +102,8 @@ class Command(BaseCommand):
                             recipient_list=[getattr(settings, 'ADMIN_EMAIL', 'admin@sharpdocs.com')],
                             fail_silently=False,
                         )
-                        if hasattr(notification, 'email_sent'):
-                            notification.email_sent = True
-                            notification.save()
+                        notification.email_sent = True
+                        notification.save()
                         sent_count += 1
                     except Exception as e:
                         self.stdout.write(f'⚠ Failed to send email for notification {notification.id}: {e}')

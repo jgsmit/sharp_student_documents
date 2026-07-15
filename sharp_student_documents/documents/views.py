@@ -3019,7 +3019,8 @@ def check_new_notifications(request):
         
         return JsonResponse({
             'has_new': len(notification_data) > 0,
-            'notifications': notification_data
+            'notifications': notification_data,
+            'total_unread': AdminNotification.objects.filter(is_read=False).count()
         })
     except Exception as e:
         return JsonResponse({'has_new': False, 'error': str(e)})
@@ -3217,7 +3218,7 @@ def email_queue_process(request):
             
             sent_count = 0
             for notification in pending_notifications:
-                if notification.requires_email:
+                if notification.requires_email and not notification.email_sent:
                     try:
                         send_mail(
                             subject=f'SharpDocs: {notification.title}',

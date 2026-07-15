@@ -279,6 +279,10 @@ class AdminNotification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
+
+    # Email tracking
+    requires_email = models.BooleanField(default=False)
+    email_sent = models.BooleanField(default=False)
     
     # Additional data (JSON field for flexible data storage)
     data = models.JSONField(default=dict, blank=True)

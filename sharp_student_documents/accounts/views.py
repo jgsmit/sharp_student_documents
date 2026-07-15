@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import redirect_to_login
+from django.contrib import messages
 from .forms import CustomUserCreationForm, CustomUserChangeForm, CustomAuthenticationForm
 from notifications.utils import send_new_user_notification
 
@@ -33,6 +34,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+            messages.success(request, f"Welcome back, {user.username}!")
             next_url = request.GET.get("next") or "documents:dashboard"
             return redirect(next_url)
         else:
@@ -60,6 +62,7 @@ def profile_view(request):
         form = CustomUserChangeForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
+            messages.success(request, "Profile updated successfully!")
             return redirect("profile")
     else:
         form = CustomUserChangeForm(instance=request.user)

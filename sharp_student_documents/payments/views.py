@@ -420,6 +420,7 @@ def payment_success(request, order_id):
 @login_required
 def payment_failed(request, order_id):
     order = get_object_or_404(Order, id=order_id, buyer=request.user)
+    messages.error(request, "Payment was not completed. Please try again.")
     return render(request, "payments/failed.html", {"order": order})
 
 

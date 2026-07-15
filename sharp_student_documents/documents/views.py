@@ -29,7 +29,8 @@ from accounts.models import CustomUser
 from withdrawals.models import WithdrawalRequest
 from payments.models import Payment
 from security.models import SecurityLog, TwoFactorAuth, IdentityVerification, FraudDetection
-from notifications.utils import send_new_document_notification, send_new_purchase_notification
+from notifications.utils import send_new_document_notification, send_new_purchase_notification, send_admin_notification
+from django.core.mail import send_mail
 
 # Import education models if available
 try:
@@ -2090,6 +2091,21 @@ def admin_manage_refunds(request):
                         sale=sale,
                     )
 
+        # Notify buyer about refund status change
+        try:
+            buyer_email = rr.buyer.email
+            if buyer_email:
+                send_mail(
+                    subject=f"Refund Update: {rr.get_status_display()}",
+                    message=f"Your refund request for order #{rr.order.id} ({rr.order.document.title}) "
+                            f"has been updated to: {rr.get_status_display()}.\n\n"
+                            f"Admin notes: {admin_notes or 'None provided'}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[buyer_email],
+                    fail_silently=True,
+                )
+        except Exception:
+            pass
         messages.success(request, "Refund request updated.")
         return redirect("documents:admin_manage_refunds")
 
@@ -2835,6 +2851,15 @@ def request_refund(request, order_id):
             rr.status = "open"
             rr.save()
             messages.success(request, "Refund request submitted. Support will review it shortly.")
+            # Notify admin about new refund request
+            try:
+                send_admin_notification(
+                    subject=f"New Refund Request: Order #{order.id}",
+                    message=f"Buyer {request.user.username} requested a refund for order #{order.id} "
+                            f"(document: {order.document.title}). Reason: {rr.reason}"
+                )
+            except Exception:
+                pass
             return redirect("documents:my_purchases")
     else:
         form = RefundRequestForm()

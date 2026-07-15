@@ -95,7 +95,7 @@ class FraudDetection(models.Model):
         time_threshold = timezone.now() - timedelta(minutes=time_window_minutes)
         recent_withdrawals = WithdrawalRequest.objects.filter(
             user=user,
-            created_at__gte=time_threshold
+            requested_at__gte=time_threshold
         ).count()
         
         if recent_withdrawals >= max_withdrawals:
@@ -137,7 +137,7 @@ class FraudDetection(models.Model):
                 severity=severity,
                 user=user,
                 description=f'Unusually large withdrawal: ${amount} (avg: ${avg_amount:.2f})',
-                withdrawal_request=user_withdrawals.order_by('-created_at').first(),
+                withdrawal_request=user_withdrawals.order_by('-requested_at').first(),
                 data={
                     'amount': str(amount),
                     'average_amount': str(avg_amount),
@@ -156,7 +156,7 @@ class FraudDetection(models.Model):
         failed_withdrawals = WithdrawalRequest.objects.filter(
             user=user,
             status='failed',
-            created_at__gte=time_threshold
+            requested_at__gte=time_threshold
         ).count()
         
         if failed_withdrawals >= max_attempts:
@@ -181,13 +181,13 @@ class FraudDetection(models.Model):
         from withdrawals.models import WithdrawalRequest
         
         # Get withdrawal history
-        withdrawals = WithdrawalRequest.objects.filter(user=user).order_by('-created_at')[:20]
+        withdrawals = WithdrawalRequest.objects.filter(user=user).order_by('-requested_at')[:20]
         if withdrawals.count() < 10:
             return None  # Not enough history
         
         # Check for pattern anomalies
         amounts = [w.amount for w in withdrawals]
-        times = [w.created_at for w in withdrawals]
+        times = [w.requested_at for w in withdrawals]
         
         # Check for round numbers (potential testing)
         round_numbers = sum(1 for amount in amounts if amount % 100 == 0)
@@ -342,7 +342,7 @@ class FraudRule(models.Model):
         time_threshold = timezone.now() - timedelta(minutes=time_window)
         count = WithdrawalRequest.objects.filter(
             user=user,
-            created_at__gte=time_threshold
+            requested_at__gte=time_threshold
         ).count()
         
         if count > max_count:
@@ -357,7 +357,7 @@ class FraudRule(models.Model):
         if pattern_type == 'round_numbers':
             from withdrawals.models import WithdrawalRequest
             
-            withdrawals = WithdrawalRequest.objects.filter(user=user).order_by('-created_at')[:20]
+            withdrawals = WithdrawalRequest.objects.filter(user=user).order_by('-requested_at')[:20]
             if withdrawals.count() < 10:
                 return False, "Insufficient history"
             

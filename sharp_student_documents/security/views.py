@@ -12,9 +12,14 @@ import qrcode
 from io import BytesIO
 import base64
 import uuid
+import logging
 
 from accounts.models import CustomUser
+
+logger = logging.getLogger(__name__)
 from .models import TwoFactorAuth, IdentityVerification, SecurityLog, FraudDetection, Watermark
+from withdrawals.models import AdminNotification
+from notifications.utils import send_admin_notification
 
 def is_admin(user):
     """Check if user is admin or superuser"""
@@ -170,6 +175,18 @@ def enable_2fa(request):
             )
             
             messages.success(request, 'Two-factor authentication enabled successfully!')
+            # Send email notification
+            try:
+                send_mail(
+                    subject='2FA Enabled - SharpDocs',
+                    message=f'Two-factor authentication has been enabled on your SharpDocs account.\n'
+                            f'If you did not do this, please contact support immediately.',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
             return redirect('accounts:profile')
         else:
             messages.error(request, 'Invalid verification code')
@@ -203,6 +220,18 @@ def disable_2fa(request):
             )
             
             messages.success(request, 'Two-factor authentication disabled')
+            # Send email notification
+            try:
+                send_mail(
+                    subject='2FA Disabled - SharpDocs',
+                    message=f'Two-factor authentication has been disabled on your SharpDocs account.\n'
+                            f'If you did not do this, please contact support immediately.',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
         
         return redirect('accounts:profile')
     
@@ -244,6 +273,15 @@ def verify_identity(request):
         )
         
         messages.success(request, 'Identity verification submitted for review')
+        # Notify admin about new verification request
+        try:
+            send_admin_notification(
+                subject=f'New Identity Verification: {request.user.username}',
+                message=f'User {request.user.username} ({request.user.email}) submitted a '
+                        f'{verification_type} verification with {len(documents)} document(s).'
+            )
+        except Exception:
+            pass
         return redirect('security:verification_status')
     
     return render(request, 'security/verify_identity.html')
@@ -529,6 +567,17 @@ def detect_fraud_activity(user, event_type, details=None, risk_score=0):
         # Implement rate limiting or other restrictions
     
     fraud_alert.save()
+    
+    # Create admin notification for fraud detection
+    try:
+        if risk_score >= 40:
+            AdminNotification.create_suspicious_activity_notification(
+                user=user,
+                activity_type=event_type,
+                details=f"Risk score: {risk_score}. {details or ''}"
+            )
+    except Exception:
+        logger.exception("Failed to create fraud admin notification")
     
     return fraud_alert
 

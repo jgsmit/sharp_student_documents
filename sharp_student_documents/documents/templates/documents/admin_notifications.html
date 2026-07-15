@@ -156,12 +156,7 @@
                                       <tr>
                                           <td>
                                               <span class="badge bg-{{ notification.priority }}">
-                                                  {% if notification.notification_type == 'withdrawal_request' %}Withdrawal Request
-                                                  {% elif notification.notification_type == 'withdrawal_completed' %}Withdrawal Completed
-                                                  {% elif notification.notification_type == 'withdrawal_failed' %}Withdrawal Failed
-                                                  {% elif notification.notification_type == 'fraud_alert' %}Fraud Alert
-                                                  {% else %}System Alert
-                                                  {% endif %}
+                                                  {{ notification.get_notification_type_display }}
                                               </span>
                                           </td>
                                           <td>

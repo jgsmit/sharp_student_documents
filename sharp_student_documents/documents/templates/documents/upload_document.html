@@ -213,7 +213,7 @@
                 </button>
               </div>
               <small class="form-text text-muted">
-                All file types are accepted. Large files are supported.
+                All file types are accepted, up to 10 MB per file.
               </small>
               {% if form.file.errors %}
                 <div class="text-danger small mt-1">
@@ -299,6 +299,7 @@ document.getElementById('clearFileBtn').addEventListener('click', function() {
 (function() {
   var cloudName = "{{ CLOUDINARY_CLOUD_NAME|default:'' }}";
   var uploadPreset = "{{ CLOUDINARY_UPLOAD_PRESET|default:'' }}";
+  var maxFileSize = 10 * 1024 * 1024; // 10 MB Cloudinary free-plan raw limit
 
   // Direct-to-Cloudinary uploads not configured; fall back to normal multipart.
   if (!cloudName || !uploadPreset) return;
@@ -318,9 +319,23 @@ document.getElementById('clearFileBtn').addEventListener('click', function() {
       : originalBtnHtml;
   }
 
+  function friendlyError(message) {
+    if (message && message.indexOf('File size too large') !== -1) {
+      return 'File size too large. The maximum allowed upload size is 10 MB. Please compress or split the document and try again.';
+    }
+    return 'File upload to storage failed: ' + message;
+  }
+
   form.addEventListener('submit', function(e) {
     var file = fileInput.files[0];
     if (!file) return; // e.g. edit flow without a new file
+
+    if (file.size > maxFileSize) {
+      e.preventDefault();
+      alert('This file is ' + (file.size / (1024 * 1024)).toFixed(1) +
+            ' MB. The maximum allowed upload size is 10 MB. Please compress or split the document and try again.');
+      return;
+    }
 
     e.preventDefault();
     setUploading(true);
@@ -341,7 +356,7 @@ document.getElementById('clearFileBtn').addEventListener('click', function() {
       })
       .catch(function(err) {
         setUploading(false);
-        alert('File upload to storage failed: ' + err.message);
+        alert(friendlyError(err.message));
       });
   });
 })();

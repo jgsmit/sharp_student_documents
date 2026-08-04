@@ -141,7 +141,7 @@
                         <div class="mt-3">
                             {{ form.file.label_tag }}
                             {{ form.file }}
-                            <small class="form-text text-muted">Leave empty to keep current file</small>
+                            <small class="form-text text-muted">Leave empty to keep current file. New files up to 10 MB.</small>
                             {% if form.file.errors %}
                                 <div class="text-danger">{{ form.file.errors }}</div>
                             {% endif %}
@@ -243,6 +243,7 @@
 (function() {
   var cloudName = "{{ CLOUDINARY_CLOUD_NAME|default:'' }}";
   var uploadPreset = "{{ CLOUDINARY_UPLOAD_PRESET|default:'' }}";
+  var maxFileSize = 10 * 1024 * 1024; // 10 MB Cloudinary free-plan raw limit
 
   // Direct-to-Cloudinary uploads not configured; fall back to normal multipart.
   if (!cloudName || !uploadPreset) return;
@@ -262,9 +263,23 @@
       : originalBtnHtml;
   }
 
+  function friendlyError(message) {
+    if (message && message.indexOf('File size too large') !== -1) {
+      return 'File size too large. The maximum allowed upload size is 10 MB. Please compress or split the document and try again.';
+    }
+    return 'File upload to storage failed: ' + message;
+  }
+
   form.addEventListener('submit', function(e) {
     var file = fileInput.files[0];
     if (!file) return; // keep current file
+
+    if (file.size > maxFileSize) {
+      e.preventDefault();
+      alert('This file is ' + (file.size / (1024 * 1024)).toFixed(1) +
+            ' MB. The maximum allowed upload size is 10 MB. Please compress or split the document and try again.');
+      return;
+    }
 
     e.preventDefault();
     setUploading(true);
@@ -285,7 +300,7 @@
       })
       .catch(function(err) {
         setUploading(false);
-        alert('File upload to storage failed: ' + err.message);
+        alert(friendlyError(err.message));
       });
   });
 })();

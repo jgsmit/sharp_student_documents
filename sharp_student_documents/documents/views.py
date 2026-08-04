@@ -16,6 +16,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import os
+import io
 import mimetypes
 
 from .models import Document, Order, Category
@@ -103,6 +104,51 @@ def generate_preview(uploaded_file, description=""):
         pages = max(1, len(paragraphs) // 3)
 
     return preview_text, pages
+
+
+class _NamedBytesIO(io.BytesIO):
+    """BytesIO that also exposes a file name so preview parsers accept it."""
+
+    def __init__(self, buf, name):
+        super().__init__(buf)
+        self.name = name
+
+
+def _apply_cloudinary_upload(request, doc):
+    """
+    Attach a file that was uploaded directly from the browser to Cloudinary.
+
+    Vercel serverless functions reject request bodies above ~4.5MB, so document
+    files must bypass the server entirely. When the upload page posts a
+    ``cloudinary_public_id`` hidden field, this wires that public_id onto the
+    document and regenerates the preview from Cloudinary instead of the request.
+    Returns True when a Cloudinary upload was attached.
+    """
+    public_id = (request.POST.get("cloudinary_public_id") or "").strip()
+    if not public_id:
+        return False
+
+    doc.file.name = public_id
+
+    secure_url = (request.POST.get("cloudinary_secure_url") or "").strip()
+    file_name = (request.POST.get("cloudinary_file_name") or "").strip()
+
+    try:
+        from cloudinary.utils import cloudinary_url
+        if not secure_url:
+            secure_url, _ = cloudinary_url(public_id, resource_type="raw")
+        if not file_name:
+            file_name = os.path.basename(public_id)
+
+        resp = requests.get(secure_url, timeout=30)
+        resp.raise_for_status()
+        preview_text, pages = generate_preview(_NamedBytesIO(resp.content, file_name), doc.description)
+        doc.preview_text = preview_text or doc.description[:500]
+        doc.pages = pages
+    except Exception:
+        logger.exception("Cloudinary direct-upload preview failed (public_id=%s)", public_id)
+
+    return True
 
 # ---------------------------
 # Document Detail View
@@ -657,8 +703,10 @@ def upload_document(request):
                 doc = form.save(commit=False)
                 doc.seller = request.user
 
+                cloudinary_handled = _apply_cloudinary_upload(request, doc)
+
                 uploaded_file = request.FILES.get("file")
-                if uploaded_file:
+                if uploaded_file and not cloudinary_handled:
                     # Generate preview text and page count
                     preview_text, pages = generate_preview(uploaded_file, doc.description)
                     doc.preview_text = preview_text
@@ -711,7 +759,9 @@ def edit_document(request, pk):
             doc = form.save(commit=False)
             uploaded_file = request.FILES.get("file")
 
-            if uploaded_file:
+            cloudinary_handled = _apply_cloudinary_upload(request, doc)
+
+            if uploaded_file and not cloudinary_handled:
                 # Generate preview and page count for new uploaded file
                 preview_text, pages = generate_preview(uploaded_file, doc.description)
                 doc.preview_text = preview_text
@@ -1603,7 +1653,9 @@ def admin_edit_document(request, pk):
             doc = form.save(commit=False)
             uploaded_file = request.FILES.get("file")
 
-            if uploaded_file:
+            cloudinary_handled = _apply_cloudinary_upload(request, doc)
+
+            if uploaded_file and not cloudinary_handled:
                 # Generate preview and page count for new uploaded file
                 preview_text, pages = generate_preview(uploaded_file, doc.description)
                 doc.preview_text = preview_text

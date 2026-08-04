@@ -33,8 +33,11 @@
                         {% endfor %}
                     {% endif %}
 
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" id="documentUploadForm">
                         {% csrf_token %}
+                        <input type="hidden" name="cloudinary_public_id" id="cloudinary_public_id" value="">
+                        <input type="hidden" name="cloudinary_secure_url" id="cloudinary_secure_url" value="">
+                        <input type="hidden" name="cloudinary_file_name" id="cloudinary_file_name" value="">
                         
                         <div class="row">
                             <div class="col-md-8">
@@ -235,6 +238,58 @@
     border-bottom: 1px solid #e9ecef;
 }
 </style>
+
+<script>
+(function() {
+  var cloudName = "{{ CLOUDINARY_CLOUD_NAME|default:'' }}";
+  var uploadPreset = "{{ CLOUDINARY_UPLOAD_PRESET|default:'' }}";
+
+  // Direct-to-Cloudinary uploads not configured; fall back to normal multipart.
+  if (!cloudName || !uploadPreset) return;
+
+  var form = document.getElementById('documentUploadForm');
+  var fileInput = form.querySelector('input[type="file"][name="file"]');
+  var hiddenPublicId = document.getElementById('cloudinary_public_id');
+  var hiddenSecureUrl = document.getElementById('cloudinary_secure_url');
+  var hiddenFileName = document.getElementById('cloudinary_file_name');
+  var submitBtn = form.querySelector('button[type="submit"]');
+  var originalBtnHtml = submitBtn.innerHTML;
+
+  function setUploading(uploading) {
+    submitBtn.disabled = uploading;
+    submitBtn.innerHTML = uploading
+      ? '<span class="spinner-border spinner-border-sm me-2"></span> Uploading file...'
+      : originalBtnHtml;
+  }
+
+  form.addEventListener('submit', function(e) {
+    var file = fileInput.files[0];
+    if (!file) return; // keep current file
+
+    e.preventDefault();
+    setUploading(true);
+
+    var fd = new FormData();
+    fd.append('upload_preset', uploadPreset);
+    fd.append('file', file);
+
+    fetch('https://api.cloudinary.com/v1_1/' + cloudName + '/raw/upload', { method: 'POST', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.error) throw new Error(data.error.message);
+        hiddenPublicId.value = data.public_id;
+        hiddenSecureUrl.value = data.secure_url || '';
+        hiddenFileName.value = file.name;
+        fileInput.disabled = true; // keep the multipart POST tiny
+        form.submit();
+      })
+      .catch(function(err) {
+        setUploading(false);
+        alert('File upload to storage failed: ' + err.message);
+      });
+  });
+})();
+</script>
 {% endblock %}
 
 

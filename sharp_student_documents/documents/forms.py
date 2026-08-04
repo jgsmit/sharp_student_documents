@@ -136,10 +136,23 @@ class DocumentForm(forms.ModelForm):
         self.fields['category'].queryset = ensure_upload_categories()
         self.fields['category'].empty_label = "Select a category"
 
+        # Files are uploaded directly to Cloudinary from the browser, so the
+        # form's file field is optional here. Validation happens in clean().
+        self.fields['file'].required = False
+
         # Explicitly ensure optional metadata fields are not required in the UI.
         for optional_field in ["isbn", "author", "university", "subject", "course_code", "tags", "year", "license_note"]:
             if optional_field in self.fields:
                 self.fields[optional_field].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        file_obj = cleaned_data.get('file')
+        public_id = (self.data.get('cloudinary_public_id') or '').strip()
+        # A Cloudinary direct-upload (via hidden field) or a multipart file is required.
+        if not file_obj and not public_id:
+            raise forms.ValidationError("Please choose a document file to upload.")
+        return cleaned_data
 
     def clean_file(self):
         """Allow uploads of any file type and size accepted by storage."""

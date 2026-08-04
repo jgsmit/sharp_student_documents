@@ -122,6 +122,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "sharp_student_documents.context_processors.cloudinary_upload",
             ],
         },
     },
@@ -178,6 +179,10 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": os.getenv("CLOUDINARY_API_SECRET"),
 }
 DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+# Unsigned upload preset for browser-to-Cloudinary direct uploads.
+# Create it in the Cloudinary dashboard (Settings > Upload > Upload presets,
+# unsigned, "raw" resource type) so files bypass the Vercel 4.5MB limit.
+CLOUDINARY_UPLOAD_PRESET = os.getenv("CLOUDINARY_UPLOAD_PRESET", "")
 
 # Configure cloudinary library globally
 cloudinary_lib.config(

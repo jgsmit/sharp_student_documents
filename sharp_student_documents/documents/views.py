@@ -21,6 +21,7 @@ import mimetypes
 
 from .models import Document, Order, Category
 from .forms import DocumentUploadForm, DocumentSearchForm
+from .preview_utils import normalize_preview_text
 from reviews.models import Review
 from .models import RefundRequest
 from .forms import RefundRequestForm
@@ -69,7 +70,12 @@ def generate_preview(uploaded_file, description=""):
         name = uploaded_file.name.lower()
         try:
             if name.endswith(".pdf"):
-                reader = PyPDF2.PdfReader(uploaded_file)
+                try:
+                    import pypdf
+
+                    reader = pypdf.PdfReader(uploaded_file)
+                except Exception:
+                    reader = PyPDF2.PdfReader(uploaded_file)
                 text_pages = []
                 for page in reader.pages[:3]:  # first 3 pages
                     text = page.extract_text()
@@ -97,6 +103,8 @@ def generate_preview(uploaded_file, description=""):
                 uploaded_file.seek(0)
             except Exception:
                 pass
+
+    preview_text = normalize_preview_text(preview_text)
 
     if not preview_text and description:
         paragraphs = [p.strip() for p in description.split("\n\n") if p.strip()]
@@ -634,6 +642,8 @@ def document_detail(request, slug):
             )
         except Exception:
             download_url = None
+
+    document.can_access_full = can_download
 
     detail_labels = [
         document.subject,

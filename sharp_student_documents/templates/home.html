@@ -208,11 +208,11 @@
                     <!-- Preview snippet -->
                     {% if doc.preview_text %}
                     <p class="doc-preview text-muted small mb-3">
-                        {{ doc.preview_text|truncatewords:25 }}
+                        {{ doc.preview_text|truncatewords:80 }}
                     </p>
                     {% elif doc.description %}
                     <p class="doc-preview text-muted small mb-3">
-                        {{ doc.description|truncatewords:25 }}
+                        {{ doc.description|truncatewords:80 }}
                     </p>
                     {% endif %}
 
@@ -473,12 +473,20 @@
     min-height: 2.5rem;
 }
 .doc-preview {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    max-height: 6rem;
+    overflow-y: auto;
     line-height: 1.5;
     min-height: 4.5rem;
+    padding-right: .25rem;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 575.98px) {
+    .doc-preview {
+        max-height: 10rem;
+        scrollbar-width: none;
+    }
+    .doc-preview::-webkit-scrollbar { display: none; }
 }
 
 /* ── Feature Cards ── */

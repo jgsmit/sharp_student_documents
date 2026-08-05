@@ -103,6 +103,7 @@ INSTALLED_APPS = [
 # --- Middleware ---
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "sharp_student_documents.middleware.CanonicalDomainMiddleware",  # Force https + non-www
     "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ For static files on Render
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -204,6 +205,10 @@ CSRF_FAILURE_VIEW = "sharp_student_documents.views.csrf_failure"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 SITE_ID = 1  # Required by django.contrib.sites
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
+
+# --- HTTPS / Proxy settings ---
+# Tell Django to trust the X-Forwarded-Proto header from Render/PythonAnywhere
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # --- Email ---
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

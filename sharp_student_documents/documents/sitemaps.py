@@ -9,6 +9,9 @@ class StaticViewSitemap(Sitemap):
     protocol = "https"
 
     def items(self):
+        # Only include truly public pages that don't redirect.
+        # Auth pages (/login/, /register/) redirect logged-in users → Google flags as "Page with redirect".
+        # Private pages (/security/settings/) require login → same issue.
         return [
             {"route": "home",                    "priority": 1.0, "changefreq": "daily"},
             {"route": "documents:document_list", "priority": 0.9, "changefreq": "daily"},
@@ -19,8 +22,6 @@ class StaticViewSitemap(Sitemap):
             {"route": "reviews:contact",         "priority": 0.5, "changefreq": "monthly"},
             {"route": "reviews:terms",           "priority": 0.3, "changefreq": "yearly"},
             {"route": "reviews:privacy",         "priority": 0.3, "changefreq": "yearly"},
-            {"route": "accounts:register",       "priority": 0.5, "changefreq": "monthly"},
-            {"route": "accounts:login",          "priority": 0.4, "changefreq": "monthly"},
             {"route": "security:trust_security", "priority": 0.5, "changefreq": "monthly"},
         ]
 

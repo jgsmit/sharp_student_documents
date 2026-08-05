@@ -65,6 +65,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:14560",
     "https://*.pythonanywhere.com",
     "https://*.vercel.app",
+    "https://sharpstudentdoc.com",
+    "https://www.sharpstudentdoc.com",
 ]
 
 # --- Applications ---
@@ -75,6 +77,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.sitemaps",
+    "django.contrib.sites",
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
@@ -199,6 +202,7 @@ LOGIN_URL = "/accounts/login/"  # Use direct URL path
 CSRF_FAILURE_VIEW = "sharp_student_documents.views.csrf_failure"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+SITE_ID = 1  # Required by django.contrib.sites
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000").rstrip("/")
 
 # --- Email ---

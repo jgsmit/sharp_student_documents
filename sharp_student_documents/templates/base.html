@@ -19,24 +19,30 @@
   <meta name="author" content="SharpDocs">
   <meta name="application-name" content="SharpDocs">
   <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+  <meta name="rating" content="general">
+  <meta name="revisit-after" content="7 days">
 
-  <!-- Open Graph (Facebook, LinkedIn) -->
+  <!-- Open Graph (Facebook, LinkedIn, Google previews) -->
   <meta property="og:title" content="{% block og_title %}SharpDocs - Student Documents Marketplace{% endblock %}">
   <meta property="og:description" content="{% block og_description %}SharpDocs helps students buy and sell notes, study guides, and academic documents securely.{% endblock %}">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:url" content="{% block og_url %}{% canonical_url %}{% endblock %}">
   <meta property="og:image" content="{% block og_image %}{% absolute_static 'images/og-preview.png' %}{% endblock %}">
+  <meta property="og:image:alt" content="{% block og_image_alt %}SharpDocs - Student Documents Marketplace{% endblock %}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:site_name" content="SharpDocs">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="{% block twitter_card %}summary_large_image{% endblock %}">
   <meta name="twitter:site" content="@SharpDocs">
+  <meta name="twitter:creator" content="@SharpDocs">
   <meta name="twitter:title" content="{% block twitter_title %}SharpDocs - Student Documents Marketplace{% endblock %}">
   <meta name="twitter:description" content="{% block twitter_description %}SharpDocs helps students buy and sell notes, study guides, and academic documents securely.{% endblock %}">
   <meta name="twitter:image" content="{% block twitter_image %}{% absolute_static 'images/og-preview.png' %}{% endblock %}">
+  <meta name="twitter:image:alt" content="{% block twitter_image_alt %}SharpDocs - Student Documents Marketplace{% endblock %}">
 
   <!-- Theme color -->
   <meta name="theme-color" content="#0f2044" id="themeColorMeta">
@@ -47,16 +53,24 @@
   <!-- Canonical URL -->
   {% block canonical %}<link rel="canonical" href="{% canonical_url %}">{% endblock %}
   
-  <!-- Structured Data -->
+  <!-- Structured Data: Organization (sitewide) -->
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "@id": "{% absolute_url '/' %}#organization",
       "name": "SharpDocs",
+      "alternateName": ["Sharp Student Documents", "Sharp Student Docs", "Sharp Docs", "SharpStudentDocs"],
       "url": "{% absolute_url '/' %}",
-      "logo": "{% absolute_static 'sharp.png' %}",
-      "description": "SharpDocs is a marketplace where students find and sell notes, study guides, past papers, and academic documents."
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{% absolute_static 'images/sharpdocs-logo.png' %}",
+        "width": 512,
+        "height": 512
+      },
+      "image": "{% absolute_static 'images/og-preview.png' %}",
+      "description": "SharpDocs (Sharp Student Documents) is a marketplace where students find and sell notes, study guides, past papers, and academic documents.",
+      "sameAs": []
     }
   </script>
   {% block structured_data %}{% endblock %}
@@ -67,13 +81,15 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https://res.cloudinary.com; connect-src 'self' https://api.cloudinary.com;">
   {% endif %}
   
-  
-  <!-- Favicon -->
-  <link rel="icon" href="{% static 'sharp.png' %}" type="image/png" sizes="32x32">
-  <link rel="icon" href="{% static 'sharp.png' %}" type="image/png" sizes="192x192">
-  <link rel="shortcut icon" href="{% static 'sharp.png' %}" type="image/png">
-  <link rel="apple-touch-icon" href="{% static 'sharp.png' %}">
-  <meta name="msapplication-TileImage" content="{% absolute_static 'sharp.png' %}">
+  <!-- Favicon set (proper multi-size) -->
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/icons/icon-72x72.png' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/icons/icon-96x96.png' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'images/icons/icon-192x192.png' %}">
+  <link rel="icon" type="image/png" sizes="512x512" href="{% static 'images/icons/icon-512x512.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/icons/apple-touch-icon.png' %}">
+  <link rel="shortcut icon" href="{% static 'favicon.ico' %}">
+  <meta name="msapplication-TileImage" content="{% absolute_static 'images/icons/icon-144x144.png' %}">
   
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">

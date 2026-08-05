@@ -2,13 +2,15 @@
 {% load static %}
 {% load seo_tags %}
 
-{% block title %}SharpDocs | Student Documents, Study Guides, Notes & Past Papers{% endblock %}
-{% block meta_description %}SharpDocs is a marketplace for student documents, notes, study guides, and past papers.{% endblock %}
-{% block meta_keywords %}SharpDocs, student documents, study notes, academic resources, university guides, exam preparation, study guides, course notes, past papers{% endblock %}
-{% block og_title %}SharpDocs - Premium Student Documents & Study Guides{% endblock %}
-{% block og_description %}SharpDocs is a student marketplace for notes, study guides, and past papers.{% endblock %}
-{% block twitter_title %}SharpDocs - Student Document Marketplace{% endblock %}
-{% block twitter_description %}SharpDocs connects students to notes, study guides, and past papers with instant access and verified content.{% endblock %}
+{% block title %}SharpDocs – Sharp Student Documents, Study Guides, Notes & Past Papers{% endblock %}
+{% block meta_description %}SharpDocs (Sharp Student Documents) is the marketplace where students buy and sell notes, study guides, past papers, and academic resources. Find sharp student docs for any subject, instantly.{% endblock %}
+{% block meta_keywords %}SharpDocs, sharp student documents, sharp student docs, sharp docs, student documents marketplace, buy study notes, sell class notes, university study guides, exam past papers, course materials, academic resources, student notes online{% endblock %}
+{% block og_title %}SharpDocs – Sharp Student Documents & Study Guides{% endblock %}
+{% block og_description %}SharpDocs is where students find sharp, high-quality notes, study guides, and past papers. Buy and sell academic documents instantly with secure checkout.{% endblock %}
+{% block og_image_alt %}SharpDocs - Sharp Student Documents Marketplace{% endblock %}
+{% block twitter_title %}SharpDocs – Sharp Student Documents Marketplace{% endblock %}
+{% block twitter_description %}Find sharp student notes, study guides, and past papers on SharpDocs. Instant access, secure checkout, verified content.{% endblock %}
+{% block twitter_image_alt %}SharpDocs - Sharp Student Documents Marketplace{% endblock %}
 {% block og_image %}{% absolute_static 'images/sharpdocs-og-image.jpg' %}{% endblock %}
 {% block twitter_image %}{% absolute_static 'images/sharpdocs-twitter-card.jpg' %}{% endblock %}
 {% block structured_data %}
@@ -18,23 +20,55 @@
   "@graph": [
     {
       "@type": "Organization",
-      "@id": "{% canonical_url %}#organization",
+      "@id": "{% absolute_url '/' %}#organization",
       "name": "SharpDocs",
-      "url": "{% canonical_url %}",
-      "logo": "{% absolute_static 'sharp.png' %}"
+      "alternateName": ["Sharp Student Documents", "Sharp Student Docs", "Sharp Docs", "SharpStudentDocs"],
+      "url": "{% absolute_url '/' %}",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{% absolute_static 'images/sharpdocs-logo.png' %}",
+        "width": 512,
+        "height": 512
+      },
+      "image": "{% absolute_static 'images/sharpdocs-og-image.jpg' %}",
+      "description": "SharpDocs (Sharp Student Documents) is a marketplace where students buy and sell notes, study guides, past papers, and academic resources."
     },
     {
       "@type": "WebSite",
-      "@id": "{% canonical_url %}#website",
-      "url": "{% canonical_url %}",
+      "@id": "{% absolute_url '/' %}#website",
+      "url": "{% absolute_url '/' %}",
       "name": "SharpDocs",
+      "description": "Student document marketplace — buy and sell notes, study guides, and past papers.",
       "publisher": {
-        "@id": "{% canonical_url %}#organization"
+        "@id": "{% absolute_url '/' %}#organization"
       },
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "{{ request.scheme }}://{{ request.get_host }}{% url 'documents:document_list' %}?q={search_term_string}",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "{{ request.scheme }}://{{ request.get_host }}{% url 'documents:document_list' %}?q={search_term_string}"
+        },
         "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "WebPage",
+      "@id": "{% canonical_url %}#webpage",
+      "url": "{% canonical_url %}",
+      "name": "SharpDocs | Student Documents, Study Guides, Notes & Past Papers",
+      "description": "Buy and sell student notes, study guides, past papers, and academic resources on SharpDocs.",
+      "isPartOf": { "@id": "{% absolute_url '/' %}#website" },
+      "about": { "@id": "{% absolute_url '/' %}#organization" },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "{% absolute_url '/' %}"
+          }
+        ]
       }
     }
   ]
@@ -51,11 +85,10 @@
             <i class="bi bi-lightning-charge-fill text-warning"></i> SharpDocs
         </h1>
         <p class="lead mb-4 animate__animated animate__fadeInUp">
-            Premium Student Documents & Study Guides
+            Sharp Student Documents &amp; Study Guides
         </p>
         <p class="mb-4 mx-auto" style="max-width: 760px;">
-            SharpDocs helps students find notes, past papers, study guides, and academic resources.
-        
+            SharpDocs is the marketplace for sharp student notes, past papers, study guides, and academic resources — find exactly what you need, instantly.
         </p>
 
         {% if user.is_authenticated %}

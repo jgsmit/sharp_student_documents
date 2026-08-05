@@ -27,7 +27,9 @@ urlpatterns = [
     path('', include('pwa.urls')),
     # Some templates/browsers request /sw.js; keep it compatible.
     path('sw.js', RedirectView.as_view(url='/serviceworker.js', permanent=False)),
-    path('favicon.ico', RedirectView.as_view(url='/static/sharp.png', permanent=True)),
+    path('favicon.ico', RedirectView.as_view(url='/static/favicon.ico', permanent=True)),
+    path('apple-touch-icon.png', RedirectView.as_view(url='/static/images/icons/apple-touch-icon.png', permanent=True)),
+    path('apple-touch-icon-precomposed.png', RedirectView.as_view(url='/static/images/icons/apple-touch-icon.png', permanent=True)),
 
     path('accounts/', include('accounts.urls')),
     path('documents/', include('documents.urls')),

@@ -42,8 +42,7 @@ Allow: /security/trust-security/
 Allow: /security/settings/
 Disallow: /security/
 
-# Block search/filter URLs with parameters that create duplicate content
-Disallow: /*?page=
+# Block sort/filter params that create duplicate content (but allow ?page= for pagination)
 Disallow: /*?sort=
 Disallow: /*?filter=
 

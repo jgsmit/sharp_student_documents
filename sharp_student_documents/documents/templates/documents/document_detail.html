@@ -10,9 +10,11 @@
 {% block og_description %}{{ seo_description|default:document.description|truncatewords:28 }}{% endblock %}
 {% block og_type %}product{% endblock %}
 {% block og_image %}{% absolute_static 'images/og-preview.png' %}{% endblock %}
+{% block og_image_alt %}{{ document.title }} | SharpDocs{% endblock %}
 {% block twitter_title %}{{ document.title }} | SharpDocs{% endblock %}
 {% block twitter_description %}{{ seo_description|default:document.description|truncatewords:24 }}{% endblock %}
 {% block twitter_image %}{% absolute_static 'images/og-preview.png' %}{% endblock %}
+{% block twitter_image_alt %}{{ document.title }} | SharpDocs{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">

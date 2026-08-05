@@ -94,7 +94,7 @@
                     <div class="col-lg-4">
                         <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
                             {% for subject_name in featured_subjects %}
-                                <a href="?subject={{ subject_name|urlencode }}" class="brand-chip">{{ subject_name }}</a>
+                                <a href="?{% param_replace subject=subject_name %}" class="brand-chip">{{ subject_name }}</a>
                             {% endfor %}
                         </div>
                     </div>
@@ -385,8 +385,12 @@
                         </li>
                     {% endif %}
                     
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if page_obj.number == num %}
+                    {% for num in page_obj.paginator.get_elided_page_range %}
+                        {% if num == page_obj.paginator.ELLIPSIS %}
+                            <li class="page-item disabled">
+                                <span class="page-link">&hellip;</span>
+                            </li>
+                        {% elif page_obj.number == num %}
                             <li class="page-item active">
                                 <span class="page-link">{{ num }}</span>
                             </li>
@@ -422,7 +426,7 @@
                   <div class="mb-3">
                     <h6 class="fw-semibold">Document Types</h6>
                     {% for type, label in document_types %}
-                      <a href="?document_type={{ type }}" class="d-block text-decoration-none text-muted mb-1">
+                      <a href="?{% param_replace document_type=type %}" class="d-block text-decoration-none text-muted mb-1">
                         <i class="bi bi-file-earmark"></i> {{ label }}
                       </a>
                     {% endfor %}
@@ -431,7 +435,7 @@
                   <div class="mb-3">
                     <h6 class="fw-semibold">Academic Levels</h6>
                     {% for level, label in academic_levels %}
-                      <a href="?academic_level={{ level }}" class="d-block text-decoration-none text-muted mb-1">
+                      <a href="?{% param_replace academic_level=level %}" class="d-block text-decoration-none text-muted mb-1">
                         <i class="bi bi-mortarboard"></i> {{ label }}
                       </a>
                     {% endfor %}
@@ -439,18 +443,18 @@
           
           <div class="mb-3">
             <h6 class="fw-semibold">Popular Subjects</h6>
-            <a href="?subject=Mathematics" class="d-block text-decoration-none text-muted mb-1">Mathematics</a>
-            <a href="?subject=Computer%20Science" class="d-block text-decoration-none text-muted mb-1">Computer Science</a>
-            <a href="?subject=Business" class="d-block text-decoration-none text-muted mb-1">Business</a>
-            <a href="?subject=Engineering" class="d-block text-decoration-none text-muted mb-1">Engineering</a>
-            <a href="?subject=Medicine" class="d-block text-decoration-none text-muted mb-1">Medicine</a>
+            <a href="?{% param_replace subject='Mathematics' %}" class="d-block text-decoration-none text-muted mb-1">Mathematics</a>
+            <a href="?{% param_replace subject='Computer Science' %}" class="d-block text-decoration-none text-muted mb-1">Computer Science</a>
+            <a href="?{% param_replace subject='Business' %}" class="d-block text-decoration-none text-muted mb-1">Business</a>
+            <a href="?{% param_replace subject='Engineering' %}" class="d-block text-decoration-none text-muted mb-1">Engineering</a>
+            <a href="?{% param_replace subject='Medicine' %}" class="d-block text-decoration-none text-muted mb-1">Medicine</a>
           </div>
           
           <div class="mb-3">
             <h6 class="fw-semibold">Price Range</h6>
-            <a href="?max_price=5" class="d-block text-decoration-none text-muted mb-1">Under $5</a>
-            <a href="?min_price=5&max_price=20" class="d-block text-decoration-none text-muted mb-1">$5 - $20</a>
-            <a href="?min_price=20" class="d-block text-decoration-none text-muted mb-1">Over $20</a>
+            <a href="?{% param_replace max_price=5 min_price='' %}" class="d-block text-decoration-none text-muted mb-1">Under $5</a>
+            <a href="?{% param_replace min_price=5 max_price=20 %}" class="d-block text-decoration-none text-muted mb-1">$5 - $20</a>
+            <a href="?{% param_replace min_price=20 max_price='' %}" class="d-block text-decoration-none text-muted mb-1">Over $20</a>
           </div>
         </div>
       </div>

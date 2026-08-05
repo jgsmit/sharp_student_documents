@@ -176,7 +176,10 @@ def document_list(request):
         if search_type == 'title':
             documents = documents.filter(title__icontains=query)
         elif search_type == 'content':
-            documents = documents.filter(description__icontains=query)
+            documents = documents.filter(
+                Q(description__icontains=query) |
+                Q(preview_text__icontains=query)
+            )
         elif search_type == 'author':
             documents = documents.filter(author__icontains=query)
         elif search_type == 'tags':
@@ -187,11 +190,13 @@ def document_list(request):
             documents = documents.filter(
                 Q(title__icontains=query) |
                 Q(description__icontains=query) |
+                Q(preview_text__icontains=query) |
                 Q(tags__icontains=query) |
                 Q(author__icontains=query) |
                 Q(subject__icontains=query) |
                 Q(course_code__icontains=query) |
-                Q(isbn__icontains=query)
+                Q(isbn__icontains=query) |
+                Q(category__name__icontains=query)
             )
     
     # Document type filter
@@ -483,7 +488,10 @@ def advanced_search(request):
                 if search_type == 'title':
                     documents = documents.filter(title__icontains=query)
                 elif search_type == 'content':
-                    documents = documents.filter(description__icontains=query)
+                    documents = documents.filter(
+                        Q(description__icontains=query) |
+                        Q(preview_text__icontains=query)
+                    )
                 elif search_type == 'tags':
                     documents = documents.filter(tags__icontains=query)
                 elif search_type == 'author':
@@ -494,11 +502,13 @@ def advanced_search(request):
                     documents = documents.filter(
                         Q(title__icontains=query) |
                         Q(description__icontains=query) |
+                        Q(preview_text__icontains=query) |
                         Q(tags__icontains=query) |
                         Q(author__icontains=query) |
                         Q(subject__icontains=query) |
                         Q(course_code__icontains=query) |
-                        Q(isbn__icontains=query)
+                        Q(isbn__icontains=query) |
+                        Q(category__name__icontains=query)
                     )
             
             # Category filter
@@ -839,6 +849,7 @@ def seller_documents(request):
         documents = documents.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
+            Q(preview_text__icontains=query) |
             Q(tags__icontains=query) |
             Q(author__icontains=query) |
             Q(subject__icontains=query) |

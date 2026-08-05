@@ -67,13 +67,15 @@ def sitemap_xml(request, sitemaps):
 
 
 def home(request):
+    from django.core.paginator import Paginator
+
     # Annotate documents with average ratings and review counts
     documents = Document.objects.select_related(
         'seller', 'category'
     ).annotate(
         average_rating=Avg("reviews__rating"),
         reviews_count=Count("reviews"),
-    )
+    ).order_by("-created_at")
 
     # Top 5 sellers by total number of paid sales (include first name + username)
     top_sellers = (
@@ -111,8 +113,12 @@ def home(request):
             })
             purchased_ids.add(doc.id)
 
-    # Add preview and access info for each document
-    for doc in documents:
+    # Paginate featured documents: 12 per page (clean 3x4 grid on the home page)
+    paginator = Paginator(documents, 12)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    # Add preview and access info only for the documents shown on this page
+    for doc in page_obj:
         # Flag if the logged-in user purchased it
         doc.can_access_full = doc.id in purchased_ids
         
@@ -128,16 +134,20 @@ def home(request):
         if not doc.preview_text:
             try:
                 uploaded_file = getattr(doc.file, "file", None)
-                doc.preview_text = generate_preview(uploaded_file, doc.description)
+                preview_text, _ = generate_preview(uploaded_file, doc.description)
+                doc.preview_text = preview_text or (doc.description[:300] + "...")
                 doc.save(update_fields=["preview_text"])
             except Exception:
                 doc.preview_text = doc.description[:300] + "..."
 
     context = {
-        "documents": documents,
+        "documents": page_obj,
         "top_sellers": top_sellers,
         "purchases": purchases,
         "categories": Category.objects.filter(is_active=True).order_by("sort_order", "name")[:12],
+        "is_paginated": page_obj.has_other_pages(),
+        "page_obj": page_obj,
+        "result_count": paginator.count,
     }
     return render(request, "home.html", context)
 
